@@ -1,0 +1,17 @@
+{
+  "name": "Chef Control",
+  "short_name": "Chef Control",
+  "description": "Gestão de pedidos e lucro para confeiteiros e produtores",
+  "theme_color": "#c2410c",
+  "background_color": "#fff7ed",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}

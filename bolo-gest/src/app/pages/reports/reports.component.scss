@@ -1,0 +1,121 @@
+.reports-page {
+  padding: 1rem;
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+}
+
+.btn {
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  background: var(--secondary);
+  color: var(--text);
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.card {
+  padding: 1.25rem;
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  .label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  .value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.stat {
+  padding: 1rem 1.5rem;
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+
+  &.warning {
+    border-left: 4px solid var(--warning);
+  }
+
+  .stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .stat-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+}
+
+.revenue-chart-section {
+  margin-top: 2rem;
+
+  h2 {
+    margin: 0 0 1rem;
+    font-size: 1.15rem;
+    color: var(--text);
+  }
+
+  .chart-container {
+    max-width: 700px;
+    height: 320px;
+    padding: 1rem;
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .chart-loading,
+  .chart-error,
+  .chart-empty {
+    padding: 1rem 0;
+    color: var(--text-muted);
+  }
+
+  .chart-error {
+    color: var(--danger, #dc2626);
+  }
+}

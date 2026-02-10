@@ -1,0 +1,79 @@
+<div class="finalizar-conta">
+  <header class="page-header">
+    <h1>Finalizar conta</h1>
+    <button type="button" class="btn btn-text logout-btn" (click)="logout()">Sair</button>
+  </header>
+
+  @if (loading) {
+    <p class="loading">A carregar...</p>
+  } @else if (success) {
+    <div class="success-box">
+      <div class="icon">✓</div>
+      <h2>Conta activada</h2>
+      <p>A sua conta está activa. A redirecionar para o dashboard...</p>
+    </div>
+  } @else {
+    <section class="section">
+      <p class="intro">Para activar a sua conta e usar o Chef Control, efectue o pagamento da licença. Depois receberá um link com o código; introduza-o aqui.</p>
+
+      <div class="payment-box">
+        <div class="amount">{{ amount }} MZN</div>
+        <p class="label">Valor da licença</p>
+      </div>
+
+      <div class="payment-instructions">
+        <h3>Como pagar (e-Mola)</h3>
+        <ol>
+          <li>Abra a aplicação e-Mola no seu telemóvel.</li>
+          <li>Escolha <strong>Enviar dinheiro</strong> ou <strong>Transferência</strong>.</li>
+          <li>Número do destinatário: <strong class="phone">{{ eMolaPhone }}</strong></li>
+          <li>Valor: <strong>{{ amount }} MZN</strong>.</li>
+          <li>Após o pagamento ser aprovado, receberá um <strong>link</strong> (por mensagem). Abra o link para ver o seu código de licença.</li>
+          <li>Volte aqui e clique em <strong>Já finalizei o pagamento</strong> para introduzir o código.</li>
+        </ol>
+      </div>
+
+      @if (error) {
+        <p class="msg-error">{{ error }}</p>
+      }
+
+      <button
+        type="button"
+        class="btn btn-primary btn-block"
+        (click)="openCodePopup()">
+        Já finalizei o pagamento
+      </button>
+
+      <p class="hint">Ao clicar, abrirá uma janela para introduzir o código da licença que recebeu no link. Pode fechar a janela e continuar mais tarde ou sair da página.</p>
+
+      <button type="button" class="btn btn-text btn-block" (click)="logout()">Sair da conta</button>
+    </section>
+  }
+</div>
+
+@if (showCodePopup) {
+  <div class="code-popup-overlay" (click)="closeCodePopup()">
+    <div class="code-popup" (click)="$event.stopPropagation()">
+      <h3>Código da licença</h3>
+      <p class="code-popup-hint">Introduza o código de 9 caracteres que recebeu ao abrir o link (ou por mensagem).</p>
+      <input
+        type="text"
+        maxlength="9"
+        placeholder="Ex: AB12CD9XY"
+        class="code-input"
+        [value]="licenseCode"
+        (input)="licenseCode = $any($event.target).value.toUpperCase(); codeError = ''"
+        (keydown.enter)="submitLicenseCode()"
+      />
+      @if (codeError) {
+        <p class="msg-error">{{ codeError }}</p>
+      }
+      <div class="code-popup-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeCodePopup()">Fechar</button>
+        <button type="button" class="btn btn-primary" [disabled]="validating" (click)="submitLicenseCode()">
+          {{ validating ? 'A validar...' : 'Validar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,150 @@
+<div class="dashboard">
+  <header class="page-header">
+    <h1>Dashboard</h1>
+    <p class="subtitle">{{ isAdmin ? 'Visão geral do sistema e acompanhamento de vendas' : 'Visão geral do seu negócio de bolos' }}</p>
+  </header>
+
+  @if (isAdmin) {
+    <!-- Dashboard administrador – estilo Power BI: KPIs + gráfico principal -->
+    @if (adminLoading()) {
+      <p class="loading-msg">A carregar...</p>
+    } @else {
+      <div class="dashboard-admin">
+        <section class="kpi-row">
+          <div class="kpi-tile kpi-tile-users">
+            <span class="kpi-label">Utilizadores</span>
+            <span class="kpi-value">{{ adminStats()?.totalUsers ?? 0 }}</span>
+            <span class="kpi-meta">registados</span>
+          </div>
+          <div class="kpi-tile kpi-tile-active">
+            <span class="kpi-label">Licenças activas</span>
+            <span class="kpi-value">{{ adminStats()?.licensesPaid ?? 0 }}</span>
+            <span class="kpi-meta">contas com licença paga</span>
+          </div>
+          <div class="kpi-tile kpi-tile-blocked">
+            <span class="kpi-label">Contas bloqueadas</span>
+            <span class="kpi-value">{{ adminStats()?.licensesPending ?? 0 }}</span>
+            <span class="kpi-meta">sem licença paga</span>
+          </div>
+          <div class="kpi-tile kpi-tile-revenue">
+            <span class="kpi-label">Receita este mês</span>
+            <span class="kpi-value">{{ revenueThisMonth() | number:'1.0-0' }}</span>
+            <span class="kpi-meta">MZN · todos</span>
+          </div>
+        </section>
+
+        <section class="indicators-section">
+          <h2 class="section-heading">Indicadores de uso do sistema</h2>
+          <div class="kpi-row kpi-row-usage">
+            <div class="kpi-tile kpi-tile-usage">
+              <span class="kpi-label">Tempo médio no sistema</span>
+              <span class="kpi-value">—</span>
+              <span class="kpi-meta">Em breve: tempo médio de sessão por utilizador</span>
+            </div>
+            <div class="kpi-tile kpi-tile-usage">
+              <span class="kpi-label">Utilizador mais activo</span>
+              <span class="kpi-value">—</span>
+              <span class="kpi-meta">Quem mais utilizou o sistema (em breve)</span>
+            </div>
+            <div class="kpi-tile kpi-tile-usage">
+              <span class="kpi-label">Tempo no sistema por utilizador</span>
+              <span class="kpi-value">—</span>
+              <span class="kpi-meta">Indicador de adopção (em breve)</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="report-section">
+          <div class="report-card">
+            <h2 class="report-title">Receita por mês</h2>
+            <p class="report-desc">Acompanhamento de vendas (todos os utilizadores)</p>
+            <div class="chart-container chart-tall">
+              <canvas #chartRevenueMonth></canvas>
+            </div>
+          </div>
+        </section>
+
+        <section class="quick-actions">
+          <a routerLink="/gestao-licencas" class="action-tile">
+            <span class="action-title">Gestão de licenças</span>
+            <span class="action-desc">Licenças activas, bloqueadas e expiradas</span>
+          </a>
+          <a routerLink="/encomendas" class="action-tile">
+            <span class="action-title">Encomendas</span>
+            <span class="action-desc">Todas as encomendas do sistema</span>
+          </a>
+        </section>
+      </div>
+    }
+  } @else {
+    <!-- Dashboard utilizador: cards + gráficos + pedidos do dia -->
+    <section class="cards">
+      <div class="card highlight">
+        <span class="card-label">Lucro hoje</span>
+        <span class="card-value">{{ profitDay() | number:'1.2-2' }} MZN</span>
+        <span class="card-meta">{{ dayOrders().length }} pedido(s)</span>
+      </div>
+      <div class="card">
+        <span class="card-label">Lucro esta semana</span>
+        <span class="card-value">{{ profitWeek() | number:'1.2-2' }} MZN</span>
+        <span class="card-meta">{{ weekOrders().length }} pedido(s)</span>
+      </div>
+      <div class="card">
+        <span class="card-label">Lucro este mês</span>
+        <span class="card-value">{{ profitMonth() | number:'1.2-2' }} MZN</span>
+      </div>
+      @if (pendingOrders().length > 0) {
+        <div class="card warning">
+          <span class="card-label">Saldo pendente</span>
+          <span class="card-value">{{ pendingOrders().length }}</span>
+          <span class="card-meta">pedido(s) por cobrar</span>
+        </div>
+      }
+    </section>
+
+    <section class="charts-section">
+      <div class="chart-card">
+        <h2>Lucro nos últimos 7 dias</h2>
+        <div class="chart-container">
+          <canvas #chartProfit></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h2>Status de pagamento</h2>
+        <div class="chart-container chart-doughnut">
+          <canvas #chartPayment></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="orders-preview">
+      <div class="section-header">
+        <h2>Pedidos do dia</h2>
+        <a routerLink="/novo-pedido" class="btn btn-primary">Novo Pedido</a>
+      </div>
+      @if (dayOrders().length === 0) {
+        <div class="empty-state">
+          <span class="empty-icon">📋</span>
+          <p>Nenhum pedido hoje.</p>
+          <a routerLink="/novo-pedido" class="btn btn-outline">Criar primeiro pedido</a>
+        </div>
+      } @else {
+        <ul class="order-list">
+          @for (o of dayOrders(); track o.id) {
+            <li class="order-item">
+              <div class="order-info">
+                <span class="order-client">{{ o.clientName }}</span>
+                <span class="order-cake">{{ getProductName(o) }} ({{ getProductSize(o) }})</span>
+              </div>
+              <span class="amount">{{ o.valueCharged | number:'1.0-0' }} MZN</span>
+              <span class="badge" [class]="o.paymentStatus">{{ o.paymentStatus }}</span>
+            </li>
+          }
+        </ul>
+        <div class="section-footer">
+          <a routerLink="/pedidos" class="link">Ver todos os pedidos →</a>
+        </div>
+      }
+    </section>
+  }
+</div>
