@@ -1,0 +1,86 @@
+.ativar-licenca-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f5f0eb 0%, #e8e0d5 100%);
+}
+
+.loading,
+.msg-error {
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.msg-error {
+  color: #c0392b;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
+  max-width: 420px;
+  width: 100%;
+}
+
+.card h1 {
+  margin: 0 0 1rem;
+  font-size: 1.5rem;
+  color: #2c1810;
+}
+
+.welcome {
+  margin-bottom: 1.25rem;
+  font-size: 1rem;
+  color: #555;
+}
+
+.license-code-wrap {
+  background: #f8f6f3;
+  border: 2px dashed #c4a574;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.license-code-wrap .label {
+  display: block;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.license-code-wrap .code {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #2c1810;
+}
+
+.validity {
+  font-size: 0.95rem;
+  color: #27ae60;
+  margin-bottom: 1rem;
+}
+
+.validity.expired {
+  color: #c0392b;
+}
+
+.hint {
+  font-size: 0.9rem;
+  color: #777;
+  margin: 0;
+}
+
+.offline-msg {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0 0 1rem;
+  line-height: 1.45;
+}

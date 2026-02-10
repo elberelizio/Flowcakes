@@ -1,0 +1,124 @@
+.orders-page {
+  padding: 1rem;
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+}
+
+.btn {
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+
+  &.btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+}
+
+.empty {
+  color: var(--text-muted);
+  a { color: var(--primary); }
+}
+
+.table-wrap {
+  overflow-x: auto;
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+
+  th, td {
+    padding: 0.6rem 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .input-pago {
+    width: 4.5rem;
+    padding: 0.35rem 0.4rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+  }
+
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius);
+    text-transform: capitalize;
+    &.pendente { background: var(--danger-bg); color: var(--danger); }
+    &.parcial { background: var(--warning-bg); color: var(--warning); }
+    &.pago { background: var(--success-bg); color: var(--success); }
+  }
+
+  .btn-sm {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.8rem;
+    border: none;
+    border-radius: var(--radius);
+    background: var(--primary);
+    color: white;
+    cursor: pointer;
+  }
+}
+
+@media (max-width: 768px) {
+  .orders-table {
+    display: block;
+
+    thead { display: none; }
+    tr {
+      display: block;
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.35rem 0;
+      border: none;
+
+      &::before {
+        content: attr(data-label);
+        font-weight: 500;
+        margin-right: 0.5rem;
+      }
+    }
+    td:first-child { padding-top: 0.5rem; }
+    td:last-child { padding-bottom: 0.5rem; }
+  }
+}

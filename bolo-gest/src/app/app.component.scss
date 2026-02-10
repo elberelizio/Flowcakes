@@ -1,0 +1,14 @@
+// Shell do app – imports modulares (cada partial < 200 linhas)
+@use './core/styles/sidebar';
+@use './core/styles/navbar';
+@use './core/styles/dropdowns';
+@use './core/styles/layout';
+@use './core/styles/license-popup';
+@use './core/styles/responsive';
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  position: relative;
+  background: var(--secondary, #f8fafc);
+}

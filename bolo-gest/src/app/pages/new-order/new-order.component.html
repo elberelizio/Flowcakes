@@ -1,0 +1,167 @@
+<div class="new-order">
+  <header class="page-header">
+    <h1>Novo Pedido</h1>
+    @if (step > 1) {
+      <button type="button" class="btn-back" (click)="backToCategory()">
+        ← Voltar
+      </button>
+    }
+  </header>
+
+  <!-- Passo 1: Categoria -->
+  @if (step === 1) {
+    <section class="step-section">
+      <h2>Seleção de categoria</h2>
+      <div class="category-cards">
+        <button type="button" class="category-card" (click)="selectCategory('doces')">
+          <span class="category-label">Doces</span>
+          <span class="category-desc">Bolos, biscoitos, tortas, pudins</span>
+        </button>
+        <button type="button" class="category-card" (click)="selectCategory('salgados')">
+          <span class="category-label">Salgados</span>
+          <span class="category-desc">Chamussas, recois e outros</span>
+        </button>
+      </div>
+    </section>
+  }
+
+  <!-- Passo 2: Formulário do pedido -->
+  @if (step === 2 && category) {
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <section class="section">
+        <h2>Dados do pedido</h2>
+        <div class="grid">
+          <div class="field full">
+            <label>Cliente</label>
+            <input formControlName="clientName" placeholder="Nome do cliente" />
+          </div>
+          <div class="field">
+            <label>Tipo</label>
+            <select formControlName="subcategory">
+              @for (sub of subcategories; track sub) {
+                <option [value]="sub">{{ sub }}</option>
+              }
+            </select>
+          </div>
+          <div class="field full">
+            <label>Nome do produto</label>
+            <input
+              formControlName="productName"
+              [placeholder]="isDoces ? 'Ex: Bolo de Chocolate, Bolo de Aniversário' : 'Ex: Chamussas, Recois'" />
+          </div>
+          @if (isDoces) {
+            <div class="field full">
+              <label>Tamanho</label>
+              <div class="size-type-options">
+                <button type="button" class="chip" [class.active]="sizeType === 'nome'" (click)="setSizeType('nome')">Por nome</button>
+                <button type="button" class="chip" [class.active]="sizeType === 'numero'" (click)="setSizeType('numero')">Por número</button>
+              </div>
+              @if (sizeType === 'nome') {
+                <select formControlName="size" class="size-select">
+                  @for (s of docesSizesByName; track s) {
+                    <option [value]="s">{{ s }}</option>
+                  }
+                </select>
+              }
+              @if (sizeType === 'numero') {
+                <div class="size-number-row">
+                  <select formControlName="size" class="size-select">
+                    @for (n of docesSizesByNumber; track n) {
+                      <option [value]="n">{{ n }}</option>
+                    }
+                    <option value="outro">Outro</option>
+                  </select>
+                  @if (form.get('size')?.value === 'outro') {
+                    <input type="number" formControlName="sizeNumberCustom" min="1" step="1" placeholder="Nº" class="size-custom" />
+                  }
+                </div>
+                <span class="field-hint">Tamanho por número (ex: diâmetro em cm). Cada confeiteiro usa a sua escala.</span>
+              }
+            </div>
+          }
+          @if (isSalgados) {
+            <div class="field">
+              <label>Quantidade (kg)</label>
+              <input
+                type="number"
+                formControlName="quantityKg"
+                min="0"
+                step="0.5"
+                placeholder="Ex: 2, 1.5" />
+            </div>
+            <div class="field">
+              <label>Unidades por quilo</label>
+              <input
+                type="number"
+                formControlName="unitsPerKg"
+                min="1"
+                step="1"
+                placeholder="Ex: 10 chamussas/kg" />
+              <span class="field-hint">Quantas unidades saem em 1 kg (cada confeiteiro tem a sua margem)</span>
+            </div>
+            @if (totalUnitsApprox != null) {
+              <div class="field total-units">
+                <span class="total-units-label">Total aproximado:</span>
+                <strong>{{ totalUnitsApprox }} unidades</strong>
+              </div>
+            }
+          }
+          <div class="field">
+            <label>Valor cobrado ao cliente (MZN)</label>
+            <input type="number" formControlName="valueCharged" min="0" step="1" />
+          </div>
+        </div>
+
+        <div class="field payment-quick">
+          <label>Valor pago</label>
+          <div class="quick-btns">
+            <button type="button" class="chip" [class.active]="paymentPercent === 0" (click)="setPaymentPercent(0)">0%</button>
+            <button type="button" class="chip" [class.active]="paymentPercent === 50" (click)="setPaymentPercent(50)">50%</button>
+            <button type="button" class="chip" [class.active]="paymentPercent === 100" (click)="setPaymentPercent(100)">100%</button>
+          </div>
+          <input type="number" formControlName="valuePaid" min="0" step="1" placeholder="MZN" />
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Ingredientes</h2>
+        <div formArrayName="ingredients" class="ingredients-list">
+          @for (item of ingredients.controls; track $index) {
+            <div class="ingredient-row" [formGroupName]="$index">
+              <input formControlName="name" placeholder="Nome" class="ing-name" />
+              <input type="number" formControlName="unitValue" min="0" placeholder="MZN" class="ing-value" />
+              <button type="button" class="btn-icon" (click)="removeIngredient($index)" [disabled]="ingredients.length <= 1" title="Remover">×</button>
+            </div>
+          }
+        </div>
+        <button type="button" class="btn btn-outline" (click)="addIngredient()">+ Adicionar ingrediente</button>
+        <div class="field energy">
+          <label>Energia (MZN)</label>
+          <input type="number" formControlName="energyCost" min="0" step="1" />
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Observações (opcional)</h2>
+        <textarea formControlName="observations" rows="2" placeholder="Ex: Entrega às 16h, Cliente prefere sem piripiri..."></textarea>
+      </section>
+
+      <section class="section totals">
+        <div class="row"><span>Custo total</span><strong>{{ costTotal | number:'1.2-2' }} MZN</strong></div>
+        <div class="row"><span>Lucro</span><strong class="profit">{{ profit | number:'1.2-2' }} MZN</strong></div>
+        <div class="row"><span>Status pagamento</span><strong>{{ paymentStatus }}</strong></div>
+        <div class="row"><span>Saldo</span><strong>{{ balance | number:'1.2-2' }} MZN</strong></div>
+      </section>
+
+      @if (submitError) {
+        <p class="msg-error">{{ submitError }}</p>
+      }
+      <div class="actions">
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || submitting">
+          {{ submitting ? 'A guardar...' : 'Guardar pedido' }}
+        </button>
+        <a routerLink="/dashboard" class="btn btn-secondary">Cancelar</a>
+      </div>
+    </form>
+  }
+</div>

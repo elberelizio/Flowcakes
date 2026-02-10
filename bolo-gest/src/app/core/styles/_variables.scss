@@ -1,0 +1,43 @@
+// Chef Control – design tokens (modular)
+$primary: #0d9488;
+$primary-dark: #0f766e;
+$primary-light: #ccfbf1;
+$primary-bg: rgba(13, 148, 136, 0.08);
+
+$secondary: #f8fafc;
+$secondary-hover: #f1f5f9;
+$card-bg: #ffffff;
+$input-bg: #ffffff;
+
+$text: #0f172a;
+$text-muted: #64748b;
+
+$border: #e2e8f0;
+$border-light: #f1f5f9;
+
+$success: #059669;
+$success-bg: #d1fae5;
+$warning: #d97706;
+$warning-bg: #fef3c7;
+$danger: #dc2626;
+$danger-bg: #fee2e2;
+
+$radius: 10px;
+$radius-lg: 14px;
+$radius-xl: 18px;
+
+$shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+$shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+$shadow-lg: 0 10px 40px rgba(15, 23, 42, 0.08);
+
+$sidebar-bg: #0f172a;
+$sidebar-text: #e2e8f0;
+$sidebar-muted: #94a3b8;
+$sidebar-border: rgba(255, 255, 255, 0.06);
+$sidebar-hover: rgba(255, 255, 255, 0.06);
+$sidebar-active: rgba(13, 148, 136, 0.25);
+$sidebar-active-text: #5eead4;
+
+$navbar-height: 64px;
+$sidebar-width: 280px;
+$sidebar-collapsed: 80px;

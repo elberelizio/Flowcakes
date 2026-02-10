@@ -1,0 +1,61 @@
+@use 'variables' as v;
+
+.navbar-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  min-width: 220px;
+  background: v.$card-bg;
+  border: 1px solid v.$border;
+  border-radius: v.$radius-lg;
+  box-shadow: v.$shadow-lg;
+  z-index: 50;
+  overflow: hidden;
+}
+
+.dropdown-title {
+  padding: 0.65rem 1rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: v.$text-muted;
+  border-bottom: 1px solid v.$border;
+}
+
+.dropdown-empty {
+  padding: 1rem;
+  font-size: 0.9rem;
+  color: v.$text-muted;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: none;
+  background: none;
+  font-size: 0.9375rem;
+  color: v.$text;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+
+  &:hover {
+    background: v.$secondary;
+  }
+  &.logout {
+    color: v.$danger;
+    &:hover {
+      background: v.$danger-bg;
+    }
+  }
+}
+
+.user-dropdown {
+  min-width: 200px;
+}
