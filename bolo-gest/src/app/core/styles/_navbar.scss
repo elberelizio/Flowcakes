@@ -1,0 +1,141 @@
+@use 'variables' as v;
+
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1.5rem;
+  min-height: v.$navbar-height;
+  background: linear-gradient(180deg, #ffffff 0%, v.$secondary 100%);
+  border-bottom: 2px solid v.$primary;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.navbar-menu-btn {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: v.$radius;
+  background: transparent;
+  color: v.$text;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  &:hover {
+    background: v.$secondary;
+  }
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-right: 1.5rem;
+  min-width: 0;
+}
+
+.navbar-brand-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: v.$radius;
+  flex-shrink: 0;
+}
+
+.navbar-brand-text {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: v.$text;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+.navbar-brand-tagline {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: v.$text-muted;
+  margin-left: 0.35rem;
+  white-space: nowrap;
+}
+
+.navbar-divider {
+  width: 1px;
+  height: 24px;
+  background: v.$border;
+  flex-shrink: 0;
+}
+
+.navbar-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: v.$text-muted;
+  letter-spacing: -0.02em;
+  flex: 1;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.navbar-datetime {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: v.$text-muted;
+  white-space: nowrap;
+}
+
+.navbar-link {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: v.$text-muted;
+  text-decoration: none;
+  padding: 0.35rem 0.5rem;
+  border-radius: v.$radius;
+  transition: color 0.15s, background 0.15s;
+  &:hover {
+    color: v.$primary;
+    background: v.$primary-bg;
+  }
+}
+
+.navbar-dropdown-wrap {
+  position: relative;
+}
+
+.navbar-icon-btn,
+.navbar-user-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: v.$radius;
+  background: transparent;
+  color: v.$text-muted;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: v.$secondary;
+    color: v.$text;
+  }
+  &.active {
+    background: v.$primary-bg;
+    color: v.$primary;
+  }
+}
+
+.navbar-user-name {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: v.$text;
+}

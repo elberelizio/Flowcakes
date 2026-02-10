@@ -1,0 +1,8 @@
+-- Criar a base de dados Chef Control (executar como superuser)
+-- No terminal: psql -U postgres -c "CREATE DATABASE chefcontrol2025;"
+-- Depois: psql -U postgres -d chefcontrol2025 -f 01_schema.sql
+--
+-- Ou manualmente no psql:
+-- CREATE DATABASE chefcontrol2025;
+-- \c chefcontrol2025
+-- \i 01_schema.sql

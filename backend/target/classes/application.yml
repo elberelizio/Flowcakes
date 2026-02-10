@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: chef-control-backend
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:chefcontrol2025}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:admin}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+
+server:
+  port: ${SERVER_PORT:8080}
+
+# CORS (ajustar em produção para o domínio do front)
+app:
+  cors-allowed-origins: http://localhost:4200
+  license-amount: 500
+  e-mola-phone: "871964887"
+  # SMS (operador nacional) e WhatsApp via Twilio
+  # Confirmação de conta (registo) + código de licença (após admin confirmar pagamento)
+  twilio-account-sid: ${TWILIO_ACCOUNT_SID:}
+  twilio-auth-token: ${TWILIO_AUTH_TOKEN:}
+  twilio-from-number: ${TWILIO_FROM_NUMBER:}
+  # WhatsApp: número com prefixo whatsapp: (ex.: whatsapp:+14155238886 sandbox). Se vazio, só envia SMS.
+  twilio-whatsapp-from: ${TWILIO_WHATSAPP_FROM:}

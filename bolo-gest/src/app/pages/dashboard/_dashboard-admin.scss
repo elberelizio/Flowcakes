@@ -1,0 +1,171 @@
+/* Dashboard admin – estilo Power BI: KPIs + relatório */
+.dashboard-admin {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .kpi-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .kpi-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kpi-tile {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-left: 4px solid var(--primary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .kpi-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+  }
+
+  .kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  .kpi-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  &.kpi-tile-users {
+    border-left-color: #6366f1;
+    .kpi-value { color: #6366f1; }
+  }
+
+  &.kpi-tile-active {
+    border-left-color: var(--success);
+    .kpi-value { color: var(--success); }
+  }
+
+  &.kpi-tile-blocked {
+    border-left-color: var(--warning);
+    .kpi-value { color: var(--warning); }
+  }
+
+  &.kpi-tile-revenue {
+    border-left-color: var(--primary);
+    .kpi-value { color: var(--primary); }
+  }
+}
+
+.report-section {
+  margin-bottom: 1.5rem;
+}
+
+.report-card {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+
+  .report-title {
+    margin: 0 0 0.25rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .report-desc {
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+}
+
+.chart-tall {
+  height: 320px;
+}
+
+.indicators-section {
+  margin-bottom: 1.5rem;
+}
+
+.section-heading {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.kpi-row-usage {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.kpi-tile-usage {
+  border-left-color: #64748b;
+  .kpi-value { color: var(--text-muted); font-size: 1.5rem; }
+}
+
+@media (max-width: 768px) {
+  .kpi-row-usage {
+    grid-template-columns: 1fr;
+  }
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.action-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.25rem;
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(13, 148, 136, 0.12);
+  }
+
+  .action-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--primary);
+  }
+
+  .action-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+}

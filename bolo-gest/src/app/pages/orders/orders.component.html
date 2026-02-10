@@ -1,0 +1,52 @@
+<div class="orders-page">
+  <header class="page-header">
+    <h1>Pedidos</h1>
+    <a routerLink="/novo-pedido" class="btn btn-primary">Novo Pedido</a>
+  </header>
+
+  @if (orders().length === 0) {
+    <p class="empty">Nenhum pedido. <a routerLink="/novo-pedido">Criar primeiro pedido</a>.</p>
+  } @else {
+    <div class="table-wrap">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Produto</th>
+            <th>Tamanho / Qtd</th>
+            <th>Valor cobrado</th>
+            <th>Pago</th>
+            <th>Saldo</th>
+            <th>Lucro</th>
+            <th>Status</th>
+            <th>Entregue</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (o of orders(); track o.id) {
+            <tr>
+              <td data-label="Cliente">{{ o.clientName }}</td>
+              <td data-label="Produto">{{ displayName(o) }}</td>
+              <td data-label="Tamanho / Qtd">{{ displaySize(o) }}</td>
+              <td data-label="Valor cobrado">{{ o.valueCharged | number:'1.0-0' }} MZN</td>
+              <td data-label="Pago">
+                <input type="number" [value]="o.valuePaid" min="0" [max]="o.valueCharged" step="1"
+                  (change)="updatePayment(o, $any($event.target).value)" class="input-pago" />
+              </td>
+              <td data-label="Saldo">{{ saldo(o) | number:'1.0-0' }} MZN</td>
+              <td data-label="Lucro">{{ o.profit | number:'1.0-0' }} MZN</td>
+              <td data-label="Status"><span class="badge" [class]="o.paymentStatus">{{ o.paymentStatus }}</span></td>
+              <td data-label="Entregue">{{ o.delivered ? 'Sim' : 'Não' }}</td>
+              <td data-label="Ações">
+                @if (!o.delivered) {
+                  <button type="button" class="btn-sm" (click)="markDelivered(o)">Entregue</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
