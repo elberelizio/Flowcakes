@@ -94,8 +94,8 @@ export class AppComponent implements OnInit {
     if (url.includes('/satisfacao')) return 'Satisfação';
     if (url.includes('/gestao-notificacoes')) return 'Notificações';
     if (url.includes('/finalizar-conta')) return 'Finalizar conta';
-    if (url.includes('/novo-pedido')) return 'Novo Pedido';
-    if (url.includes('/pedidos')) return 'Pedidos';
+    if (url.includes('/nova-encomenda')) return 'Nova Encomenda';
+    if (url.includes('/encomendas')) return 'Encomendas';
     if (url.includes('/relatorios')) return 'Relatórios';
     if (url.includes('/perfil')) return 'Perfil';
     if (url.includes('/dashboard') || url === '/') return 'Dashboard';

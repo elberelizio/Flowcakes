@@ -1,8 +1,13 @@
 package com.chefcontrol.entity;
 
+import com.chefcontrol.dto.VariableExpense;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -71,6 +76,25 @@ public class OrderEntity {
     @Column(name = "cake_size", length = 50)
     private String cakeSize;
 
+    @Column(name = "delivery_date")
+    private LocalDate deliveryDate;
+
+    @Column(name = "has_delivery", nullable = false)
+    private boolean hasDelivery = false;
+
+    @Column(name = "delivery_cost", nullable = false, precision = 12, scale = 2)
+    private BigDecimal deliveryCost = BigDecimal.ZERO;
+
+    @Column(name = "order_status", nullable = false, length = 20)
+    private String orderStatus = "ordered"; // "ordered" | "in_progress" | "completed" | "cancelled"
+
+    @Column(name = "is_cancelled", nullable = false)
+    private boolean isCancelled = false;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "variable_expenses", columnDefinition = "jsonb")
+    private List<VariableExpense> variableExpenses = new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
@@ -121,6 +145,20 @@ public class OrderEntity {
     public void setCakeName(String cakeName) { this.cakeName = cakeName; }
     public String getCakeSize() { return cakeSize; }
     public void setCakeSize(String cakeSize) { this.cakeSize = cakeSize; }
+    public LocalDate getDeliveryDate() { return deliveryDate; }
+    public void setDeliveryDate(LocalDate deliveryDate) { this.deliveryDate = deliveryDate; }
+    public boolean isHasDelivery() { return hasDelivery; }
+    public void setHasDelivery(boolean hasDelivery) { this.hasDelivery = hasDelivery; }
+    public BigDecimal getDeliveryCost() { return deliveryCost; }
+    public void setDeliveryCost(BigDecimal deliveryCost) { this.deliveryCost = deliveryCost != null ? deliveryCost : BigDecimal.ZERO; }
+    public String getOrderStatus() { return orderStatus; }
+    public void setOrderStatus(String orderStatus) { this.orderStatus = orderStatus != null ? orderStatus : "ordered"; }
+    public boolean isCancelled() { return isCancelled; }
+    public void setCancelled(boolean cancelled) { isCancelled = cancelled; }
+    public List<VariableExpense> getVariableExpenses() { return variableExpenses; }
+    public void setVariableExpenses(List<VariableExpense> variableExpenses) { 
+        this.variableExpenses = variableExpenses != null ? variableExpenses : new ArrayList<>(); 
+    }
     public UserEntity getUser() { return user; }
     public void setUser(UserEntity user) { this.user = user; }
 }

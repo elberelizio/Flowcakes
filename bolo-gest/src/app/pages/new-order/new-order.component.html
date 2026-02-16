@@ -1,6 +1,6 @@
 <div class="new-order">
   <header class="page-header">
-    <h1>Novo Pedido</h1>
+    <h1>Nova Encomenda</h1>
     @if (step > 1) {
       <button type="button" class="btn-back" (click)="backToCategory()">
         ← Voltar
@@ -25,11 +25,11 @@
     </section>
   }
 
-  <!-- Passo 2: Formulário do pedido -->
+  <!-- Passo 2: Formulário da encomenda -->
   @if (step === 2 && category) {
     <form [formGroup]="form" (ngSubmit)="submit()">
       <section class="section">
-        <h2>Dados do pedido</h2>
+        <h2>Dados da encomenda</h2>
         <div class="grid">
           <div class="field full">
             <label>Cliente</label>
@@ -110,6 +110,25 @@
             <label>Valor cobrado ao cliente (MZN)</label>
             <input type="number" formControlName="valueCharged" min="0" step="1" />
           </div>
+          <div class="field">
+            <label>Data de entrega</label>
+            <input type="date" formControlName="deliveryDate" [min]="today" />
+            <span class="field-hint">Data prevista para entrega da encomenda</span>
+          </div>
+        </div>
+
+        <div class="field delivery-section">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="hasDelivery" />
+            <span>Incluir custo de transporte/delivery</span>
+          </label>
+          @if (form.get('hasDelivery')?.value) {
+            <div class="field delivery-cost-field" style="margin-top: 0.75rem;">
+              <label>Custo de transporte (MZN)</label>
+              <input type="number" formControlName="deliveryCost" min="0" step="1" placeholder="Ex: 50" />
+              <span class="field-hint">Este valor será adicionado ao custo total</span>
+            </div>
+          }
         </div>
 
         <div class="field payment-quick">
@@ -128,8 +147,8 @@
         <div formArrayName="ingredients" class="ingredients-list">
           @for (item of ingredients.controls; track $index) {
             <div class="ingredient-row" [formGroupName]="$index">
-              <input formControlName="name" placeholder="Nome" class="ing-name" />
-              <input type="number" formControlName="unitValue" min="0" placeholder="MZN" class="ing-value" />
+              <input formControlName="name" placeholder="Nome" class="ing-name" (input)="form.get('ingredients')?.updateValueAndValidity()" />
+              <input type="number" formControlName="unitValue" min="0" placeholder="MZN" class="ing-value" (input)="form.get('ingredients')?.updateValueAndValidity()" />
               <button type="button" class="btn-icon" (click)="removeIngredient($index)" [disabled]="ingredients.length <= 1" title="Remover">×</button>
             </div>
           }
@@ -137,7 +156,7 @@
         <button type="button" class="btn btn-outline" (click)="addIngredient()">+ Adicionar ingrediente</button>
         <div class="field energy">
           <label>Energia (MZN)</label>
-          <input type="number" formControlName="energyCost" min="0" step="1" />
+          <input type="number" formControlName="energyCost" min="0" step="1" (input)="form.get('energyCost')?.updateValueAndValidity()" />
         </div>
       </section>
 
@@ -158,7 +177,7 @@
       }
       <div class="actions">
         <button type="submit" class="btn btn-primary" [disabled]="form.invalid || submitting">
-          {{ submitting ? 'A guardar...' : 'Guardar pedido' }}
+          {{ submitting ? 'A guardar...' : 'Guardar encomenda' }}
         </button>
         <a routerLink="/dashboard" class="btn btn-secondary">Cancelar</a>
       </div>

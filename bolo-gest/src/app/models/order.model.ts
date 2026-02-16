@@ -48,6 +48,22 @@ export interface Order {
   /** Legado: pedidos antigos */
   cakeName?: string;
   cakeSize?: string;
+  /** Campos do backend (compatibilidade) */
+  date?: string; // ISO date (data do pedido)
+  deliveryDate?: string; // ISO date (data de entrega)
+  hasDelivery?: boolean; // Se tem transporte/delivery
+  deliveryCost?: number; // Custo de transporte/delivery (incluído nas despesas variáveis)
+  orderStatus?: 'ordered' | 'in_progress' | 'completed' | 'cancelled'; // Status do pedido
+  isCancelled?: boolean; // Se foi cancelado
+  quantity?: number; // Quantidade (backend)
+  /** Despesas variáveis (delivery + outras despesas adicionais) */
+  variableExpenses?: VariableExpense[];
+}
+
+/** Despesa variável (ex: delivery, spray para bolo derretido, etc) */
+export interface VariableExpense {
+  name: string; // Nome da despesa (ex: "Delivery", "Spray para bolo")
+  amount: number; // Valor da despesa em MZN
 }
 
 export interface OrderWithIngredients extends Order {

@@ -82,7 +82,14 @@ export class AuthService {
         this.currentUser.set(user ? this.toCurrentUser(user) : null);
         this.initialized = true;
       })
-      .catch(() => {
+      .catch((err) => {
+        // Sem sessão ativa - usuário precisa fazer login
+        // Erro 401 é esperado quando não há sessão - não é um problema
+        if (err?.status === 401) {
+          console.log('Nenhuma sessão ativa encontrada - utilizador precisa fazer login');
+        } else {
+          console.error('Erro ao verificar sessão:', err);
+        }
         this.currentUser.set(null);
         this.initialized = true;
       });

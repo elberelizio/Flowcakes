@@ -16,6 +16,12 @@ export const appConfig: ApplicationConfig = {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',
     }),
-    { provide: APP_INITIALIZER, useFactory: (auth: AuthService) => () => auth.initSession(), deps: [AuthService], multi: true },
+    { 
+      provide: APP_INITIALIZER, 
+      useFactory: (auth: AuthService) => () => auth.initSession(), 
+      deps: [AuthService], 
+      multi: true 
+    },
+    // IndexedDB e dados fictícios removidos - sistema agora usa apenas PostgreSQL via API
   ],
 };

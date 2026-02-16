@@ -30,6 +30,11 @@ export class NewOrderComponent {
   paymentPercent: 0 | 50 | 100 = 0;
   submitError = '';
   submitting = false;
+  
+  // Data mínima para entrega (hoje)
+  get today(): string {
+    return new Date().toISOString().split('T')[0];
+  }
 
   readonly docesSubcategories = DOCES_SUBCATEGORIES;
   readonly salgadosSubcategories = SALGADOS_SUBCATEGORIES;
@@ -45,6 +50,8 @@ export class NewOrderComponent {
   }
 
   get costTotal(): number {
+    // Custo total inicial: apenas ingredientes + energia
+    // Delivery NÃO entra aqui - será incluído nas despesas variáveis depois
     const ing = this.form.getRawValue().ingredients ?? [];
     const sumIng = ing.reduce(
       (s: number, i: { name: string | null; unitValue: number | null }) =>
@@ -57,7 +64,19 @@ export class NewOrderComponent {
 
   get profit(): number {
     const charged = Number(this.form.get('valueCharged')?.value ?? 0);
-    return charged - this.costTotal;
+    const paid = Number(this.form.get('valuePaid')?.value ?? 0);
+    const totalProfit = charged - this.costTotal;
+    
+    // Se não pagou nada, lucro é 0
+    if (paid === 0) return 0;
+    
+    // Se pagou tudo, lucro é o total
+    if (paid >= charged) return totalProfit;
+    
+    // Se pagou parcialmente (ex: 50%), lucro é proporcional ao que foi pago
+    // Exemplo: Se lucro total é 100 e pagou 50% de 200, lucro é 50
+    const paymentRatio = paid / charged;
+    return totalProfit * paymentRatio;
   }
 
   get paymentStatus(): 'Pendente' | 'Parcial' | 'Pago' {
@@ -115,6 +134,11 @@ export class NewOrderComponent {
   }
 
   private buildForm(): void {
+    // Data padrão: hoje + 1 dia
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const defaultDeliveryDate = tomorrow.toISOString().split('T')[0];
+
     this.form = this.fb.group({
       clientName: ['', Validators.required],
       subcategory: ['', Validators.required],
@@ -126,6 +150,9 @@ export class NewOrderComponent {
       valueCharged: [0, [Validators.required, Validators.min(1)]],
       valuePaid: [0, [Validators.required, Validators.min(0)]],
       energyCost: [0, [Validators.required, Validators.min(0)]],
+      deliveryDate: [defaultDeliveryDate, Validators.required], // Data de entrega
+      hasDelivery: [false], // Se tem transporte
+      deliveryCost: [0, [Validators.min(0)]], // Custo de transporte
       observations: [''],
       ingredients: this.fb.array([]),
     });
@@ -174,7 +201,12 @@ export class NewOrderComponent {
   }
 
   removeIngredient(i: number): void {
-    if (this.ingredients.length > 1) this.ingredients.removeAt(i);
+    if (this.ingredients.length > 1) {
+      this.ingredients.removeAt(i);
+      // Forçar atualização do cálculo após remover ingrediente
+      // Isso garante que o custo total seja recalculado corretamente
+      this.form.get('ingredients')?.updateValueAndValidity();
+    }
   }
 
   setPaymentPercent(p: 0 | 50 | 100): void {
@@ -222,13 +254,16 @@ export class NewOrderComponent {
         })
       ),
       energyCost: Number(raw.energyCost),
+      deliveryDate: raw.deliveryDate || undefined, // Data de entrega
+      hasDelivery: raw.hasDelivery || false, // Se tem transporte
+      deliveryCost: raw.hasDelivery ? Number(raw.deliveryCost) || 0 : 0, // Custo de transporte
       observations: raw.observations?.trim() || undefined,
     });
     this.submitting = false;
     if (order) {
-      this.router.navigate(['/pedidos']);
+      this.router.navigate(['/encomendas']);
     } else {
-      this.submitError = 'Não foi possível criar o pedido. Tente novamente.';
+      this.submitError = 'Não foi possível criar a encomenda. Tente novamente.';
     }
   }
 }

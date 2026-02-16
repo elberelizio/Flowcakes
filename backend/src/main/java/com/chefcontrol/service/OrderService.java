@@ -101,5 +101,20 @@ public class OrderService {
         order.setObservations(request.getObservations());
         order.setCakeName(request.getCakeName());
         order.setCakeSize(request.getCakeSize());
+        order.setDeliveryDate(request.getDeliveryDate());
+        order.setHasDelivery(request.isHasDelivery());
+        order.setDeliveryCost(request.getDeliveryCost() != null ? request.getDeliveryCost() : BigDecimal.ZERO);
+        order.setOrderStatus(request.getOrderStatus() != null ? request.getOrderStatus() : "ordered");
+        
+        // Se isCancelled foi explicitamente definido no request, usar esse valor
+        // Caso contrário, inferir do orderStatus
+        if (request.getIsCancelled() != null) {
+            order.setCancelled(request.getIsCancelled());
+        } else {
+            order.setCancelled(request.getOrderStatus() != null && request.getOrderStatus().equals("cancelled"));
+        }
+        
+        // Mapear despesas variáveis
+        order.setVariableExpenses(request.getVariableExpenses());
     }
 }

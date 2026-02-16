@@ -5,6 +5,7 @@
 @use './core/styles/layout';
 @use './core/styles/license-popup';
 @use './core/styles/responsive';
+@use './core/styles/mobile-responsive';
 
 .app-shell {
   min-height: 100vh;
