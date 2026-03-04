@@ -4,6 +4,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 public class OrderRequest {
@@ -41,6 +42,12 @@ public class OrderRequest {
     private String observations;
     private String cakeName;
     private String cakeSize;
+    private LocalDate deliveryDate;
+    private boolean hasDelivery = false;
+    private BigDecimal deliveryCost = BigDecimal.ZERO;
+    private String orderStatus = "ordered"; // "ordered" | "in_progress" | "completed" | "cancelled"
+    private Boolean isCancelled; // null = não alterar, true/false = definir valor
+    private List<VariableExpense> variableExpenses;
 
     public String getClientName() { return clientName; }
     public void setClientName(String clientName) { this.clientName = clientName; }
@@ -76,4 +83,16 @@ public class OrderRequest {
     public void setCakeName(String cakeName) { this.cakeName = cakeName; }
     public String getCakeSize() { return cakeSize; }
     public void setCakeSize(String cakeSize) { this.cakeSize = cakeSize; }
+    public LocalDate getDeliveryDate() { return deliveryDate; }
+    public void setDeliveryDate(LocalDate deliveryDate) { this.deliveryDate = deliveryDate; }
+    public boolean isHasDelivery() { return hasDelivery; }
+    public void setHasDelivery(boolean hasDelivery) { this.hasDelivery = hasDelivery; }
+    public BigDecimal getDeliveryCost() { return deliveryCost; }
+    public void setDeliveryCost(BigDecimal deliveryCost) { this.deliveryCost = deliveryCost != null ? deliveryCost : BigDecimal.ZERO; }
+    public String getOrderStatus() { return orderStatus; }
+    public void setOrderStatus(String orderStatus) { this.orderStatus = orderStatus != null ? orderStatus : "ordered"; }
+    public Boolean getIsCancelled() { return isCancelled; }
+    public void setIsCancelled(Boolean isCancelled) { this.isCancelled = isCancelled; }
+    public List<VariableExpense> getVariableExpenses() { return variableExpenses; }
+    public void setVariableExpenses(List<VariableExpense> variableExpenses) { this.variableExpenses = variableExpenses; }
 }

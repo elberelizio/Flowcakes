@@ -4,6 +4,8 @@
     <p class="subtitle">{{ isAdmin ? 'Visão geral do sistema e acompanhamento de vendas' : 'Visão geral do seu negócio de bolos' }}</p>
   </header>
 
+  <!-- Componente de dados locais removido - sistema agora usa apenas PostgreSQL via API -->
+
   @if (isAdmin) {
     <!-- Dashboard administrador – estilo Power BI: KPIs + gráfico principal -->
     @if (adminLoading()) {
@@ -77,56 +79,151 @@
       </div>
     }
   } @else {
-    <!-- Dashboard utilizador: cards + gráficos + pedidos do dia -->
-    <section class="cards">
-      <div class="card highlight">
-        <span class="card-label">Lucro hoje</span>
-        <span class="card-value">{{ profitDay() | number:'1.2-2' }} MZN</span>
-        <span class="card-meta">{{ dayOrders().length }} pedido(s)</span>
-      </div>
-      <div class="card">
-        <span class="card-label">Lucro esta semana</span>
-        <span class="card-value">{{ profitWeek() | number:'1.2-2' }} MZN</span>
-        <span class="card-meta">{{ weekOrders().length }} pedido(s)</span>
-      </div>
-      <div class="card">
-        <span class="card-label">Lucro este mês</span>
-        <span class="card-value">{{ profitMonth() | number:'1.2-2' }} MZN</span>
-      </div>
-      @if (pendingOrders().length > 0) {
-        <div class="card warning">
-          <span class="card-label">Saldo pendente</span>
-          <span class="card-value">{{ pendingOrders().length }}</span>
-          <span class="card-meta">pedido(s) por cobrar</span>
+    <!-- Dashboard utilizador: cards principais com ícones animados -->
+    <section class="main-cards">
+      <div class="main-card card-revenue">
+        <div class="card-icon-wrapper">
+          <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Bolo - Cores vermelhas/rosas -->
+            <!-- Base do bolo -->
+            <path d="M5 12C5 12 3 14 3 17C3 20 5 22 7 22C7 22 7 24 12 24C17 24 17 22 19 22C21 22 23 20 23 17C23 14 21 12 21 12" fill="#fca5a5" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Camada superior do bolo -->
+            <path d="M5 12L12 6L19 12" fill="#fecaca" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Velas -->
+            <rect x="9" y="4" width="1.5" height="4" fill="#ef4444" rx="0.5"/>
+            <rect x="11.5" y="3.5" width="1.5" height="4" fill="#ef4444" rx="0.5"/>
+            <rect x="14" y="4" width="1.5" height="4" fill="#ef4444" rx="0.5"/>
+            <!-- Chamas das velas -->
+            <ellipse cx="9.75" cy="3" rx="0.6" ry="1" fill="#fbbf24"/>
+            <ellipse cx="12.25" cy="2.5" rx="0.6" ry="1" fill="#fbbf24"/>
+            <ellipse cx="14.75" cy="3" rx="0.6" ry="1" fill="#fbbf24"/>
+            <!-- Decorações no bolo -->
+            <circle cx="9" cy="16" r="1" fill="#dc2626"/>
+            <circle cx="12" cy="16" r="1" fill="#dc2626"/>
+            <circle cx="15" cy="16" r="1" fill="#dc2626"/>
+            <path d="M10 19L12 20L14 19" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
-      }
+        <div class="card-content">
+          <span class="card-label">Total Arrecadado</span>
+          <span class="card-value">{{ totalRevenue() | number:'1.2-2' }} MZN</span>
+        </div>
+      </div>
+      
+      <div class="main-card card-expense">
+        <div class="card-icon-wrapper">
+          <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Chamussa - Cores amarelas/laranjas -->
+            <!-- Forma da chamussa (meia-lua) -->
+            <path d="M4 10C4 10 2 12 2 15C2 18 4 20 6 20C6 20 6 22 12 22C18 22 18 20 20 20C22 20 24 18 24 15C24 12 22 10 22 10" fill="#fde68a" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Recheio interno -->
+            <ellipse cx="12" cy="12" rx="9" ry="4" fill="#fbbf24" opacity="0.7"/>
+            <!-- Dobra da massa -->
+            <path d="M4 10L12 7L20 10" fill="#f59e0b" stroke="#d97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Padrão de pregas (típico de chamussa) -->
+            <path d="M6 13C6 13 6.5 14 8 14C9.5 14 10 13 10 13" stroke="#d97706" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M14 13C14 13 14.5 14 16 14C17.5 14 18 13 18 13" stroke="#d97706" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M8 16C8 16 8.5 17 10 17C11.5 17 12 16 12 16" stroke="#d97706" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M12 16C12 16 12.5 17 14 17C15.5 17 16 16 16 16" stroke="#d97706" stroke-width="1.2" stroke-linecap="round"/>
+            <!-- Pontos decorativos (típicos de chamussa frita) -->
+            <circle cx="9" cy="13" r="0.4" fill="#d97706"/>
+            <circle cx="15" cy="13" r="0.4" fill="#d97706"/>
+          </svg>
+        </div>
+        <div class="card-content">
+          <span class="card-label">Despesa</span>
+          <span class="card-value">{{ totalExpense() | number:'1.2-2' }} MZN</span>
+        </div>
+      </div>
+      
+      <div class="main-card card-profit">
+        <div class="card-icon-wrapper">
+          <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Rissol - Cores verdes -->
+            <!-- Forma do rissol (semi-circular) -->
+            <path d="M4 11C4 11 2 13 2 16C2 19 4 21 6 21C6 21 6 23 12 23C18 23 18 21 20 21C22 21 24 19 24 16C24 13 22 11 22 11" fill="#86efac" stroke="#059669" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Recheio -->
+            <ellipse cx="12" cy="13" rx="9" ry="4" fill="#a7f3d0" opacity="0.6"/>
+            <!-- Crosta superior -->
+            <path d="M4 11L12 8L20 11" fill="#6ee7b7" stroke="#059669" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Padrão de pregas do rissol -->
+            <path d="M7 14C7 14 7.5 15 9 15C10.5 15 11 14 11 14" stroke="#059669" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M13 14C13 14 13.5 15 15 15C16.5 15 17 14 17 14" stroke="#059669" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M9 17C9 17 9.5 18 11 18C12.5 18 13 17 13 17" stroke="#059669" stroke-width="1.2" stroke-linecap="round"/>
+            <!-- Linha decorativa -->
+            <path d="M10 20L12 21L14 20" stroke="#047857" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Pontos decorativos -->
+            <circle cx="10" cy="14" r="0.5" fill="#10b981"/>
+            <circle cx="14" cy="14" r="0.5" fill="#10b981"/>
+          </svg>
+        </div>
+        <div class="card-content">
+          <span class="card-label">Lucro</span>
+          <span class="card-value">{{ totalProfit() | number:'1.2-2' }} MZN</span>
+        </div>
+      </div>
     </section>
 
     <section class="charts-section">
-      <div class="chart-card">
-        <h2>Lucro nos últimos 7 dias</h2>
-        <div class="chart-container">
-          <canvas #chartProfit></canvas>
-        </div>
-      </div>
-      <div class="chart-card">
-        <h2>Status de pagamento</h2>
-        <div class="chart-container chart-doughnut">
-          <canvas #chartPayment></canvas>
+      <div class="chart-card chart-card-full">
+        <h2>Lucro vs Despesa (últimos 30 dias)</h2>
+        <p class="chart-subtitle">Comparação visual entre lucro e despesas ao longo do tempo</p>
+        <div class="chart-container chart-line">
+          <canvas #chartProfitExpense></canvas>
         </div>
       </div>
     </section>
 
+    <!-- Encomendas por entregar -->
+    @if (upcomingDeliveries().length > 0) {
+      <section class="upcoming-deliveries">
+        <div class="section-header">
+          <h2>Encomendas por entregar</h2>
+          <span class="delivery-count">{{ upcomingDeliveries().length }} encomenda(s)</span>
+        </div>
+        <div class="deliveries-list">
+          @for (item of displayedDeliveries(); track item.order.id) {
+            <div class="delivery-card" [class.urgent]="getDeliveryUrgency(item.date) === 'today'" [class.soon]="getDeliveryUrgency(item.date) === 'soon'">
+              <div class="delivery-icon">
+                @if (getDeliveryUrgency(item.date) === 'today') {
+                  🔴
+                } @else if (getDeliveryUrgency(item.date) === 'soon') {
+                  🟡
+                } @else {
+                  📦
+                }
+              </div>
+              <div class="delivery-info">
+                <div class="delivery-client">{{ item.order.clientName }}</div>
+                <div class="delivery-product">{{ getProductName(item.order) }} {{ getProductSize(item.order) ? '(' + getProductSize(item.order) + ')' : '' }}</div>
+                @if (!item.isSameDay) {
+                  <div class="delivery-date" [class.urgent-text]="getDeliveryUrgency(item.date) === 'today'" [class.soon-text]="getDeliveryUrgency(item.date) === 'soon'">
+                    {{ formatDeliveryDate(item.date) }}
+                  </div>
+                }
+              </div>
+              <div class="delivery-value">{{ item.order.valueCharged | number:'1.0-0' }} MZN</div>
+            </div>
+          }
+        </div>
+        @if (hasMoreDeliveries()) {
+          <div class="section-footer">
+            <a routerLink="/encomendas" class="link">Ver todas as encomendas →</a>
+          </div>
+        }
+      </section>
+    }
+
     <section class="orders-preview">
       <div class="section-header">
-        <h2>Pedidos do dia</h2>
-        <a routerLink="/novo-pedido" class="btn btn-primary">Novo Pedido</a>
+        <h2>Encomendas do dia</h2>
+        <a routerLink="/nova-encomenda" class="btn btn-primary">Nova Encomenda</a>
       </div>
       @if (dayOrders().length === 0) {
         <div class="empty-state">
           <span class="empty-icon">📋</span>
-          <p>Nenhum pedido hoje.</p>
-          <a routerLink="/novo-pedido" class="btn btn-outline">Criar primeiro pedido</a>
+          <p>Nenhuma encomenda hoje.</p>
+          <a routerLink="/nova-encomenda" class="btn btn-outline">Criar primeira encomenda</a>
         </div>
       } @else {
         <ul class="order-list">
@@ -142,9 +239,12 @@
           }
         </ul>
         <div class="section-footer">
-          <a routerLink="/pedidos" class="link">Ver todos os pedidos →</a>
+          <a routerLink="/encomendas" class="link">Ver todas as encomendas →</a>
         </div>
       }
     </section>
   }
+
+  <!-- Snackbar de notificações -->
+  <app-snackbar />
 </div>

@@ -11,6 +11,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -135,19 +137,25 @@ public class AuthController {
     }
 
     private void addSessionCookie(HttpServletResponse response, UUID sessionId) {
-        Cookie cookie = new Cookie(SessionConfig.COOKIE_NAME, sessionId.toString());
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(86400);
-        cookie.setSecure(false);
-        response.addCookie(cookie);
+        // Usar ResponseCookie para melhor suporte a CORS e SameSite
+        ResponseCookie cookie = ResponseCookie.from(SessionConfig.COOKIE_NAME, sessionId.toString())
+                .httpOnly(true)
+                .secure(false) // true em produção com HTTPS
+                .path("/")
+                .maxAge(86400) // 24 horas
+                .sameSite("Lax") // Lax para funcionar com CORS em localhost
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     private void clearSessionCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie(SessionConfig.COOKIE_NAME, "");
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
+        ResponseCookie cookie = ResponseCookie.from(SessionConfig.COOKIE_NAME, "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }

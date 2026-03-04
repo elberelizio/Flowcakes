@@ -3,7 +3,7 @@ package com.chefcontrol.dto;
 import com.chefcontrol.entity.OrderEntity;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,6 +28,12 @@ public class OrderResponse {
     private String observations;
     private String cakeName;
     private String cakeSize;
+    private String deliveryDate; // ISO date string
+    private boolean hasDelivery;
+    private BigDecimal deliveryCost;
+    private String orderStatus;
+    private boolean isCancelled;
+    private List<VariableExpense> variableExpenses = new ArrayList<>();
 
     public static OrderResponse fromEntity(OrderEntity o) {
         OrderResponse r = new OrderResponse();
@@ -50,6 +56,12 @@ public class OrderResponse {
         r.setObservations(o.getObservations());
         r.setCakeName(o.getCakeName());
         r.setCakeSize(o.getCakeSize());
+        r.setDeliveryDate(o.getDeliveryDate() != null ? o.getDeliveryDate().toString() : null);
+        r.setHasDelivery(o.isHasDelivery());
+        r.setDeliveryCost(o.getDeliveryCost());
+        r.setOrderStatus(o.getOrderStatus());
+        r.setCancelled(o.isCancelled());
+        r.setVariableExpenses(o.getVariableExpenses() != null ? o.getVariableExpenses() : new ArrayList<>());
         return r;
     }
 
@@ -91,4 +103,18 @@ public class OrderResponse {
     public void setCakeName(String cakeName) { this.cakeName = cakeName; }
     public String getCakeSize() { return cakeSize; }
     public void setCakeSize(String cakeSize) { this.cakeSize = cakeSize; }
+    public String getDeliveryDate() { return deliveryDate; }
+    public void setDeliveryDate(String deliveryDate) { this.deliveryDate = deliveryDate; }
+    public boolean isHasDelivery() { return hasDelivery; }
+    public void setHasDelivery(boolean hasDelivery) { this.hasDelivery = hasDelivery; }
+    public BigDecimal getDeliveryCost() { return deliveryCost; }
+    public void setDeliveryCost(BigDecimal deliveryCost) { this.deliveryCost = deliveryCost; }
+    public String getOrderStatus() { return orderStatus; }
+    public void setOrderStatus(String orderStatus) { this.orderStatus = orderStatus; }
+    public boolean isCancelled() { return isCancelled; }
+    public void setCancelled(boolean cancelled) { isCancelled = cancelled; }
+    public List<VariableExpense> getVariableExpenses() { return variableExpenses; }
+    public void setVariableExpenses(List<VariableExpense> variableExpenses) { 
+        this.variableExpenses = variableExpenses != null ? variableExpenses : new ArrayList<>(); 
+    }
 }

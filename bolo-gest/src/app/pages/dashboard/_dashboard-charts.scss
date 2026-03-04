@@ -1,14 +1,12 @@
 .charts-section {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
-@media (max-width: 768px) {
-  .charts-section {
-    grid-template-columns: 1fr;
-  }
+.chart-card-full {
+  grid-column: 1 / -1;
 }
 
 .chart-card {
@@ -19,20 +17,90 @@
   overflow: hidden;
 
   h2 {
-    margin: 0 0 1rem;
+    margin: 0 0 0.5rem;
     font-size: 1.05rem;
     font-weight: 600;
     color: var(--text);
+  }
+
+  &.chart-card-full {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid rgba(226, 232, 240, 0.8);
   }
 }
 
 .chart-container {
   height: 240px;
   position: relative;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f1f5f9 100%);
+  border-radius: var(--radius);
+  padding: 0.75rem;
 
   &.chart-doughnut {
     height: 260px;
     max-width: 280px;
     margin: 0 auto;
+  }
+
+  &.chart-line {
+    height: 320px;
+    width: 100%;
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 30%, #f8fafc 100%);
+    border: 1px solid rgba(226, 232, 240, 0.5);
+  }
+}
+
+.chart-subtitle {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+@media (max-width: 768px) {
+  .charts-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .chart-card {
+    padding: 1rem;
+
+    h2 {
+      font-size: 1rem;
+      margin-bottom: 0.75rem;
+    }
+  }
+
+  .chart-subtitle {
+    font-size: 0.8rem;
+    margin-bottom: 0.875rem;
+  }
+
+  .chart-container.chart-line {
+    height: 280px; // Adjusted height for tablet
+  }
+}
+
+@media (max-width: 480px) {
+  .charts-section {
+    margin-bottom: 1.25rem;
+  }
+
+  .chart-card {
+    padding: 0.875rem;
+
+    h2 {
+      font-size: 0.95rem;
+      margin-bottom: 0.625rem;
+    }
+  }
+
+  .chart-subtitle {
+    font-size: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .chart-container.chart-line {
+    height: 240px; // Adjusted height for mobile
   }
 }

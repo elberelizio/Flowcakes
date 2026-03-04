@@ -16,6 +16,9 @@ export interface OrderCreateInput {
   valuePaid: number;
   ingredients: { name: string; unitValue: number }[];
   energyCost: number;
+  deliveryDate?: string; // Data de entrega (ISO date)
+  hasDelivery?: boolean; // Se tem transporte
+  deliveryCost?: number; // Custo de transporte
   observations?: string;
 }
 
@@ -35,9 +38,15 @@ interface OrderRequest {
   paymentStatus: string;
   delivered: boolean;
   ingredientIds: string[];
+  deliveryDate?: string; // Data de entrega (ISO date)
+  hasDelivery?: boolean; // Se tem transporte
+  deliveryCost?: number; // Custo de transporte
+  orderStatus?: string; // Estado do pedido
+  isCancelled?: boolean; // Se foi cancelado
   observations?: string;
   cakeName?: string;
   cakeSize?: string;
+  variableExpenses?: { name: string; amount: number }[]; // Despesas variáveis
 }
 
 @Injectable({ providedIn: 'root' })
@@ -54,31 +63,81 @@ export class OrdersService {
     private http: HttpClient,
     private auth: AuthService
   ) {
-    this.loadOrders();
+    // Não carregar pedidos automaticamente - só quando o utilizador estiver autenticado
+    // O loadOrders() será chamado após login bem-sucedido
   }
 
-  loadOrders(): void {
+  async loadOrders(): Promise<void> {
+    // Só carregar se o utilizador estiver autenticado
+    if (!this.auth.isLoggedIn()) {
+      this.orders.set([]);
+      this.loading.set(false);
+      return;
+    }
+
     this.loading.set(true);
     this.error.set(null);
-    this.http
-      .get<OrderApi[]>(`${API_URL}/orders`)
-      .subscribe({
-        next: (list) => {
-          this.orders.set(list.map(apiToOrder));
-          this.loading.set(false);
-        },
-        error: (err) => {
-          this.error.set(err?.error?.message || err?.message || 'Erro ao carregar pedidos');
-          this.orders.set([]);
-          this.loading.set(false);
-        },
-      });
+
+    // Carregar apenas do backend (PostgreSQL)
+    try {
+      const list = await this.http.get<OrderApi[]>(`${API_URL}/orders`).toPromise();
+      if (list) {
+        this.orders.set(list.map(apiToOrder));
+        this.loading.set(false);
+      } else {
+        this.orders.set([]);
+        this.loading.set(false);
+      }
+    } catch (err: any) {
+      // Se for erro 401 (não autenticado), não mostrar erro - é esperado
+      if (err?.status === 401) {
+        console.log('Utilizador não autenticado - pedidos não carregados');
+        this.orders.set([]);
+        this.loading.set(false);
+        return;
+      }
+      console.error('Erro ao carregar pedidos do backend:', err);
+      this.error.set('Erro ao carregar pedidos. Verifique se o backend está rodando.');
+      this.orders.set([]);
+      this.loading.set(false);
+    }
   }
 
   create(input: OrderCreateInput): Promise<Order | null> {
+    // Custo total inicial: apenas ingredientes + energia
+    // Delivery NÃO entra aqui - será incluído nas despesas variáveis depois
     const costTotal =
       input.ingredients.reduce((s, i) => s + i.unitValue, 0) + (input.energyCost || 0);
-    const profit = input.valueCharged - costTotal;
+    
+    // Despesas variáveis: incluir delivery se marcado
+    const variableExpenses: { name: string; amount: number }[] = [];
+    if (input.hasDelivery && input.deliveryCost && input.deliveryCost > 0) {
+      variableExpenses.push({
+        name: 'Delivery',
+        amount: input.deliveryCost,
+      });
+    }
+    
+    // Calcular lucro total (valor cobrado - custo total inicial)
+    // Despesas variáveis serão adicionadas depois na edição
+    const totalProfit = input.valueCharged - costTotal;
+    
+    // Lucro proporcional ao valor pago:
+    // - Se não pagou nada: lucro = 0
+    // - Se pagou parcialmente (ex: 50%): lucro = lucro_total * (valor_pago / valor_cobrado)
+    // - Se pagou tudo: lucro = lucro_total
+    let profit = 0;
+    if (input.valuePaid > 0) {
+      if (input.valuePaid >= input.valueCharged) {
+        // Pagou tudo: lucro total (sem despesas variáveis ainda)
+        profit = totalProfit;
+      } else {
+        // Pagou parcialmente: lucro proporcional
+        const paymentRatio = input.valuePaid / input.valueCharged;
+        profit = totalProfit * paymentRatio;
+      }
+    }
+    
     const paymentStatus: PaymentStatus =
       input.valuePaid >= input.valueCharged
         ? 'pago'
@@ -101,7 +160,12 @@ export class OrdersService {
       paymentStatus,
       delivered: false,
       ingredientIds: [],
+      deliveryDate: input.deliveryDate,
+      hasDelivery: input.hasDelivery || false,
+      deliveryCost: input.hasDelivery && input.deliveryCost ? input.deliveryCost : 0,
+      orderStatus: 'ordered', // Estado inicial: pedido feito
       observations: input.observations?.trim() || undefined,
+      variableExpenses: variableExpenses.length > 0 ? variableExpenses : undefined,
     };
 
     return this.http
@@ -121,6 +185,26 @@ export class OrdersService {
   updatePayment(orderId: string, valuePaid: number): Promise<boolean> {
     const order = this.orders().find((o) => o.id === orderId);
     if (!order) return Promise.resolve(false);
+    
+    // Calcular lucro total (valor cobrado - custo total)
+    const totalProfit = order.valueCharged - order.costTotal;
+    
+    // Recalcular lucro proporcional ao valor pago:
+    // - Se não pagou nada: lucro = 0
+    // - Se pagou parcialmente (ex: 50%): lucro = lucro_total * (valor_pago / valor_cobrado)
+    // - Se pagou tudo: lucro = lucro_total
+    let profit = 0;
+    if (valuePaid > 0) {
+      if (valuePaid >= order.valueCharged) {
+        // Pagou tudo: lucro total
+        profit = totalProfit;
+      } else {
+        // Pagou parcialmente: lucro proporcional
+        const paymentRatio = valuePaid / order.valueCharged;
+        profit = totalProfit * paymentRatio;
+      }
+    }
+    
     const paymentStatus: PaymentStatus =
       valuePaid >= order.valueCharged ? 'pago' : valuePaid > 0 ? 'parcial' : 'pendente';
     const body: OrderRequest = {
@@ -134,13 +218,17 @@ export class OrdersService {
       valueCharged: order.valueCharged,
       valuePaid,
       costTotal: order.costTotal,
-      profit: order.profit,
+      profit, // Lucro recalculado proporcionalmente
       paymentStatus,
       delivered: order.delivered,
       ingredientIds: order.ingredientIds || [],
       observations: order.observations,
       cakeName: order.cakeName,
       cakeSize: order.cakeSize,
+      deliveryDate: order.deliveryDate,
+      hasDelivery: false, // Manter valores existentes
+      deliveryCost: 0,
+      orderStatus: order.orderStatus || 'ordered',
     };
     return this.http
       .put<OrderApi>(`${API_URL}/orders/${orderId}`, body)
@@ -178,6 +266,11 @@ export class OrdersService {
       observations: order.observations,
       cakeName: order.cakeName,
       cakeSize: order.cakeSize,
+      deliveryDate: order.deliveryDate,
+      hasDelivery: order.hasDelivery || false,
+      deliveryCost: order.deliveryCost || 0,
+      orderStatus: order.orderStatus || 'ordered',
+      isCancelled: order.isCancelled || false,
     };
     return this.http
       .put<OrderApi>(`${API_URL}/orders/${orderId}`, body)
@@ -194,13 +287,169 @@ export class OrdersService {
       .catch(() => false);
   }
 
+  cancelOrder(orderId: string): Promise<boolean> {
+    const order = this.orders().find((o) => o.id === orderId);
+    if (!order) return Promise.resolve(false);
+    
+    // Manter lucro de 50% se já foi pago parcialmente
+    const totalProfit = order.valueCharged - order.costTotal;
+    let profit = order.profit; // Manter o lucro atual (já calculado proporcionalmente)
+    
+    const body: OrderRequest = {
+      clientName: order.clientName,
+      category: order.category,
+      subcategory: order.subcategory,
+      productName: order.productName,
+      size: order.size,
+      quantityKg: order.quantityKg,
+      unitsPerKg: order.unitsPerKg,
+      valueCharged: order.valueCharged,
+      valuePaid: order.valuePaid, // Manter valor pago
+      costTotal: order.costTotal,
+      profit, // Manter lucro proporcional ao que foi pago
+      paymentStatus: order.paymentStatus,
+      delivered: order.delivered,
+      ingredientIds: order.ingredientIds || [],
+      observations: order.observations,
+      cakeName: order.cakeName,
+      cakeSize: order.cakeSize,
+      deliveryDate: order.deliveryDate,
+      hasDelivery: order.hasDelivery || false,
+      deliveryCost: order.deliveryCost || 0,
+      orderStatus: 'cancelled',
+      isCancelled: true,
+    };
+    return this.http
+      .put<OrderApi>(`${API_URL}/orders/${orderId}`, body)
+      .toPromise()
+      .then((updated) => {
+        if (updated) {
+          const updatedOrder = apiToOrder(updated);
+          this.orders.update((list) =>
+            list.map((o) => (o.id === orderId ? updatedOrder : o))
+          );
+          // Recarregar lista completa do backend para garantir sincronização
+          this.loadOrders();
+          return true;
+        }
+        return false;
+      })
+      .catch(() => false);
+  }
+
+  updateOrder(orderId: string, updates: {
+    deliveryDate?: string;
+    observations?: string;
+    orderStatus?: string;
+    isCancelled?: boolean;
+    variableExpenses?: { name: string; amount: number }[];
+    valuePaid?: number;
+  }): Promise<boolean> {
+    const order = this.orders().find((o) => o.id === orderId);
+    if (!order) return Promise.resolve(false);
+    
+    // Se está restaurando (isCancelled: false), garantir que orderStatus não seja 'cancelled'
+    const newOrderStatus = updates.isCancelled === false 
+      ? (updates.orderStatus || 'ordered')
+      : (updates.orderStatus !== undefined ? updates.orderStatus : (order.orderStatus || 'ordered'));
+    
+    const body: OrderRequest = {
+      clientName: order.clientName,
+      category: order.category,
+      subcategory: order.subcategory,
+      productName: order.productName,
+      size: order.size,
+      quantityKg: order.quantityKg,
+      unitsPerKg: order.unitsPerKg,
+      valueCharged: order.valueCharged,
+      valuePaid: updates.valuePaid !== undefined ? updates.valuePaid : order.valuePaid,
+      costTotal: order.costTotal,
+      profit: order.profit,
+      paymentStatus: order.paymentStatus,
+      delivered: order.delivered,
+      ingredientIds: order.ingredientIds || [],
+      observations: updates.observations !== undefined ? updates.observations : order.observations,
+      cakeName: order.cakeName,
+      cakeSize: order.cakeSize,
+      deliveryDate: updates.deliveryDate !== undefined ? updates.deliveryDate : order.deliveryDate,
+      hasDelivery: order.hasDelivery || false,
+      deliveryCost: order.deliveryCost || 0,
+      orderStatus: newOrderStatus,
+      isCancelled: updates.isCancelled !== undefined ? updates.isCancelled : order.isCancelled || false,
+      variableExpenses: updates.variableExpenses !== undefined ? updates.variableExpenses : order.variableExpenses,
+    };
+    
+    // Atualizar paymentStatus se valuePaid mudou
+    if (updates.valuePaid !== undefined) {
+      const newValuePaid = updates.valuePaid;
+      if (newValuePaid >= order.valueCharged) {
+        body.paymentStatus = 'pago';
+      } else if (newValuePaid > 0) {
+        body.paymentStatus = 'parcial';
+      } else {
+        body.paymentStatus = 'pendente';
+      }
+    }
+    
+    // Recalcular lucro se despesas variáveis ou pagamento foram atualizados
+    const varExpensesTotal = (updates.variableExpenses || order.variableExpenses || []).reduce((s, e) => s + e.amount, 0);
+    const finalValuePaid = updates.valuePaid !== undefined ? updates.valuePaid : order.valuePaid;
+    const baseCostTotal = order.costTotal;
+    const totalProfit = order.valueCharged - baseCostTotal;
+    
+    let newProfit = 0;
+    if (finalValuePaid > 0) {
+      if (finalValuePaid >= order.valueCharged) {
+        // Pagou tudo: lucro total - despesas variáveis
+        newProfit = totalProfit - varExpensesTotal;
+      } else {
+        // Pagou parcialmente: lucro proporcional - despesas variáveis proporcionais
+        const paymentRatio = finalValuePaid / order.valueCharged;
+        newProfit = (totalProfit * paymentRatio) - (varExpensesTotal * paymentRatio);
+      }
+    }
+    
+    body.profit = Math.max(0, newProfit);
+    
+    console.log('Enviando PUT para atualizar encomenda:', body);
+    console.log('Despesas variáveis no body:', body.variableExpenses);
+    
+    return this.http
+      .put<OrderApi>(`${API_URL}/orders/${orderId}`, body)
+      .toPromise()
+      .then((updated) => {
+        if (updated) {
+          console.log('Resposta do backend:', updated);
+          console.log('Despesas variáveis na resposta:', updated.variableExpenses);
+          const updatedOrder = apiToOrder(updated);
+          console.log('Order convertido:', updatedOrder);
+          console.log('Despesas variáveis no order convertido:', updatedOrder.variableExpenses);
+          this.orders.update((list) =>
+            list.map((o) => (o.id === orderId ? updatedOrder : o))
+          );
+          // Recarregar lista completa do backend para garantir sincronização
+          this.loadOrders();
+          return true;
+        }
+        return false;
+      })
+      .catch((error) => {
+        console.error('Erro ao atualizar encomenda:', error);
+        return false;
+      });
+  }
+
   getOrderById(id: string): Order | undefined {
     return this.orders().find((o) => o.id === id);
   }
 
   ordersOfDay(date: Date): Order[] {
     const day = date.toISOString().slice(0, 10);
-    return this.orders().filter((o) => o.createdAt.startsWith(day));
+    return this.orders().filter((o) => {
+      // Usar date (backend) ou createdAt (fallback)
+      const orderDate = o.date || o.createdAt.split('T')[0];
+      return orderDate === day;
+    });
   }
 
   ordersOfWeek(date: Date): Order[] {
@@ -288,6 +537,12 @@ interface OrderApi {
   observations?: string;
   cakeName?: string;
   cakeSize?: string;
+  deliveryDate?: string; // Data de entrega (ISO date)
+  hasDelivery?: boolean; // Se tem transporte
+  deliveryCost?: number; // Custo de transporte
+  orderStatus?: string; // Estado do pedido: ordered, in_progress, completed, cancelled
+  isCancelled?: boolean; // Se foi cancelado
+  variableExpenses?: { name: string; amount: number }[]; // Despesas variáveis
 }
 
 function apiToOrder(a: OrderApi): Order {
@@ -311,5 +566,51 @@ function apiToOrder(a: OrderApi): Order {
     observations: a.observations,
     cakeName: a.cakeName,
     cakeSize: a.cakeSize,
+    deliveryDate: a.deliveryDate, // Data de entrega (ISO date)
+    hasDelivery: a.hasDelivery || false, // Se tem transporte
+    deliveryCost: a.deliveryCost || 0, // Custo de transporte
+    orderStatus: (a.orderStatus as Order['orderStatus']) || 'ordered', // Estado do pedido
+    // Mapear isCancelled explicitamente: se não vier da API, verificar orderStatus
+    isCancelled: a.isCancelled !== undefined ? a.isCancelled : (a.orderStatus === 'cancelled'),
+    variableExpenses: a.variableExpenses || [], // Despesas variáveis
+  };
+}
+
+/** Converter OrderDB (IndexedDB) para Order (frontend) */
+function dbToOrder(db: any): Order {
+  // Converter paymentStatus do backend para o formato do frontend
+  let paymentStatus: PaymentStatus = 'pendente';
+  if (db.paymentStatus === 'paid') {
+    paymentStatus = 'pago';
+  } else if (db.valuePaid > 0 && db.valuePaid < db.valueCharged) {
+    paymentStatus = 'parcial';
+  }
+
+  return {
+    id: db.id,
+    createdAt: db.createdAt,
+    clientName: db.clientName,
+    category: db.category as Order['category'],
+    subcategory: db.subcategory,
+    productName: db.productName,
+    size: db.size,
+    quantityKg: db.quantityKg,
+    unitsPerKg: db.unitsPerKg,
+    valueCharged: db.valueCharged,
+    valuePaid: db.valuePaid,
+    costTotal: db.costTotal,
+    profit: db.profit,
+    paymentStatus,
+    delivered: db.delivered,
+    ingredientIds: db.ingredientIds || [],
+    observations: db.observations,
+    cakeName: db.cakeName,
+    cakeSize: db.cakeSize,
+    date: db.date,
+    deliveryDate: db.deliveryDate,
+    orderStatus: db.orderStatus,
+    // Mapear isCancelled: se não vier do DB, verificar orderStatus
+    isCancelled: db.isCancelled !== undefined ? db.isCancelled : (db.orderStatus === 'cancelled'),
+    quantity: db.quantity,
   };
 }

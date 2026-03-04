@@ -1,4 +1,4 @@
-@if (auth.isLoggedIn() && (auth.isAdmin() || (auth.isAccountFinalized() && auth.isLicenseCodeValidated())) && !isPublicPage()) {
+@if (auth.isLoggedIn() && !isPublicPage()) {
   <div class="app-shell">
     <aside class="sidebar" [class.collapsed]="sidebarCollapsed()" [class.visible-mobile]="sidebarOpen()">
       <div class="sidebar-header">
@@ -27,7 +27,7 @@
             <app-icon name="chart" />
             <span class="nav-label">Gestão de licenças</span>
           </a>
-          <a routerLink="/encomendas" routerLinkActive="active" class="nav-item">
+          <a routerLink="/admin-encomendas" routerLinkActive="active" class="nav-item">
             <app-icon name="list" />
             <span class="nav-label">Encomendas</span>
           </a>
@@ -40,13 +40,13 @@
             <span class="nav-label">Notificações</span>
           </a>
         } @else {
-          <a routerLink="/novo-pedido" routerLinkActive="active" class="nav-item">
+          <a routerLink="/nova-encomenda" routerLinkActive="active" class="nav-item">
             <app-icon name="add" />
-            <span class="nav-label">Novo Pedido</span>
+            <span class="nav-label">Nova Encomenda</span>
           </a>
-          <a routerLink="/pedidos" routerLinkActive="active" class="nav-item">
+          <a routerLink="/encomendas" routerLinkActive="active" class="nav-item">
             <app-icon name="list" />
-            <span class="nav-label">Pedidos</span>
+            <span class="nav-label">Encomendas</span>
           </a>
         }
         <a routerLink="/relatorios" routerLinkActive="active" class="nav-item">
