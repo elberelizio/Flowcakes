@@ -1,0 +1,22 @@
+<div class="admin-dashboard-page">
+  <header class="page-header">
+    <h1>Painel de administração</h1>
+    <p class="subtitle">Visão geral do sistema, clientes e acompanhamento de vendas</p>
+  </header>
+
+  @if (loading()) {
+    <p class="loading-msg">A carregar...</p>
+  } @else {
+    <div class="dashboard-admin">
+      <app-admin-kpi-section
+        [kpiTiles]="kpiTiles()"
+        [adminStats]="adminStats()"
+      />
+      <app-admin-charts-section
+        [revenueByMonth]="revenueByMonth()"
+        [adminStats]="adminStats()"
+      />
+      <app-admin-quick-actions-section [actions]="quickActions()" />
+    </div>
+  }
+</div>

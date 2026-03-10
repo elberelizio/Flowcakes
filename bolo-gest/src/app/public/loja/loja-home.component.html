@@ -1,0 +1,263 @@
+<div class="loja-home overflow-hidden">
+  <!-- Hero -->
+  <section id="hero" class="loja-hero">
+    @for (slide of slides; track slide.id) {
+      <div class="loja-hero-slide" [class.loja-hero-slide--active]="currentSlide() === $index">
+        <div class="loja-hero-slide-bg" [style.backgroundImage]="'url(' + slide.image + ')'"></div>
+        <div class="loja-hero-slide-overlay"></div>
+        <div class="loja-hero-slide-accent" [ngClass]="slide.accentClass"></div>
+      </div>
+    }
+    <div class="loja-hero-content">
+      <div class="loja-hero-inner">
+        @for (slide of slides; track slide.id) {
+          <div class="loja-hero-text" [class.loja-hero-text--active]="currentSlide() === $index">
+            <span class="loja-hero-badge">Confeitaria Artesanal</span>
+            <h1 class="loja-hero-title">{{ slide.title }}</h1>
+            <h2 class="loja-hero-subtitle" [ngClass]="slide.accentClass">{{ slide.subtitle }}</h2>
+            <p class="loja-hero-desc">{{ slide.description }}</p>
+            <div class="loja-hero-cta">
+              <a [routerLink]="slide.ctaRoute" [fragment]="getFragment(slide)" class="loja-btn loja-btn-primary">{{ slide.cta }}</a>
+              <a routerLink="/loja/contato" class="loja-btn loja-btn-outline">Fale Conosco</a>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+    <div class="loja-hero-controls">
+      <button type="button" class="loja-hero-arrow" (click)="prevSlide()" aria-label="Anterior">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      @for (s of slides; track s.id; let i = $index) {
+        <button type="button" class="loja-hero-dot" [class.loja-hero-dot--active]="currentSlide() === i" (click)="goToSlide(i)" [attr.aria-label]="'Slide ' + (i+1)"></button>
+      }
+      <button type="button" class="loja-hero-arrow" (click)="nextSlide()" aria-label="Próximo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section id="sobre" class="loja-section loja-about">
+    <div class="loja-container">
+      <div class="loja-about-grid">
+        <div class="loja-about-image-wrap">
+          <img src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&q=80" alt="Confeiteira Doce Sabor" />
+        </div>
+        <div class="loja-about-content">
+          <span class="loja-badge loja-badge-pink">Quem Somos</span>
+          <h2 class="loja-section-title">Bem-vindo à <span class="loja-text-gradient">Doce Sabor!</span></h2>
+          <p>Somos uma confeitaria artesanal dedicada a criar momentos doces e memoráveis. Com mais de 15 anos de experiência, nossa paixão pela confeitaria se reflete em cada detalhe dos nossos produtos.</p>
+          <p>Utilizamos apenas os melhores ingredientes. Cada bolo, doce e salgado é preparado com amor e dedicação.</p>
+          <a routerLink="/loja/contato" class="loja-btn loja-btn-primary">Conheça Nossa História</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products -->
+  <section id="produtos" class="loja-section loja-products">
+    <div class="loja-container">
+      <div class="loja-section-header">
+        <span class="loja-badge loja-badge-pink">Nossos Produtos</span>
+        <h2 class="loja-section-title">Descubra Nossas <span class="loja-text-gradient">Delícias</span></h2>
+        <p>Seleção especial de bolos, salgados e doces feitos com amor.</p>
+      </div>
+      <div class="loja-category-tabs">
+        @for (cat of categories; track cat.id) {
+          <button type="button" class="loja-tab" [class.loja-tab--active]="activeCategory() === cat.id" (click)="setCategory(cat.id)">{{ cat.name }}</button>
+        }
+      </div>
+      <div class="loja-products-grid">
+        @for (product of filteredProducts(); track product.id) {
+          <div class="loja-product-card">
+            <div class="loja-product-image">
+              <img [src]="product.image" [alt]="product.name" />
+              @if (product.badge) {
+                <span class="loja-product-badge">{{ product.badge }}</span>
+              }
+              <div class="loja-product-overlay">
+                <button type="button" class="loja-product-overlay-btn" (click)="openProduct(product)">Ver detalhes</button>
+              </div>
+            </div>
+            <div class="loja-product-body">
+              <h3>{{ product.name }}</h3>
+              <p class="loja-product-desc">{{ product.description }}</p>
+              <div class="loja-product-footer">
+                <span class="loja-product-price">{{ product.price }}</span>
+                <button type="button" class="loja-product-link" (click)="openProduct(product)">Ver detalhes</button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="loja-section-cta">
+        <a routerLink="/loja/contato" class="loja-btn loja-btn-primary">Ver Todos os Produtos</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery -->
+  <section id="galeria" class="loja-section loja-gallery">
+    <div class="loja-container">
+      <div class="loja-section-header">
+        <span class="loja-badge loja-badge-purple">Galeria</span>
+        <h2 class="loja-section-title">Nossa <span class="loja-text-gradient">Galeria</span></h2>
+        <p>Confira algumas das nossas criações mais especiais.</p>
+      </div>
+      <div class="loja-gallery-grid">
+        @for (img of galleryImages; track img.id) {
+          <div class="loja-gallery-item">
+            <img [src]="img.src" [alt]="img.alt" />
+            <div class="loja-gallery-overlay">
+              <p class="loja-gallery-caption">{{ img.alt }}</p>
+              <p class="loja-gallery-cat">{{ img.category }}</p>
+              <button type="button" class="loja-gallery-zoom" (click)="openImage(img)">Ampliar</button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Projects -->
+  <section id="projetos" class="loja-section loja-projects">
+    <div class="loja-container">
+      <div class="loja-section-header">
+        <span class="loja-badge loja-badge-orange">Nossos Projetos</span>
+        <h2 class="loja-section-title">Cada Evento é uma <span class="loja-text-gradient">Obra de Arte</span></h2>
+        <p>Conheça alguns dos eventos que tivemos o privilégio de participar.</p>
+      </div>
+      <div class="loja-projects-grid">
+        @for (project of projects; track project.id) {
+          <div class="loja-project-card">
+            <div class="loja-project-image">
+              <img [src]="project.image" [alt]="project.title" />
+              <span class="loja-project-cat">{{ project.category }}</span>
+              <button type="button" class="loja-project-view" (click)="openProject(project)">Ver Detalhes</button>
+            </div>
+            <div class="loja-project-body">
+              <h3>{{ project.title }}</h3>
+              <p>{{ project.description }}</p>
+              <button type="button" class="loja-project-link" (click)="openProject(project)">Ver Detalhes</button>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="loja-section-cta">
+        <a routerLink="/loja/contato" class="loja-btn loja-btn-primary">Solicite um Orçamento</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="loja-section loja-faq">
+    <div class="loja-container">
+      <div class="loja-section-header">
+        <span class="loja-badge loja-badge-pink">FAQ</span>
+        <h2 class="loja-section-title">Perguntas <span class="loja-text-gradient">Frequentes</span></h2>
+      </div>
+      <div class="loja-faq-grid">
+        <div class="loja-faq-card">
+          <h4>Como encomendo?</h4>
+          <p>Use «Encomende Já» ou Contato. Indique o produto, data e contacto. Entraremos em contacto para confirmar.</p>
+        </div>
+        <div class="loja-faq-card">
+          <h4>Fazem entrega?</h4>
+          <p>Sim. Recolha na loja ou entrega ao domicílio. O custo de transporte será indicado no orçamento.</p>
+        </div>
+        <div class="loja-faq-card">
+          <h4>Como rastrear o pedido?</h4>
+          <p>Após a confirmação receberá um número. Use «Rastrear» no menu para consultar o estado.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="loja-section loja-testimonials">
+    <div class="loja-container">
+      <div class="loja-section-header">
+        <span class="loja-badge loja-badge-yellow">Depoimentos</span>
+        <h2 class="loja-section-title">O Que Nossos <span class="loja-text-gradient">Clientes Dizem</span></h2>
+      </div>
+      <div class="loja-testimonial-card">
+        @for (t of testimonials; track t.id; let i = $index) {
+          <div class="loja-testimonial-slide" [class.loja-testimonial-slide--active]="currentTestimonial() === i">
+            <p class="loja-testimonial-text">"{{ t.content }}"</p>
+            <div class="loja-testimonial-author">
+              <img [src]="t.avatar" [alt]="t.name" />
+              <div>
+                <strong>{{ t.name }}</strong>
+                <span>{{ t.role }}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="loja-testimonial-nav">
+        <button type="button" (click)="prevTestimonial()" aria-label="Anterior">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        @for (t of testimonials; track t.id; let i = $index) {
+          <button type="button" class="loja-testimonial-dot" [class.loja-testimonial-dot--active]="currentTestimonial() === i" (click)="currentTestimonial.set(i)"></button>
+        }
+        <button type="button" (click)="nextTestimonial()" aria-label="Próximo">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Product modal -->
+@if (selectedProduct(); as p) {
+  <div class="loja-modal-backdrop" (click)="closeProduct()">
+    <div class="loja-modal loja-modal-product" (click)="$event.stopPropagation()">
+      <button type="button" class="loja-modal-close" (click)="closeProduct()" aria-label="Fechar">&times;</button>
+      <div class="loja-modal-grid">
+        <div class="loja-modal-image">
+          <img [src]="p.image" [alt]="p.name" />
+        </div>
+        <div class="loja-modal-content">
+          <h3>{{ p.name }}</h3>
+          <p>{{ p.description }}</p>
+          <p class="loja-modal-price">{{ p.price }}</p>
+          <a routerLink="/loja/contato" class="loja-btn loja-btn-primary">Encomendar</a>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Image modal -->
+@if (selectedImage(); as img) {
+  <div class="loja-modal-backdrop" (click)="closeImage()">
+    <div class="loja-modal loja-modal-image" (click)="$event.stopPropagation()">
+      <button type="button" class="loja-modal-close" (click)="closeImage()" aria-label="Fechar">&times;</button>
+      <img [src]="img.src" [alt]="img.alt" />
+      <h3>{{ img.alt }}</h3>
+      <p>{{ img.category }}</p>
+    </div>
+  </div>
+}
+
+<!-- Project modal -->
+@if (selectedProject(); as proj) {
+  <div class="loja-modal-backdrop" (click)="closeProject()">
+    <div class="loja-modal loja-modal-project" (click)="$event.stopPropagation()">
+      <button type="button" class="loja-modal-close" (click)="closeProject()" aria-label="Fechar">&times;</button>
+      <img [src]="proj.image" [alt]="proj.title" class="loja-modal-project-img" />
+      <span class="loja-badge loja-badge-pink">{{ proj.category }}</span>
+      <h3>{{ proj.title }}</h3>
+      <p>{{ proj.description }}</p>
+      <p>{{ proj.details }}</p>
+      <div class="loja-modal-project-highlights">
+        @for (h of proj.highlights; track h) {
+          <span class="loja-tag">{{ h }}</span>
+        }
+      </div>
+      <a routerLink="/loja/contato" class="loja-btn loja-btn-primary">Solicitar Orçamento Similar</a>
+    </div>
+  </div>
+}

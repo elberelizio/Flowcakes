@@ -1,0 +1,67 @@
+<div class="notificacoes-page">
+  <header class="page-header">
+    <h1>Gestão de notificações</h1>
+    <a routerLink="/admin-dashboard" class="btn btn-secondary">Voltar</a>
+  </header>
+
+  <section class="create-section">
+    <h2>Enviar notificação</h2>
+    <p class="intro">As notificações são exibidas aos utilizadores quando acedem ao sistema.</p>
+    <form class="create-form" (ngSubmit)="submit()">
+      <div class="form-group">
+        <label for="title">Título</label>
+        <input id="title" type="text" [(ngModel)]="title" name="title" placeholder="Ex: Manutenção programada" maxlength="200" />
+      </div>
+      <div class="form-group">
+        <label for="message">Mensagem</label>
+        <textarea id="message" [(ngModel)]="message" name="message" placeholder="Mensagem para todos os utilizadores..." rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="type">Tipo</label>
+        <select id="type" [(ngModel)]="type" name="type">
+          <option value="info">Info</option>
+          <option value="warning">Aviso</option>
+          <option value="success">Sucesso</option>
+          <option value="error">Erro</option>
+        </select>
+      </div>
+      @if (createError()) {
+        <p class="form-error">{{ createError() }}</p>
+      }
+      <button type="submit" class="btn btn-primary" [disabled]="creating()">
+        {{ creating() ? 'A enviar...' : 'Enviar notificação' }}
+      </button>
+    </form>
+  </section>
+
+  <section class="list-section">
+    <h2>Notificações enviadas</h2>
+    @if (loading()) {
+      <p class="loading">A carregar...</p>
+    } @else if (error()) {
+      <p class="msg-error">{{ error() }}</p>
+    } @else if (notifications().length === 0) {
+      <p class="empty">Nenhuma notificação enviada.</p>
+    } @else {
+      <div class="notification-list">
+        @for (n of notifications(); track n.id) {
+          <div class="notification-card" [class.inactive]="!n.active">
+            <div class="notification-header">
+              <span class="notification-title">{{ n.title }}</span>
+              <span class="notification-date">{{ formatDate(n.createdAt) }}</span>
+            </div>
+            <p class="notification-message">{{ n.message }}</p>
+            <div class="notification-footer">
+              <span class="badge" [class]="'badge-' + n.type">{{ n.type }}</span>
+              @if (n.active) {
+                <button type="button" class="btn btn-sm btn-secondary" (click)="deactivate(n.id)">Desactivar</button>
+              } @else {
+                <span class="muted">Desactivada</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </section>
+</div>

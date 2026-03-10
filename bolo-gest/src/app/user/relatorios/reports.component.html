@@ -1,0 +1,54 @@
+<div class="reports-page">
+  <header class="page-header">
+    <a routerLink="/dashboard" class="btn-back">← Voltar</a>
+    <h1>Relatórios</h1>
+  </header>
+
+  @if (!isAdmin) {
+    <section class="summary">
+      <div class="card">
+        <span class="label">Lucro total do dia</span>
+        <span class="value">{{ profitDay() | number:'1.2-2' }} MZN</span>
+        <span class="meta">{{ dayOrders().length }} pedidos</span>
+      </div>
+      <div class="card">
+        <span class="label">Lucro total da semana</span>
+        <span class="value">{{ profitWeek() | number:'1.2-2' }} MZN</span>
+        <span class="meta">{{ weekOrders().length }} pedidos</span>
+      </div>
+      <div class="card">
+        <span class="label">Lucro total do mês</span>
+        <span class="value">{{ profitMonth() | number:'1.2-2' }} MZN</span>
+        <span class="meta">{{ monthOrders().length }} pedidos</span>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="stat">
+        <span class="stat-value">{{ totalOrders() }}</span>
+        <span class="stat-label">Total de pedidos</span>
+      </div>
+      @if (pendingCount() > 0) {
+        <div class="stat warning">
+          <span class="stat-value">{{ pendingCount() }}</span>
+          <span class="stat-label">Pedidos com saldo pendente</span>
+        </div>
+      }
+    </section>
+  }
+
+  <section class="revenue-chart-section">
+    <h2>{{ isAdmin ? 'Receita por mês (todos os utilizadores)' : 'Receita por mês' }}</h2>
+    @if (chartLoading()) {
+      <p class="chart-loading">A carregar gráfico...</p>
+    } @else if (chartError()) {
+      <p class="chart-error">{{ chartError() }}</p>
+    } @else if (revenueByMonth().length === 0) {
+      <p class="chart-empty">Sem dados de receita para mostrar.</p>
+    } @else {
+      <div class="chart-container">
+        <canvas #revenueChart></canvas>
+      </div>
+    }
+  </section>
+</div>

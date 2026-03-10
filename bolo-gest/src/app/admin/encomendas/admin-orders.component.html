@@ -1,0 +1,118 @@
+<div class="admin-orders-page">
+  <header class="page-header">
+    <h1>Encomendas</h1>
+    <p class="subtitle">Todas as encomendas dos utilizadores do sistema.</p>
+  </header>
+
+  @if (loading) {
+    <p class="loading">A carregar...</p>
+  } @else if (error) {
+    <p class="msg-error">{{ error }}</p>
+  } @else if (orders.length === 0) {
+    <p class="empty">Nenhuma encomenda registada.</p>
+  } @else {
+    <!-- Estatísticas -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-label">Maior nº vendas (utilizador)</span>
+        <span class="stat-value">{{ stats().userWithMostSales }}</span>
+        <span class="stat-extra">{{ stats().totalVendasUser }} vendas</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Total despesas</span>
+        <span class="stat-value">{{ stats().totalDespesas | number:'1.0-0' }} MZN</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Produto mais vendido</span>
+        <span class="stat-value">{{ stats().productMostSold }}</span>
+        <span class="stat-extra">{{ stats().productMostSoldCount }} un.</span>
+      </div>
+      <div class="stat-card stat-card--highlight">
+        <span class="stat-label">Utilizador do mês</span>
+        <span class="stat-value">{{ stats().userOfMonth }}</span>
+        <span class="stat-extra">{{ stats().userOfMonthCount }} vendas este mês</span>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-bar">
+      <label class="filter-item">
+        <span class="filter-label">Utilizador</span>
+        <select class="filter-select" [ngModel]="filterUser()" (ngModelChange)="filterUser.set($event)">
+          <option value="">Todos</option>
+          @for (u of uniqueUsers(); track u) {
+            <option [value]="u">{{ u }}</option>
+          }
+        </select>
+      </label>
+      <label class="filter-item">
+        <span class="filter-label">Mês</span>
+        <select class="filter-select" [ngModel]="filterMonth()" (ngModelChange)="filterMonth.set(+$event)">
+          @for (m of months; track m.v) {
+            <option [value]="m.v">{{ m.label }}</option>
+          }
+        </select>
+      </label>
+      <label class="filter-item">
+        <span class="filter-label">Ano</span>
+        <select class="filter-select" [ngModel]="filterYear()" (ngModelChange)="filterYear.set(+$event)">
+          <option [value]="0">Todos</option>
+          @for (y of years(); track y) {
+            @if (y !== 0) {
+              <option [value]="y">{{ y }}</option>
+            }
+          }
+        </select>
+      </label>
+      <label class="filter-item">
+        <span class="filter-label">Produto</span>
+        <select class="filter-select" [ngModel]="filterProduct()" (ngModelChange)="filterProduct.set($event)">
+          <option value="">Todos</option>
+          @for (p of uniqueProducts(); track p) {
+            <option [value]="p">{{ p }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Utilizador</th>
+            <th>Data</th>
+            <th>Cliente</th>
+            <th>Produto</th>
+            <th>Valor cobrado</th>
+            <th>Pago</th>
+            <th>Lucro</th>
+            <th>Status</th>
+            <th>Entregue</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (o of filteredOrders(); track o.id) {
+            <tr>
+              <td class="user-cell">{{ userLabel(o) }}</td>
+              <td>{{ formatDate(o.createdAt) }}</td>
+              <td>{{ o.clientName }}</td>
+              <td>{{ displayName(toOrder(o)) }}</td>
+              <td>{{ o.valueCharged | number:'1.0-0' }} MZN</td>
+              <td>{{ o.valuePaid | number:'1.0-0' }} MZN</td>
+              <td>{{ o.profit | number:'1.0-0' }} MZN</td>
+              <td>
+                <span class="badge" [class.pendente]="o.paymentStatus === 'pendente'" [class.parcial]="o.paymentStatus === 'parcial'" [class.pago]="o.paymentStatus === 'pago'">
+                  {{ o.paymentStatus }}
+                </span>
+              </td>
+              <td>{{ o.delivered ? 'Sim' : 'Não' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (filteredOrders().length === 0 && orders.length > 0) {
+      <p class="empty">Nenhuma encomenda corresponde aos filtros.</p>
+    }
+  }
+</div>

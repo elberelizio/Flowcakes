@@ -1,0 +1,108 @@
+.ranking-page {
+  padding: 1rem;
+  max-width: 52rem;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  .header-main {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .subtitle {
+    margin: 0.35rem 0 0;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+}
+
+.btn-back {
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  background: var(--secondary);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+
+  .loading-spinner {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .hint {
+    margin: 0.5rem 0 0;
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.ranking-table {
+  .rank-cell {
+    font-weight: 600;
+  }
+
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.75rem;
+    height: 1.75rem;
+    padding: 0 0.35rem;
+    border-radius: 50%;
+    background: var(--secondary);
+    font-size: 0.9rem;
+
+    &.gold {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+    }
+    &.silver {
+      background: linear-gradient(135deg, #94a3b8, #64748b);
+      color: #fff;
+    }
+    &.bronze {
+      background: linear-gradient(135deg, #b45309, #92400e);
+      color: #fff;
+    }
+  }
+}
+
+tr.rank-top {
+  background: rgba(var(--primary-rgb, 13, 148, 136), 0.05);
+}

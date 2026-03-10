@@ -1,0 +1,116 @@
+<div class="calendario-page">
+  <header class="page-header">
+    <a routerLink="/dashboard" class="btn-back">← Voltar</a>
+    <div class="header-content">
+      <h1>Criar e ver lembretes</h1>
+      <p class="subtitle">Selecione uma data e crie lembretes (nome, morada, descrição). Ver lista em Lembretes → Visualizar.</p>
+    </div>
+    <a routerLink="/lembretes" class="btn-all-reminders">Ver todos os lembretes</a>
+  </header>
+
+  <section class="calendar-section card">
+    <div class="calendar-nav">
+      <button type="button" class="nav-btn" (click)="prevMonth()" aria-label="Mês anterior">‹</button>
+      <h2 class="calendar-title">{{ monthLabel }}</h2>
+      <button type="button" class="nav-btn" (click)="nextMonth()" aria-label="Mês seguinte">›</button>
+    </div>
+    <button type="button" class="btn-today" (click)="goToToday()">Ir para hoje</button>
+
+    <div class="calendar-grid">
+      @for (w of WEEKDAYS; track w) {
+        <div class="calendar-weekday">{{ w }}</div>
+      }
+      @for (cell of calendarDays(); track $index) {
+        <button
+          type="button"
+          class="calendar-day"
+          [class.empty]="!cell.isCurrentMonth"
+          [class.selected]="isSelected(cell)"
+          [class.today]="isToday(cell)"
+          [class.has-orders]="getOrdersCount(cell.dateStr) > 0"
+          [class.has-reminders]="getRemindersCount(cell.dateStr) > 0"
+          [disabled]="!cell.isCurrentMonth"
+          (click)="cell.isCurrentMonth && cell.date && selectDate(cell.date)">
+          @if (cell.isCurrentMonth && cell.date) {
+            <span class="day-num">{{ cell.date.getDate() }}</span>
+            @if (getOrdersCount(cell.dateStr) > 0) {
+              <span class="day-badge day-badge--order" title="Encomendas">{{ getOrdersCount(cell.dateStr) }}</span>
+            }
+            @if (getRemindersCount(cell.dateStr) > 0) {
+              <span class="day-badge day-badge--reminder" title="Lembretes">{{ getRemindersCount(cell.dateStr) }}</span>
+            }
+          }
+        </button>
+      }
+    </div>
+  </section>
+
+  @if (selectedDate(); as sel) {
+    <section class="orders-section card">
+      <h3 class="orders-section-title">
+        <app-icon name="package" />
+        {{ formatDate(toDateStr(sel)) }}
+      </h3>
+
+      <!-- Lembretes do dia -->
+      <div class="block-reminders">
+        <div class="block-header">
+          <span class="block-label">Lembretes</span>
+          @if (!showNewReminderForm()) {
+            <button type="button" class="btn-link" (click)="openNewReminderForm()">+ Novo lembrete</button>
+          }
+        </div>
+        @if (showNewReminderForm()) {
+          <form [formGroup]="reminderForm" (ngSubmit)="saveReminder()" class="reminder-form">
+            <input formControlName="clientName" placeholder="Nome da pessoa" class="reminder-input" />
+            <input formControlName="address" placeholder="Morada" class="reminder-input" />
+            <input formControlName="deliveryDate" type="date" class="reminder-input" />
+            <input formControlName="description" placeholder="Descrição do pedido" class="reminder-input" />
+            <div class="form-actions-inline">
+              <button type="submit" class="btn btn-save" [disabled]="reminderForm.invalid">Guardar</button>
+              <button type="button" class="btn btn-cancel" (click)="closeNewReminderForm()">Cancelar</button>
+            </div>
+          </form>
+        }
+        @if (remindersForSelectedDate().length > 0) {
+          <ul class="reminders-list">
+            @for (r of remindersForSelectedDate(); track r.id) {
+              <li class="reminder-row">
+                <div class="reminder-text">
+                  <strong>{{ r.clientName }}</strong>
+                  @if (r.address) { <span class="muted">— {{ r.address }}</span> }
+                  @if (r.description) { <span class="muted">— {{ r.description }}</span> }
+                </div>
+                <button type="button" class="btn-remove" (click)="removeReminder(r.id)" title="Apagar">×</button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <!-- Encomendas do dia (registos completos) -->
+      <div class="block-orders">
+        <span class="block-label">Encomendas</span>
+        @if (ordersForSelectedDate().length === 0) {
+          <p class="no-orders">Nenhuma encomenda para este dia.</p>
+        } @else {
+          <div class="orders-list">
+            @for (o of ordersForSelectedDate(); track o.id) {
+              <a [routerLink]="['/encomendas', o.id]" class="order-card">
+                <div class="order-info">
+                  <span class="order-client">{{ o.clientName }}</span>
+                  <span class="order-product">{{ displayName(o) }} {{ displaySize(o) ? '(' + displaySize(o) + ')' : '' }}</span>
+                </div>
+                <div class="order-meta">
+                  <span class="badge" [class]="'status-' + (o.orderStatus || 'ordered')">{{ getOrderStatusLabel(o.orderStatus) }}</span>
+                  <span class="order-value">{{ o.valueCharged | number:'1.0-0' }} MZN</span>
+                </div>
+              </a>
+            }
+          </div>
+          <a routerLink="/encomendas" class="link link-footer">Ver encomendas</a>
+        }
+      </div>
+    </section>
+  }
+</div>

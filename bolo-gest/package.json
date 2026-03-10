@@ -4,12 +4,14 @@
   "scripts": {
     "ng": "npx ng",
     "start": "npx ng serve",
+    "start:mobile": "npx ng serve --host 0.0.0.0",
     "build": "npx ng build",
     "watch": "npx ng build --watch --configuration development",
     "test": "npx ng test"
   },
   "private": true,
   "dependencies": {
+    "@angular/animations": "^19.2.19",
     "@angular/common": "^19.2.0",
     "@angular/compiler": "^19.2.0",
     "@angular/core": "^19.2.0",
@@ -17,8 +19,11 @@
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
-    "@angular/service-worker": "^19.2.18",
+    "@angular/service-worker": "^19.2.19",
+    "@primeng/themes": "^21.0.4",
     "chart.js": "^4.5.1",
+    "primeicons": "^7.0.0",
+    "primeng": "^19.1.4",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"

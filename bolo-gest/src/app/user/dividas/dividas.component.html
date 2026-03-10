@@ -1,0 +1,85 @@
+<div class="dividas-page">
+  <header class="page-header">
+    <a routerLink="/encomendas" class="btn-back">← Voltar</a>
+    <div class="header-content">
+      <h1>Gestão de dívidas</h1>
+      <p class="subtitle">Encomendas com valor em falta. O pedido só fecha quando o valor é pago na totalidade.</p>
+    </div>
+  </header>
+
+  @if (ordersWithDebt().length === 0) {
+    <div class="empty-state card">
+      <p class="empty">Nenhuma dívida pendente. Todas as encomendas estão pagas na totalidade.</p>
+      <a routerLink="/encomendas" class="btn btn-primary">Ver encomendas</a>
+    </div>
+  } @else {
+    <div class="summary-card card">
+      <h3>Total em dívida</h3>
+      <p class="total-amount">{{ totalDebt() | number:'1.0-0' }} MZN</p>
+      <p class="total-count">{{ ordersWithDebt().length }} encomenda(s) com valor pendente</p>
+    </div>
+
+    <div class="table-card">
+      <div class="table-wrap">
+        <table class="dividas-table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Categoria</th>
+              <th>Produto</th>
+              <th>Tamanho / Qtd</th>
+              <th>Valor cobrado</th>
+              <th>Valor pago</th>
+              <th>Valor em falta</th>
+              <th>Estado</th>
+              <th>Entregue</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (o of ordersWithDebt(); track o.id) {
+              <tr>
+                <td data-label="Cliente">{{ o.clientName }}</td>
+                <td data-label="Categoria">{{ getCategoryLabel(o.category) }}</td>
+                <td data-label="Produto">{{ displayName(o) }}</td>
+                <td data-label="Tamanho / Qtd">{{ displaySize(o) }}</td>
+                <td data-label="Valor cobrado">{{ o.valueCharged | number:'1.0-0' }} MZN</td>
+                <td data-label="Valor pago">{{ o.valuePaid | number:'1.0-0' }} MZN</td>
+                <td data-label="Valor em falta">
+                  <span class="debt-amount">{{ getSaldo(o) | number:'1.0-0' }} MZN</span>
+                </td>
+                <td data-label="Estado">{{ getOrderStatusLabel(o.orderStatus) }}</td>
+                <td data-label="Entregue">{{ o.delivered ? 'Sim' : 'Não' }}</td>
+                <td data-label="Ações">
+                  <div class="action-buttons">
+                    <a [routerLink]="['/encomendas', o.id]" class="btn-sm btn-details">Detalhes</a>
+                    <button type="button" class="btn-sm btn-success" (click)="openConfirmPaid(o)">
+                      Registar pagamento
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  @if (orderToConfirmPaid()) {
+    <div class="confirm-overlay" (click)="closeConfirmPaid()">
+      <div class="confirm-card" (click)="$event.stopPropagation()">
+        <h3>Registar pagamento</h3>
+        <p class="confirm-message">
+          Confirma que recebeu o valor de <strong>{{ getSaldo(orderToConfirmPaid()!) | number:'1.0-0' }} MZN</strong>
+          do cliente <strong>{{ orderToConfirmPaid()?.clientName }}</strong>?
+        </p>
+        <p class="confirm-hint">O pedido será marcado como pago na totalidade.</p>
+        <div class="confirm-actions">
+          <button type="button" class="btn btn-ghost" (click)="closeConfirmPaid()">Cancelar</button>
+          <button type="button" class="btn btn-success" (click)="confirmMarkPaid()">Sim, registar</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

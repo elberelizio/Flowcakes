@@ -1,0 +1,43 @@
+<div class="satisfacao-page">
+  <header class="page-header">
+    <h1>Satisfação dos clientes</h1>
+    <a routerLink="/admin-dashboard" class="btn btn-secondary">Voltar</a>
+  </header>
+
+  @if (loading()) {
+    <p class="loading">A carregar...</p>
+  } @else if (error()) {
+    <p class="msg-error">{{ error() }}</p>
+  } @else {
+    <section class="stats-section">
+      <h2>Média de avaliação</h2>
+      <div class="average-card">
+        <span class="average-value">{{ averageRating() | number:'1.1-1' }}</span>
+        <span class="average-stars">{{ stars(roundRating(averageRating())) }}</span>
+        <span class="average-meta">de 5 estrelas</span>
+      </div>
+    </section>
+
+    <section class="feedback-section">
+      <h2>Feedback recebido</h2>
+      @if (feedbackList().length === 0) {
+        <p class="empty">Nenhum feedback recebido ainda.</p>
+      } @else {
+        <div class="feedback-list">
+          @for (f of feedbackList(); track f.id) {
+            <div class="feedback-card">
+              <div class="feedback-header">
+                <span class="feedback-user">{{ userLabel(f) }}</span>
+                <span class="feedback-date">{{ formatDate(f.createdAt) }}</span>
+              </div>
+              <div class="feedback-rating">{{ stars(f.rating) }}</div>
+              @if (f.comment?.trim()) {
+                <p class="feedback-comment">{{ f.comment }}</p>
+              }
+            </div>
+          }
+        </div>
+      }
+    </section>
+  }
+</div>

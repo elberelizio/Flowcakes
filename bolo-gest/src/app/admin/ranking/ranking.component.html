@@ -1,0 +1,52 @@
+<div class="ranking-page">
+  <header class="page-header">
+    <div class="header-main">
+      <h1>Ranking</h1>
+      <p class="subtitle">Classificação dos utilizadores por número de encomendas e receita.</p>
+    </div>
+    <a routerLink="/admin-dashboard" class="btn btn-back">Voltar ao painel</a>
+  </header>
+
+  @if (error()) {
+    <div class="alert alert-error">{{ error() }}</div>
+  } @else if (loading()) {
+    <div class="loading-state">
+      <span class="loading-spinner"></span>
+      <p>A carregar...</p>
+    </div>
+  } @else if (ranking().length === 0) {
+    <div class="empty-state">
+      <p>Nenhum dado de ranking disponível.</p>
+      <p class="hint">O ranking será preenchido quando houver encomendas.</p>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table class="data-table ranking-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Utilizador</th>
+            <th>Contacto</th>
+            <th>Encomendas</th>
+            <th>Receita</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of ranking(); track r.userId) {
+            <tr class="rank-row" [class.rank-top]="r.rank <= 3">
+              <td class="rank-cell">
+                <span class="rank-badge" [class.gold]="r.rank === 1" [class.silver]="r.rank === 2" [class.bronze]="r.rank === 3">
+                  {{ r.rank }}
+                </span>
+              </td>
+              <td>{{ r.fullName || '—' }}</td>
+              <td>{{ r.phone }}</td>
+              <td>{{ r.orderCount }}</td>
+              <td>{{ (r.totalRevenue ?? 0) | number:'1.0-0' }} MZN</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

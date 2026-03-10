@@ -1,0 +1,109 @@
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .kpi-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .kpi-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kpi-tile {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-left: 4px solid var(--primary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .kpi-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+
+  .kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  .kpi-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  &.kpi-tile-users {
+    border-left-color: #6366f1;
+    .kpi-value { color: #6366f1; }
+  }
+
+  &.kpi-tile-active {
+    border-left-color: var(--success);
+    .kpi-value { color: var(--success); }
+  }
+
+  &.kpi-tile-blocked {
+    border-left-color: var(--warning);
+    .kpi-value { color: var(--warning); }
+  }
+
+  &.kpi-tile-revenue {
+    border-left-color: var(--primary);
+    .kpi-value { color: var(--primary); }
+  }
+
+  &.kpi-tile-usage {
+    border-left-color: #64748b;
+    .kpi-value { color: var(--text-muted); font-size: 1.5rem; }
+  }
+
+  &.kpi-tile-link {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    &:hover {
+      border-left-color: var(--primary);
+      .kpi-value { color: var(--primary); }
+    }
+  }
+}
+
+.indicators-section {
+  .section-heading {
+    margin: 0 0 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+}
+
+.kpi-row-usage {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 768px) {
+  .kpi-row-usage {
+    grid-template-columns: 1fr;
+  }
+}

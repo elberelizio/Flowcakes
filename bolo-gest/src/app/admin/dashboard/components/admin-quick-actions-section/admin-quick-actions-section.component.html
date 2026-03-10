@@ -1,0 +1,11 @@
+<section class="quick-actions-section">
+  <h2 class="section-heading">Acesso rápido</h2>
+  <div class="quick-actions">
+    @for (action of actions(); track action.route) {
+      <a [routerLink]="action.route" class="action-tile">
+        <span class="action-title">{{ action.title }}</span>
+        <span class="action-desc">{{ action.desc }}</span>
+      </a>
+    }
+  </div>
+</section>

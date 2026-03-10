@@ -1,0 +1,43 @@
+<div class="admin-logs-page">
+  <header class="page-header">
+    <h1>Logs de acesso</h1>
+    <p class="subtitle">Histórico de logins e acessos ao sistema</p>
+  </header>
+
+  @if (loading()) {
+    <p class="loading">A carregar...</p>
+  } @else if (error()) {
+    <p class="msg-error">{{ error() }}</p>
+  } @else if (logs().length === 0) {
+    <p class="empty">Nenhum registo de acesso.</p>
+  } @else {
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Data/Hora</th>
+            <th>Utilizador (ID)</th>
+            <th>Contacto</th>
+            <th>Nome</th>
+            <th>Tipo</th>
+            <th>IP</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (log of logs(); track log.id) {
+            <tr>
+              <td>{{ formatDate(log.createdAt) }}</td>
+              <td class="id-cell"><code>{{ log.userId }}</code></td>
+              <td>{{ log.userPhone || '—' }}</td>
+              <td>{{ log.userFullName || '—' }}</td>
+              <td>
+                <span class="badge" [class.admin]="log.admin">{{ log.admin ? 'Admin' : 'Cliente' }}</span>
+              </td>
+              <td>{{ log.ipAddress || '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

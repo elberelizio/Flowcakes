@@ -1,0 +1,91 @@
+<nav class="loja-nav" [class.loja-nav--scrolled]="isScrolled()">
+  <div class="loja-nav-inner">
+    <a routerLink="/loja" class="loja-nav-brand">
+      <span class="loja-nav-brand-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 6c1.11 0 2-.9 2-2 0-.38-.1-.73-.29-1.03L12 0l-1.71 2.97c-.19.3-.29.65-.29 1.03 0 1.1.9 2 2 2zm-2 4.24V20h2v-2h2v2h2V10.24l-3-2.12-3 2.12z"/></svg>
+      </span>
+      <span class="loja-nav-brand-text">Doce Sabor</span>
+    </a>
+    <div class="loja-nav-links">
+      <a routerLink="/loja" fragment="hero" (click)="handleSectionClick($event, 'hero')">Início</a>
+      <a routerLink="/loja" fragment="sobre" (click)="handleSectionClick($event, 'sobre')">Sobre</a>
+      <a routerLink="/loja" fragment="produtos" (click)="handleSectionClick($event, 'produtos')">Produtos</a>
+      <a routerLink="/loja" fragment="galeria" (click)="handleSectionClick($event, 'galeria')">Galeria</a>
+      <a routerLink="/loja" fragment="projetos" (click)="handleSectionClick($event, 'projetos')">Projetos</a>
+      <a routerLink="/loja/contato">Contato</a>
+      <a routerLink="/loja" fragment="faq" (click)="handleSectionClick($event, 'faq')">FAQ</a>
+      <a routerLink="/loja/rastreio">Rastrear</a>
+    </div>
+    <div class="loja-nav-cta">
+      <a routerLink="/loja/contato" class="loja-nav-btn-primary">Encomende Já</a>
+    </div>
+    <button type="button" class="loja-nav-mobile-btn" (click)="toggleMobileMenu()" [attr.aria-expanded]="mobileMenuOpen()" aria-label="Menu">
+      @if (mobileMenuOpen()) {
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      } @else {
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      }
+    </button>
+  </div>
+</nav>
+
+<div class="loja-mobile-menu" [class.loja-mobile-menu--open]="mobileMenuOpen()">
+  <div class="loja-mobile-menu-backdrop" (click)="closeMobileMenu()"></div>
+  <div class="loja-mobile-menu-panel">
+    <a routerLink="/loja" fragment="hero" (click)="handleSectionClick($event, 'hero')">Início</a>
+    <a routerLink="/loja" fragment="sobre" (click)="handleSectionClick($event, 'sobre')">Sobre</a>
+    <a routerLink="/loja" fragment="produtos" (click)="handleSectionClick($event, 'produtos')">Produtos</a>
+    <a routerLink="/loja" fragment="galeria" (click)="handleSectionClick($event, 'galeria')">Galeria</a>
+    <a routerLink="/loja" fragment="projetos" (click)="handleSectionClick($event, 'projetos')">Projetos</a>
+    <a routerLink="/loja/contato" (click)="closeMobileMenu()">Contato</a>
+    <a routerLink="/loja" fragment="faq" (click)="handleSectionClick($event, 'faq')">FAQ</a>
+    <a routerLink="/loja/rastreio" (click)="closeMobileMenu()">Rastrear</a>
+    <a routerLink="/loja/contato" (click)="closeMobileMenu()" class="loja-mobile-menu-cta">Encomende Já</a>
+  </div>
+</div>
+
+<main class="loja-main">
+  <router-outlet></router-outlet>
+</main>
+
+<footer class="loja-footer">
+  <div class="loja-footer-bg"></div>
+  <div class="loja-footer-inner">
+    <div class="loja-footer-grid">
+      <div class="loja-footer-brand">
+        <a routerLink="/loja" class="loja-footer-brand-link">
+          <span class="loja-footer-brand-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M12 6c1.11 0 2-.9 2-2 0-.38-.1-.73-.29-1.03L12 0l-1.71 2.97c-.19.3-.29.65-.29 1.03 0 1.1.9 2 2 2zm-2 4.24V20h2v-2h2v2h2V10.24l-3-2.12-3 2.12z"/></svg>
+          </span>
+          <span class="loja-footer-brand-name">Doce Sabor</span>
+        </a>
+        <p class="loja-footer-tagline">Transformando momentos especiais em experiências doces e inesquecíveis há mais de 15 anos.</p>
+        <div class="loja-footer-social">
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">IG</a>
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">FB</a>
+        </div>
+      </div>
+      <div class="loja-footer-col">
+        <h3 class="loja-footer-title">Links Rápidos</h3>
+        <a routerLink="/loja" fragment="hero" (click)="handleSectionClick($event, 'hero')">Início</a>
+        <a routerLink="/loja" fragment="sobre" (click)="handleSectionClick($event, 'sobre')">Sobre Nós</a>
+        <a routerLink="/loja" fragment="produtos" (click)="handleSectionClick($event, 'produtos')">Produtos</a>
+        <a routerLink="/loja" fragment="galeria" (click)="handleSectionClick($event, 'galeria')">Galeria</a>
+        <a routerLink="/loja/contato">Contato</a>
+        <a routerLink="/loja" fragment="faq" (click)="handleSectionClick($event, 'faq')">FAQ</a>
+        <a routerLink="/loja/rastreio">Rastrear Pedido</a>
+      </div>
+      <div class="loja-footer-col">
+        <h3 class="loja-footer-title">Contato</h3>
+        <p>Rua dos Doces, 123<br>Centro, São Paulo - SP</p>
+        <a href="tel:+5511999999999">(11) 99999-9999</a>
+        <a href="mailto:contato@docesabor.com">contato&#64;docesabor.com</a>
+        <p>Seg - Sex: 8h às 18h<br>Sábado: 9h às 14h</p>
+      </div>
+    </div>
+    <div class="loja-footer-bottom">
+      <p>© {{ currentYear }} Doce Sabor. Todos os direitos reservados.</p>
+      <p>Feito com muito açúcar</p>
+    </div>
+  </div>
+</footer>

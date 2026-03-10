@@ -1,0 +1,85 @@
+<div class="loja-rastreio-page">
+  <header class="loja-rastreio-header">
+    <div class="loja-container">
+      <a routerLink="/loja" class="loja-rastreio-back">← Voltar para o início</a>
+      <h1 class="loja-rastreio-title">Rastrear <span class="loja-purple">Pedido</span></h1>
+      <p class="loja-rastreio-desc">Acompanhe o status do seu pedido em tempo real.</p>
+    </div>
+  </header>
+  <div class="loja-rastreio-content">
+    <div class="loja-container loja-rastreio-narrow">
+      <div class="loja-rastreio-form-wrap">
+        <form (ngSubmit)="search($event)" class="loja-rastreio-form">
+          <input type="text" [(ngModel)]="orderId" name="orderId" placeholder="Digite o número do pedido (ex: PED001)" class="loja-rastreio-input" />
+          <button type="submit" class="loja-btn loja-btn-purple" [disabled]="isSearching() || !orderId.trim()">
+            @if (isSearching()) {
+              <span class="loja-spinner"></span>
+              Buscando...
+            } @else {
+              Rastrear
+            }
+          </button>
+        </form>
+        @if (error()) {
+          <div class="loja-rastreio-error">{{ error() }}</div>
+        }
+        @if (!order() && !error()) {
+          <p class="loja-rastreio-hint"><strong>Dica:</strong> Use PED001, PED002 ou PED003 para testar.</p>
+        }
+      </div>
+
+      @if (order(); as o) {
+        <div class="loja-rastreio-result">
+          <div class="loja-rastreio-status-card">
+            <h2>{{ statusText(o.status) }}</h2>
+            <div class="loja-rastreio-progress-wrap">
+              <div class="loja-rastreio-progress-bar">
+                <div class="loja-rastreio-progress-fill" [style.width.%]="progress(o.status)" [ngClass]="statusClass(o.status)"></div>
+              </div>
+              <p>{{ progress(o.status) }}% concluído</p>
+            </div>
+          </div>
+          <div class="loja-rastreio-grid">
+            <div class="loja-rastreio-timeline">
+              <h3>Histórico do Pedido</h3>
+              @for (item of o.timeline; track item.status) {
+                <div class="loja-rastreio-timeline-item">
+                  <div class="loja-rastreio-timeline-dot" [class.loja-rastreio-timeline-dot--done]="item.completed"></div>
+                  <div>
+                    <p class="loja-rastreio-timeline-status" [class.loja-rastreio-timeline-status--done]="item.completed">{{ item.status }}</p>
+                    <p class="loja-rastreio-timeline-time">{{ item.time }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+            <div class="loja-rastreio-details">
+              <div class="loja-rastreio-card">
+                <h3>Itens do Pedido</h3>
+                <ul>
+                  @for (item of o.items; track item) {
+                    <li>{{ item }}</li>
+                  }
+                </ul>
+                <div class="loja-rastreio-total">
+                  <span>Total</span>
+                  <strong>{{ o.total }}</strong>
+                </div>
+              </div>
+              <div class="loja-rastreio-card">
+                <h3>Informações de Entrega</h3>
+                <p><strong>Data:</strong> {{ o.date }}</p>
+                <p><strong>Previsão:</strong> {{ o.estimatedDelivery }}</p>
+                <p><strong>Contato:</strong> {{ o.customerPhone }}</p>
+                <p><strong>Endereço:</strong> {{ o.deliveryAddress }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="loja-rastreio-cta">
+            <p>Alguma dúvida sobre seu pedido?</p>
+            <a routerLink="/loja/contato" class="loja-btn loja-btn-white">Falar com Atendimento</a>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

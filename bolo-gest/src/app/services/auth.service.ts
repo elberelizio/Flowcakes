@@ -2,6 +2,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { API_URL } from '../core/api.config';
+import { OrderAlertsPopupService } from './order-alerts-popup.service';
 
 export interface LoginRequest {
   phone: string;
@@ -12,8 +13,6 @@ export interface RegisterRequest {
   phone: string;
   password: string;
   fullName: string;
-  documentType: string;
-  documentNumber: string;
   province: string;
   email?: string;
 }
@@ -29,7 +28,6 @@ export interface UserResponse {
   email?: string;
   licenseStatus?: string;
   accountFinalized?: boolean;
-  licenseCodeValidated?: boolean;
   admin?: boolean;
 }
 
@@ -43,7 +41,6 @@ export interface CurrentUser {
   province?: string;
   email?: string;
   accountFinalized?: boolean;
-  licenseCodeValidated?: boolean;
   admin?: boolean;
 }
 
@@ -60,6 +57,7 @@ export interface LicenseStatusResponse {
   eMolaPhone: string;
   licenseToken?: string;
   accountFinalized: boolean;
+  validUntil?: string; // ISO date
 }
 
 @Injectable({ providedIn: 'root' })
@@ -69,7 +67,8 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private orderAlertsPopup: OrderAlertsPopupService
   ) {}
 
   /** Verifica sessão no backend (cookie). Chamado no arranque da app. Nenhum dado guardado no browser. */
@@ -110,7 +109,6 @@ export class AuthService {
       province: u.province,
       email: u.email,
       accountFinalized: u.accountFinalized ?? false,
-      licenseCodeValidated: u.licenseCodeValidated ?? false,
       admin: u.admin ?? false,
     };
   }
@@ -144,6 +142,9 @@ export class AuthService {
       .then((user): LoginResult => {
         if (user) {
           this.currentUser.set(this.toCurrentUser(user));
+          try {
+            sessionStorage.removeItem('chefcontrol_login_summary_dismissed');
+          } catch (_) {}
           return { ok: true, user };
         }
         return { ok: false, code: 'INVALID_CREDENTIALS' };
@@ -162,8 +163,6 @@ export class AuthService {
         phone: data.phone,
         password: data.password,
         fullName: data.fullName,
-        documentType: data.documentType,
-        documentNumber: data.documentNumber,
         province: data.province,
         email: data.email || undefined,
       })
@@ -184,6 +183,10 @@ export class AuthService {
   logout(): void {
     this.http.post(`${API_URL}/auth/logout`, {}).subscribe();
     this.currentUser.set(null);
+    this.orderAlertsPopup.resetForNextLogin();
+    try {
+      sessionStorage.removeItem('chefcontrol_login_summary_dismissed');
+    } catch (_) {}
     this.router.navigate(['/login']);
   }
 
@@ -261,25 +264,8 @@ export class AuthService {
     return this.currentUser()?.accountFinalized ?? false;
   }
 
-  isLicenseCodeValidated(): boolean {
-    return this.currentUser()?.licenseCodeValidated ?? false;
-  }
-
   isAdmin(): boolean {
     return this.currentUser()?.admin ?? false;
-  }
-
-  /** Valida o código da licença (associado ao NUIT). Só fecha o popup após validação. */
-  validateLicenseCode(code: string): Promise<boolean> {
-    if (!code || code.length > 9) return Promise.resolve(false);
-    return this.http
-      .post<void>(`${API_URL}/auth/validate-license-code`, { code: code.trim() })
-      .toPromise()
-      .then(() => {
-        this.currentUser.update((u) => u ? { ...u, licenseCodeValidated: true } : null);
-        return true;
-      })
-      .catch(() => false);
   }
 
   getLicenseStatus(): Promise<LicenseStatusResponse | null> {

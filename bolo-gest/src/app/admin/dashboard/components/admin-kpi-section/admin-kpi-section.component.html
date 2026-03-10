@@ -1,0 +1,30 @@
+<section class="kpi-row">
+  @for (kpi of kpiTiles(); track kpi.id) {
+    <div class="kpi-tile" [ngClass]="kpi.cssClass">
+      <span class="kpi-label">{{ kpi.label }}</span>
+      <span class="kpi-value">{{ kpi.value }}</span>
+      <span class="kpi-meta">{{ kpi.meta }}</span>
+    </div>
+  }
+</section>
+
+<section class="indicators-section">
+  <h2 class="section-heading">Acessos ao sistema</h2>
+  <div class="kpi-row kpi-row-usage">
+    <div class="kpi-tile kpi-tile-usage">
+      <span class="kpi-label">Logins hoje</span>
+      <span class="kpi-value">{{ adminStats()?.loginsToday ?? 0 }}</span>
+      <span class="kpi-meta">total de acessos</span>
+    </div>
+    <div class="kpi-tile kpi-tile-usage">
+      <span class="kpi-label">Utilizadores únicos hoje</span>
+      <span class="kpi-value">{{ adminStats()?.uniqueUsersToday ?? 0 }}</span>
+      <span class="kpi-meta">pessoas que acederam</span>
+    </div>
+    <a routerLink="/admin-logs" class="kpi-tile kpi-tile-usage kpi-tile-link">
+      <span class="kpi-label">Ver logs</span>
+      <span class="kpi-value">→</span>
+      <span class="kpi-meta">Histórico de acessos</span>
+    </a>
+  </div>
+</section>

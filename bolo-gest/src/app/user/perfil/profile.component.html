@@ -1,0 +1,97 @@
+<div class="profile-page">
+  <header class="profile-header">
+    <a routerLink="/dashboard" class="btn-back">
+      <span class="btn-back-icon">←</span>
+      Voltar
+    </a>
+    <div class="profile-header-content">
+      <div class="profile-avatar">
+        <span class="avatar-initial">{{ userInitial() }}</span>
+      </div>
+      <div class="profile-header-text">
+        <h1>Meu perfil</h1>
+        <p class="page-subtitle">Gerir os seus dados pessoais e opções da conta</p>
+      </div>
+    </div>
+  </header>
+
+  @if (auth.getCurrentUser(); as user) {
+    <section class="section section-profile">
+      <h2 class="section-title">Dados pessoais</h2>
+      <p class="section-hint">Pode editar os dados abaixo. O contacto (telefone) é o seu utilizador de login e não pode ser alterado aqui.</p>
+      <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="profile-edit-form">
+        <div class="profile-form-grid">
+          <div class="field">
+            <label for="profileFullName">Nome completo</label>
+            <input id="profileFullName" type="text" formControlName="fullName" placeholder="Nome completo" />
+          </div>
+          <div class="field field-readonly">
+            <label>Contacto (login)</label>
+            <span class="readonly-value">{{ user.phone }}</span>
+          </div>
+          <div class="field">
+            <label for="profileDocumentType">Tipo de documento</label>
+            <select id="profileDocumentType" formControlName="documentType">
+              <option value="bi">BI</option>
+              <option value="nuit">NUIT</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="profileDocumentNumber">Número do documento</label>
+            <input id="profileDocumentNumber" type="text" formControlName="documentNumber" placeholder="Nº do documento" maxlength="13" />
+          </div>
+          <div class="field">
+            <label for="profileProvince">Província</label>
+            <select id="profileProvince" formControlName="province">
+              <option value="">Selecione a província</option>
+              @for (p of provinces; track p) {
+                <option [value]="p">{{ p }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="profileEmail">Email</label>
+            <input id="profileEmail" type="email" formControlName="email" placeholder="exemplo&#64;email.com" />
+          </div>
+        </div>
+        @if (profileMessage) {
+          <p class="message success">{{ profileMessage }}</p>
+        }
+        @if (profileMessageError) {
+          <p class="message error">{{ profileMessageError }}</p>
+        }
+        <button type="submit" class="btn btn-primary" [disabled]="savingProfile || profileForm.pristine">
+          {{ savingProfile ? 'A guardar...' : 'Guardar alterações' }}
+        </button>
+      </form>
+    </section>
+
+    <section class="section section-password">
+      <h2 class="section-title">Alterar senha da conta</h2>
+      <p class="section-hint">Introduza a senha atual e defina uma nova senha (mín. 4 caracteres).</p>
+      <form [formGroup]="form" (ngSubmit)="changePassword()" class="password-form">
+        <div class="field">
+          <label for="currentPassword">Senha atual</label>
+          <input id="currentPassword" type="password" formControlName="currentPassword" placeholder="Senha atual" autocomplete="current-password" />
+        </div>
+        <div class="field">
+          <label for="newPassword">Nova senha</label>
+          <input id="newPassword" type="password" formControlName="newPassword" placeholder="Nova senha (mín. 4 caracteres)" autocomplete="new-password" />
+        </div>
+        <div class="field">
+          <label for="confirmPassword">Confirmar nova senha</label>
+          <input id="confirmPassword" type="password" formControlName="confirmPassword" placeholder="Repetir a nova senha" autocomplete="new-password" />
+        </div>
+        @if (message) {
+          <p class="message success">{{ message }}</p>
+        }
+        @if (messageError) {
+          <p class="message error">{{ messageError }}</p>
+        }
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Alterar senha</button>
+      </form>
+    </section>
+  } @else {
+    <p class="loading-text">A carregar perfil...</p>
+  }
+</div>

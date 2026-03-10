@@ -1,0 +1,185 @@
+<div class="perfis-page">
+  <header class="page-header">
+    <div class="header-main">
+      <h1>Gestão de perfis</h1>
+      <p class="subtitle">Lista geral de todos os utilizadores e administradores registados no sistema.</p>
+    </div>
+    <a routerLink="/admin-dashboard" class="btn btn-back">Voltar ao painel</a>
+  </header>
+
+  <div class="filters-section">
+    <div class="search-bar">
+      <input
+        type="search"
+        placeholder="Pesquisar por nome, contacto ou email..."
+        [ngModel]="pesquisa()"
+        (ngModelChange)="pesquisa.set($event)"
+        class="search-input"
+      />
+    </div>
+    <div class="filters-row">
+      <div class="filter-group">
+        <label>Tipo</label>
+        <select [ngModel]="filtroTipo()" (ngModelChange)="filtroTipo.set($event)">
+          <option value="todos">Todos</option>
+          <option value="utilizadores">Utilizadores</option>
+          <option value="administradores">Administradores</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Estado</label>
+        <select [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event)">
+          <option value="todos">Todos</option>
+          <option value="activo">Activo</option>
+          <option value="bloqueado">Bloqueado</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Licença</label>
+        <select [ngModel]="filtroLicenca()" (ngModelChange)="filtroLicenca.set($event)">
+          <option value="todos">Todas</option>
+          <option value="activa">Activa</option>
+          <option value="pendente">Pendente</option>
+          <option value="expirada">Expirada</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Registo desde</label>
+        <input type="date" [ngModel]="dataInicial()" (ngModelChange)="dataInicial.set($event)" />
+      </div>
+      <div class="filter-group">
+        <label>Registo até</label>
+        <input type="date" [ngModel]="dataFim()" (ngModelChange)="dataFim.set($event)" />
+      </div>
+      <button type="button" class="btn btn-outline btn-clear" (click)="limparFiltros()">Limpar filtros</button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-error">{{ error() }}</div>
+  } @else if (loading()) {
+    <div class="loading-state">
+      <span class="loading-spinner"></span>
+      <p>A carregar...</p>
+    </div>
+  } @else {
+    <p class="results-info">{{ filteredList().length }} {{ filteredList().length === 1 ? 'utilizador' : 'utilizadores' }} encontrado(s)</p>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Utilizador</th>
+            <th>Contacto</th>
+            <th>Tipo</th>
+            <th>Licença</th>
+            <th>Válida até</th>
+            <th>Estado</th>
+            <th class="th-actions">Acções</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (filteredList().length === 0) {
+            <tr class="empty-row">
+              <td colspan="7">Nenhum utilizador encontrado.</td>
+            </tr>
+          } @else {
+            @for (p of filteredList(); track p.id) {
+              <tr [class.row-bloqueado]="p.bloqueado">
+                <td>
+                  <span class="nome">{{ p.nome }}</span>
+                  @if (p.email) {
+                    <span class="email">{{ p.email }}</span>
+                  }
+                </td>
+                <td>{{ p.contacto }}</td>
+                <td>
+                  <span class="badge" [class.badge-admin]="p.admin" [class.badge-user]="!p.admin">
+                    {{ p.admin ? 'Administrador' : 'Utilizador' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge"
+                    [class.badge-activa]="p.licencaEstado === 'activa'"
+                    [class.badge-pendente]="p.licencaEstado === 'pendente'"
+                    [class.badge-expirada]="p.licencaEstado === 'expirada'"
+                    [class.badge-nula]="p.licencaEstado === 'nula'">
+                    {{ getLicencaLabel(p.licencaEstado) }}
+                  </span>
+                </td>
+                <td>{{ formatDate(p.validaAte) }}</td>
+                <td>
+                  <span class="badge" [class.badge-activo]="!p.bloqueado" [class.badge-bloqueado]="p.bloqueado">
+                    {{ p.bloqueado ? 'Bloqueado' : 'Activo' }}
+                  </span>
+                </td>
+                <td class="actions-cell">
+                  <button type="button" class="btn btn-sm btn-outline" (click)="abrirPerfil(p)">Ver perfil</button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (perfilAberto(); as perfil) {
+    <div class="overlay" (click)="fecharPerfil()">
+      <div class="perfil-panel" (click)="$event.stopPropagation()">
+        <button type="button" class="close-btn" (click)="fecharPerfil()" aria-label="Fechar">×</button>
+        <h2 class="panel-title">{{ perfil.nome }}</h2>
+        <p class="panel-meta">{{ perfil.contacto }} · {{ perfil.email || '—' }}</p>
+
+        <section class="panel-section">
+          <h3>Dados e acesso</h3>
+          <dl class="detail-grid">
+            <dt>Tipo</dt>
+            <dd>
+              <span class="badge" [class.badge-admin]="perfil.admin">{{ perfil.admin ? 'Administrador' : 'Utilizador' }}</span>
+            </dd>
+            <dt>Licença</dt>
+            <dd>
+              <span class="badge"
+                [class.badge-activa]="perfil.licencaEstado === 'activa'"
+                [class.badge-pendente]="perfil.licencaEstado === 'pendente'"
+                [class.badge-expirada]="perfil.licencaEstado === 'expirada'">
+                {{ getLicencaLabel(perfil.licencaEstado) }}
+              </span>
+            </dd>
+            <dt>Válida até</dt>
+            <dd>{{ formatDate(perfil.validaAte) }}</dd>
+            <dt>Estado</dt>
+            <dd>
+              <span class="badge" [class.badge-activo]="!perfil.bloqueado" [class.badge-bloqueado]="perfil.bloqueado">
+                {{ perfil.bloqueado ? 'Bloqueado' : 'Activo' }}
+              </span>
+            </dd>
+          </dl>
+          @if (!perfil.admin) {
+            <div class="panel-actions">
+              @if (perfil.bloqueado) {
+                <button
+                  type="button"
+                  class="btn btn-success"
+                  [disabled]="actionLoadingId() === perfil.id"
+                  (click)="desbloquear(perfil)"
+                >
+                  {{ actionLoadingId() === perfil.id ? 'A processar...' : 'Desbloquear' }}
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  class="btn btn-warn"
+                  [disabled]="actionLoadingId() === perfil.id"
+                  (click)="bloquear(perfil)"
+                >
+                  {{ actionLoadingId() === perfil.id ? 'A processar...' : 'Bloquear' }}
+                </button>
+              }
+            </div>
+          }
+        </section>
+      </div>
+    </div>
+  }
+</div>

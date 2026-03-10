@@ -2,7 +2,7 @@
   <div class="app-shell">
     <aside class="sidebar" [class.collapsed]="sidebarCollapsed()" [class.visible-mobile]="sidebarOpen()">
       <div class="sidebar-header">
-        <a routerLink="/dashboard" class="brand">
+        <a [routerLink]="auth.isAdmin() ? '/admin-dashboard' : '/dashboard'" class="brand">
           <img src="/logotipo.png" alt="Chef Control" class="brand-logo" />
           <div class="brand-inner">
             <span class="brand-text">Chef Control</span>
@@ -18,46 +18,129 @@
         </button>
       </div>
       <nav class="sidebar-nav">
-        <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
-          <app-icon name="dashboard" />
-          <span class="nav-label">Dashboard</span>
-        </a>
         @if (auth.isAdmin()) {
+          <a routerLink="/admin-dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
+            <app-icon name="dashboard" />
+            <span class="nav-label">Painel</span>
+          </a>
           <a routerLink="/gestao-licencas" routerLinkActive="active" class="nav-item">
-            <app-icon name="chart" />
-            <span class="nav-label">Gestão de licenças</span>
+            <app-icon name="user" />
+            <span class="nav-label">Licenças</span>
+          </a>
+          <a routerLink="/admin-logs" routerLinkActive="active" class="nav-item">
+            <app-icon name="clock" />
+            <span class="nav-label">Logs de acesso</span>
           </a>
           <a routerLink="/admin-encomendas" routerLinkActive="active" class="nav-item">
             <app-icon name="list" />
-            <span class="nav-label">Encomendas</span>
+            <span class="nav-label">Todas as encomendas</span>
           </a>
           <a routerLink="/satisfacao" routerLinkActive="active" class="nav-item">
-            <app-icon name="user" />
-            <span class="nav-label">Satisfação</span>
+            <app-icon name="chart" />
+            <span class="nav-label">Avaliação dos clientes</span>
+          </a>
+          <a routerLink="/admin-ranking" routerLinkActive="active" class="nav-item">
+            <app-icon name="chart" />
+            <span class="nav-label">Ranking</span>
           </a>
           <a routerLink="/gestao-notificacoes" routerLinkActive="active" class="nav-item">
             <app-icon name="bell" />
-            <span class="nav-label">Notificações</span>
+            <span class="nav-label">Notificações do sistema</span>
+          </a>
+          <a routerLink="/admin-novos-utilizadores" routerLinkActive="active" class="nav-item">
+            <app-icon name="add" />
+            <span class="nav-label">Pendentes de aprovação</span>
+            @if (adminStats.pendingCount() > 0) {
+              <span class="nav-badge">{{ adminStats.pendingCount() }}</span>
+            }
+          </a>
+          <a routerLink="/admin-perfis" routerLinkActive="active" class="nav-item">
+            <app-icon name="user" />
+            <span class="nav-label">Utilizadores e perfis</span>
+          </a>
+          <a routerLink="/admin-configuracoes" routerLinkActive="active" class="nav-item">
+            <app-icon name="settings" />
+            <span class="nav-label">Configurações</span>
           </a>
         } @else {
-          <a routerLink="/nova-encomenda" routerLinkActive="active" class="nav-item">
-            <app-icon name="add" />
-            <span class="nav-label">Nova Encomenda</span>
+          <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
+            <app-icon name="dashboard" />
+            <span class="nav-label">Dashboard</span>
           </a>
-          <a routerLink="/encomendas" routerLinkActive="active" class="nav-item">
-            <app-icon name="list" />
-            <span class="nav-label">Encomendas</span>
+          <div class="nav-group">
+            <button type="button" class="nav-item nav-group-toggle" (click)="toggleLembretes()">
+              <app-icon name="bell" />
+              <span class="nav-label">Lembretes</span>
+              @if (reminderCount() > 0) {
+                <span class="nav-badge">{{ reminderCount() }}</span>
+              }
+              <app-icon name="chevron-down" class="nav-chevron" [class.rotated]="!lembretesExpanded()" />
+            </button>
+            @if (lembretesExpanded()) {
+              <div class="nav-sub">
+                <a routerLink="/calendario" routerLinkActive="active" class="nav-item nav-sub-item">Criar</a>
+                <a routerLink="/lembretes" routerLinkActive="active" class="nav-item nav-sub-item">Visualizar</a>
+              </div>
+            }
+          </div>
+          <div class="nav-group">
+            <button type="button" class="nav-item nav-group-toggle" (click)="toggleEncomendas()">
+              <app-icon name="list" />
+              <span class="nav-label">Encomendas</span>
+              @if (orderCount() > 0) {
+                <span class="nav-badge">{{ orderCount() }}</span>
+              }
+              <app-icon name="chevron-down" class="nav-chevron" [class.rotated]="!encomendasExpanded()" />
+            </button>
+            @if (encomendasExpanded()) {
+              <div class="nav-sub">
+                <a routerLink="/nova-encomenda" routerLinkActive="active" class="nav-item nav-sub-item">Cadastro</a>
+                <a routerLink="/encomendas" routerLinkActive="active" class="nav-item nav-sub-item">Visualizar <span class="nav-badge-inline">@if (orderCount() > 0) { {{ orderCount() }} }</span></a>
+                <a routerLink="/despesas-variaveis" routerLinkActive="active" class="nav-item nav-sub-item">Despesas eventuais</a>
+                <a routerLink="/gestao-dividas" routerLinkActive="active" class="nav-item nav-sub-item">Gestão de dívidas @if (debtCount() > 0) { <span class="nav-badge-inline">{{ debtCount() }}</span> }</a>
+              </div>
+            }
+          </div>
+          <a routerLink="/relatorios" routerLinkActive="active" class="nav-item">
+            <app-icon name="chart" />
+            <span class="nav-label">Relatório</span>
           </a>
+          <a routerLink="/retiradas" routerLinkActive="active" class="nav-item">
+            <app-icon [name]="retiradasIcon" />
+            <span class="nav-label">Retiradas</span>
+          </a>
+          <a routerLink="/clientes" routerLinkActive="active" class="nav-item">
+            <app-icon name="user" />
+            <span class="nav-label">Clientes</span>
+          </a>
+          @if (licenseStatus()) {
+            <div class="sidebar-license">
+              <div class="license-header">
+                <span class="license-label">Minha Licença</span>
+                <span class="license-badge" [class.paid]="licenseStatus()?.status === 'paid'" [class.pending]="licenseStatus()?.status === 'pending'">
+                  {{ licenseStatus()?.status === 'paid' ? 'Activa' : 'Pendente' }}
+                </span>
+              </div>
+              @if (licenseStatus()?.validUntil) {
+                <div class="license-expiry">
+                  <span class="license-expiry-label">Expira em</span>
+                  <span class="license-expiry-date">{{ formatLicenseExpiry(licenseStatus()?.validUntil) }}</span>
+                </div>
+              }
+              @if (licenseStatus()?.status === 'pending') {
+                <div class="license-payment">
+                  <span class="license-amount">{{ licenseStatus()?.amount | number:'1.0-0' }} MZN</span>
+                  <span class="license-payment-hint">via e-Mola {{ licenseStatus()?.eMolaPhone || '' }}</span>
+                </div>
+              }
+              <a routerLink="/minha-licenca" class="license-link">Ver histórico e pagamentos</a>
+            </div>
+          }
         }
-        <a routerLink="/relatorios" routerLinkActive="active" class="nav-item">
-          <app-icon name="chart" />
-          <span class="nav-label">Relatórios</span>
-        </a>
-        <a routerLink="/perfil" routerLinkActive="active" class="nav-item">
-          <app-icon name="user" />
-          <span class="nav-label">Perfil</span>
-        </a>
       </nav>
+      <div class="sidebar-datetime">
+        <span class="sidebar-datetime-value" title="Data e hora">{{ currentDateTime() }}</span>
+      </div>
       <div class="sidebar-footer">
         <button type="button" class="nav-item logout" (click)="auth.logout()">
           <app-icon name="logout" />
@@ -73,17 +156,41 @@
         <button type="button" class="navbar-menu-btn" (click)="openSidebar()" aria-label="Abrir menu">
           <app-icon name="menu" />
         </button>
-        <div class="navbar-brand">
-          <img src="/logotipo.png" alt="Chef Control" class="navbar-brand-logo" />
-          <span class="navbar-brand-text">Chef Control</span>
-          <span class="navbar-brand-tagline">Gestão de doces e salgados</span>
+        <div class="navbar-page-info">
+          <h2 class="navbar-title">{{ getPageTitle() }}</h2>
+          <nav class="navbar-breadcrumb" aria-label="Navegação">
+            @if (auth.isAdmin()) {
+              <a routerLink="/admin-dashboard" class="breadcrumb-item">Painel</a>
+            } @else {
+              <a routerLink="/dashboard" class="breadcrumb-item">Início</a>
+            }
+            @if (getPageTitle() !== 'Dashboard' && getPageTitle() !== 'Painel de administração' && getPageTitle() !== 'Chef Control') {
+              <span class="breadcrumb-sep">/</span>
+              <span class="breadcrumb-current">{{ getPageTitle() }}</span>
+            }
+          </nav>
         </div>
-        <span class="navbar-divider" aria-hidden="true"></span>
-        <h1 class="navbar-title">{{ getPageTitle() }}</h1>
+        <div class="navbar-spacer"></div>
         <div class="navbar-right" (click)="$event.stopPropagation()">
-          <span class="navbar-datetime" title="Data e hora">{{ currentDateTime() }}</span>
-          <span class="navbar-divider" aria-hidden="true"></span>
-          <a routerLink="/dashboard" class="navbar-link" title="Ir para o início">Início</a>
+          <div class="navbar-lang-toggle" title="Idioma">
+            <button type="button" class="navbar-toggle-btn" (click)="lang.toggle()" [attr.aria-label]="lang.currentLang() === 'pt' ? 'Mudar para Inglês' : 'Change to Portuguese'">
+              <span class="lang-option" [class.active]="lang.currentLang() === 'pt'">PT</span>
+              <span class="lang-sep">/</span>
+              <span class="lang-option" [class.active]="lang.currentLang() === 'en'">EN</span>
+            </button>
+          </div>
+          <div class="navbar-theme-toggle" title="Tema">
+            <button type="button" class="navbar-toggle-btn" (click)="theme.toggle()" [attr.aria-label]="theme.isDark() ? 'Modo claro' : 'Modo escuro'">
+              @if (theme.isDark()) {
+                <app-icon name="sun" />
+              } @else {
+                <app-icon name="moon" />
+              }
+            </button>
+          </div>
+          <a routerLink="/lembretes" class="navbar-icon-btn" aria-label="Lembretes" title="Lembretes">
+            <app-icon name="calendar" />
+          </a>
           <div class="navbar-dropdown-wrap">
             <button type="button" class="navbar-icon-btn" (click)="toggleNotifications($event); $event.stopPropagation()" aria-label="Notificações" [class.active]="notificationsOpen()">
               <app-icon name="bell" />
@@ -102,10 +209,6 @@
             </button>
             @if (userMenuOpen()) {
               <div class="navbar-dropdown user-dropdown">
-                <a routerLink="/perfil" class="dropdown-item" (click)="closeNavDropdowns()">
-                  <app-icon name="user" />
-                  Ver perfil
-                </a>
                 <button type="button" class="dropdown-item logout" (click)="auth.logout(); closeNavDropdowns()">
                   <app-icon name="logout" />
                   Sair
@@ -120,30 +223,58 @@
       </main>
     </div>
   </div>
+
+  <!-- Popup de alerta ao fazer login (encomendas + lembretes) -->
+  @if (orderAlertsPopup.visible() && !auth.isAccountFinalized()) {
+    <div class="order-alerts-overlay" (click)="orderAlertsPopup.close()">
+      <div class="order-alerts-popup" (click)="$event.stopPropagation()">
+        <button type="button" class="popup-close" (click)="orderAlertsPopup.close()" aria-label="Fechar">×</button>
+        <div class="popup-header">
+          <app-icon name="calendar" />
+          <h3>Lembretes</h3>
+          <p class="popup-subtitle">
+            @if (orderAlertsPopup.upcomingOrders().length > 0 && orderAlertsPopup.upcomingRemindersWithDays().length > 0) {
+              {{ orderAlertsPopup.upcomingOrders().length }} encomenda(s) e {{ orderAlertsPopup.upcomingRemindersWithDays().length }} lembrete(s) nos próximos dias.
+            } @else if (orderAlertsPopup.upcomingOrders().length > 0) {
+              {{ orderAlertsPopup.upcomingOrders().length }} encomenda(s) para entregar nos próximos 7 dias.
+            } @else {
+              {{ orderAlertsPopup.upcomingRemindersWithDays().length }} lembrete(s) — compre material a tempo.
+            }
+          </p>
+        </div>
+        <ul class="popup-list">
+          @for (o of orderAlertsPopup.upcomingOrders().slice(0, 4); track o.id) {
+            <li class="popup-item">
+              <span class="popup-client">{{ o.clientName }}</span>
+              <span class="popup-product">{{ displayName(o) }}</span>
+              <span class="popup-date">{{ o.deliveryDate ? (o.deliveryDate | date:'dd/MM') : '—' }}</span>
+            </li>
+          }
+          @for (r of orderAlertsPopup.upcomingRemindersWithDays().slice(0, 4); track r.reminder.id) {
+            <li class="popup-item popup-item-reminder">
+              <span class="popup-client">{{ r.reminder.clientName }}</span>
+              <span class="popup-product">Faltam {{ r.daysUntil }} dia(s) — compre material</span>
+              <span class="popup-date">{{ r.reminder.deliveryDate | date:'dd/MM' }}</span>
+            </li>
+          }
+        </ul>
+        @if (orderAlertsPopup.upcomingOrders().length + orderAlertsPopup.upcomingRemindersWithDays().length > 8) {
+          <p class="popup-more">... e mais.</p>
+        }
+        <p class="popup-advice">Ver calendário ou todos os lembretes.</p>
+        <div class="popup-actions">
+          <button type="button" class="btn btn-primary" (click)="orderAlertsPopup.goToCalendar()">Calendário</button>
+          <a routerLink="/lembretes" (click)="orderAlertsPopup.close()" class="btn btn-secondary">Todos os lembretes</a>
+          <button type="button" class="btn btn-secondary" (click)="orderAlertsPopup.goToOrders()">Encomendas</button>
+        </div>
+      </div>
+    </div>
+  }
 } @else {
   <router-outlet />
 }
 
-@if (auth.isLoggedIn() && auth.isAccountFinalized() && !auth.isAdmin() && !auth.isLicenseCodeValidated()) {
-  <div class="license-code-overlay">
-    <div class="license-code-popup">
-      <h2>Código da licença</h2>
-      <p class="hint">O código está associado ao seu NUIT (documento). Introduza o código de 9 caracteres que recebeu após o pagamento.</p>
-      <input
-        type="text"
-        maxlength="9"
-        placeholder="Ex: AB12CD9XY"
-        [value]="licenseCode()"
-        (input)="licenseCode.set($any($event.target).value.toUpperCase()); licenseCodeError.set('')"
-        (keydown.enter)="submitLicenseCode(licenseCode())"
-      />
-      @if (licenseCodeError()) {
-        <p class="error">{{ licenseCodeError() }}</p>
-      }
-      <button type="button" class="btn btn-primary" (click)="submitLicenseCode(licenseCode())">
-        Validar
-      </button>
-    </div>
-  </div>
-}
+<!-- Snackbar global para toasts em todas as páginas -->
+<app-snackbar />
+
 

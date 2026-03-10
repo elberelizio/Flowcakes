@@ -1,0 +1,13 @@
+@use '../login/login-layout';
+@use '../login/login-form';
+@use '../login/login-popup-responsive';
+
+.recover-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin: 0 0 0.75rem 0;
+}
+

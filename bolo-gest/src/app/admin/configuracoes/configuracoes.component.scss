@@ -1,0 +1,79 @@
+.configuracoes-page {
+  padding: 1rem;
+  max-width: 42rem;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  .header-main {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .subtitle {
+    margin: 0.35rem 0 0;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+}
+
+.btn-back {
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  background: var(--secondary);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.config-section {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+
+  h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+}
+
+.intro {
+  margin: 0 0 1rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.coming-soon-card {
+  padding: 1rem;
+  background: var(--secondary);
+  border-radius: var(--radius);
+  text-align: center;
+
+  .coming-soon {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+}

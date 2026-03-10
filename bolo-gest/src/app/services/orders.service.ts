@@ -14,11 +14,16 @@ export interface OrderCreateInput {
   unitsPerKg?: number;
   valueCharged: number;
   valuePaid: number;
+  /** Desconto inicial concedido ao cliente (registado como despesa eventual) */
+  discount?: number;
   ingredients: { name: string; unitValue: number }[];
   energyCost: number;
   deliveryDate?: string; // Data de entrega (ISO date)
-  hasDelivery?: boolean; // Se tem transporte
-  deliveryCost?: number; // Custo de transporte
+  clientAddress?: string; // Endereço do cliente
+  pickupAddress?: string; // Endereço de recolha
+  deliveryAddress?: string; // Onde deixar (quando hasDelivery)
+  hasDelivery?: boolean; // Entrega ao cliente (Sim) ou recolha (Não)
+  deliveryCost?: number; // Preço da viagem (quando hasDelivery)
   observations?: string;
 }
 
@@ -39,6 +44,9 @@ interface OrderRequest {
   delivered: boolean;
   ingredientIds: string[];
   deliveryDate?: string; // Data de entrega (ISO date)
+  clientAddress?: string;
+  pickupAddress?: string;
+  deliveryAddress?: string;
   hasDelivery?: boolean; // Se tem transporte
   deliveryCost?: number; // Custo de transporte
   orderStatus?: string; // Estado do pedido
@@ -104,17 +112,24 @@ export class OrdersService {
   }
 
   create(input: OrderCreateInput): Promise<Order | null> {
+    this.error.set(null);
     // Custo total inicial: apenas ingredientes + energia
     // Delivery NÃO entra aqui - será incluído nas despesas variáveis depois
     const costTotal =
       input.ingredients.reduce((s, i) => s + i.unitValue, 0) + (input.energyCost || 0);
     
-    // Despesas variáveis: incluir delivery se marcado
+    // Despesas variáveis: incluir delivery e outros custos eventuais (como desconto inicial)
     const variableExpenses: { name: string; amount: number }[] = [];
     if (input.hasDelivery && input.deliveryCost && input.deliveryCost > 0) {
       variableExpenses.push({
         name: 'Delivery',
         amount: input.deliveryCost,
+      });
+    }
+    if (input.discount && input.discount > 0) {
+      variableExpenses.push({
+        name: 'Desconto',
+        amount: input.discount,
       });
     }
     
@@ -161,6 +176,9 @@ export class OrdersService {
       delivered: false,
       ingredientIds: [],
       deliveryDate: input.deliveryDate,
+      clientAddress: input.clientAddress?.trim() || undefined,
+      pickupAddress: input.pickupAddress?.trim() || undefined,
+      deliveryAddress: input.deliveryAddress?.trim() || undefined,
       hasDelivery: input.hasDelivery || false,
       deliveryCost: input.hasDelivery && input.deliveryCost ? input.deliveryCost : 0,
       orderStatus: 'ordered', // Estado inicial: pedido feito
@@ -179,7 +197,14 @@ export class OrdersService {
         }
         return null;
       })
-      .catch(() => null);
+      .catch((err) => {
+        const body = err?.error;
+        const msg = (typeof body === 'object' && body?.message)
+          ? String(body.message)
+          : (typeof body === 'string' ? body : err?.message ?? 'Erro ao criar encomenda');
+        this.error.set(msg);
+        return null;
+      });
   }
 
   updatePayment(orderId: string, valuePaid: number): Promise<boolean> {
@@ -267,6 +292,9 @@ export class OrdersService {
       cakeName: order.cakeName,
       cakeSize: order.cakeSize,
       deliveryDate: order.deliveryDate,
+      clientAddress: order.clientAddress,
+      pickupAddress: order.pickupAddress,
+      deliveryAddress: order.deliveryAddress,
       hasDelivery: order.hasDelivery || false,
       deliveryCost: order.deliveryCost || 0,
       orderStatus: order.orderStatus || 'ordered',
@@ -314,6 +342,9 @@ export class OrdersService {
       cakeName: order.cakeName,
       cakeSize: order.cakeSize,
       deliveryDate: order.deliveryDate,
+      clientAddress: order.clientAddress,
+      pickupAddress: order.pickupAddress,
+      deliveryAddress: order.deliveryAddress,
       hasDelivery: order.hasDelivery || false,
       deliveryCost: order.deliveryCost || 0,
       orderStatus: 'cancelled',
@@ -372,6 +403,9 @@ export class OrdersService {
       cakeName: order.cakeName,
       cakeSize: order.cakeSize,
       deliveryDate: updates.deliveryDate !== undefined ? updates.deliveryDate : order.deliveryDate,
+      clientAddress: order.clientAddress,
+      pickupAddress: order.pickupAddress,
+      deliveryAddress: order.deliveryAddress,
       hasDelivery: order.hasDelivery || false,
       deliveryCost: order.deliveryCost || 0,
       orderStatus: newOrderStatus,
@@ -410,20 +444,13 @@ export class OrdersService {
     }
     
     body.profit = Math.max(0, newProfit);
-    
-    console.log('Enviando PUT para atualizar encomenda:', body);
-    console.log('Despesas variáveis no body:', body.variableExpenses);
-    
+
     return this.http
       .put<OrderApi>(`${API_URL}/orders/${orderId}`, body)
       .toPromise()
       .then((updated) => {
         if (updated) {
-          console.log('Resposta do backend:', updated);
-          console.log('Despesas variáveis na resposta:', updated.variableExpenses);
           const updatedOrder = apiToOrder(updated);
-          console.log('Order convertido:', updatedOrder);
-          console.log('Despesas variáveis no order convertido:', updatedOrder.variableExpenses);
           this.orders.update((list) =>
             list.map((o) => (o.id === orderId ? updatedOrder : o))
           );
@@ -483,6 +510,41 @@ export class OrdersService {
     return this.orders().filter((o) => o.paymentStatus !== 'pago');
   }
 
+  /** Encomendas por data de entrega (usa deliveryDate, sem duplicar dados) */
+  ordersByDeliveryDate(date: Date): Order[] {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    const day = `${y}-${m}-${d}`;
+    return this.orders().filter((o) => {
+      if (o.isCancelled) return false;
+      const orderDay = o.deliveryDate?.split('T')[0];
+      return orderDay === day;
+    });
+  }
+
+  /** Encomendas com entrega nos próximos N dias (a partir de hoje) */
+  ordersByDeliveryDateRange(daysAhead: number): Order[] {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const end = new Date(today);
+    end.setDate(today.getDate() + daysAhead);
+    end.setHours(23, 59, 59, 999);
+
+    return this.orders()
+      .filter((o) => {
+        if (o.isCancelled) return false;
+        if (!o.deliveryDate) return false;
+        const d = new Date(o.deliveryDate);
+        return d >= today && d <= end;
+      })
+      .sort((a, b) => {
+        const tA = new Date(a.deliveryDate!).getTime();
+        const tB = new Date(b.deliveryDate!).getTime();
+        return tA - tB;
+      });
+  }
+
   getLast7DaysStats(): { date: string; label: string; profit: number; count: number }[] {
     const result: { date: string; label: string; profit: number; count: number }[] = [];
     const today = new Date();
@@ -520,6 +582,7 @@ export class OrdersService {
 interface OrderApi {
   id: string;
   createdAt: string;
+  orderNo?: number;
   clientName: string;
   category?: string;
   subcategory?: string;
@@ -538,6 +601,9 @@ interface OrderApi {
   cakeName?: string;
   cakeSize?: string;
   deliveryDate?: string; // Data de entrega (ISO date)
+  clientAddress?: string;
+  pickupAddress?: string;
+  deliveryAddress?: string;
   hasDelivery?: boolean; // Se tem transporte
   deliveryCost?: number; // Custo de transporte
   orderStatus?: string; // Estado do pedido: ordered, in_progress, completed, cancelled
@@ -549,6 +615,7 @@ function apiToOrder(a: OrderApi): Order {
   return {
     id: a.id,
     createdAt: a.createdAt,
+    orderNo: a.orderNo,
     clientName: a.clientName,
     category: a.category as Order['category'],
     subcategory: a.subcategory,
@@ -567,6 +634,9 @@ function apiToOrder(a: OrderApi): Order {
     cakeName: a.cakeName,
     cakeSize: a.cakeSize,
     deliveryDate: a.deliveryDate, // Data de entrega (ISO date)
+    clientAddress: a.clientAddress,
+    pickupAddress: a.pickupAddress,
+    deliveryAddress: a.deliveryAddress,
     hasDelivery: a.hasDelivery || false, // Se tem transporte
     deliveryCost: a.deliveryCost || 0, // Custo de transporte
     orderStatus: (a.orderStatus as Order['orderStatus']) || 'ordered', // Estado do pedido
@@ -576,41 +646,3 @@ function apiToOrder(a: OrderApi): Order {
   };
 }
 
-/** Converter OrderDB (IndexedDB) para Order (frontend) */
-function dbToOrder(db: any): Order {
-  // Converter paymentStatus do backend para o formato do frontend
-  let paymentStatus: PaymentStatus = 'pendente';
-  if (db.paymentStatus === 'paid') {
-    paymentStatus = 'pago';
-  } else if (db.valuePaid > 0 && db.valuePaid < db.valueCharged) {
-    paymentStatus = 'parcial';
-  }
-
-  return {
-    id: db.id,
-    createdAt: db.createdAt,
-    clientName: db.clientName,
-    category: db.category as Order['category'],
-    subcategory: db.subcategory,
-    productName: db.productName,
-    size: db.size,
-    quantityKg: db.quantityKg,
-    unitsPerKg: db.unitsPerKg,
-    valueCharged: db.valueCharged,
-    valuePaid: db.valuePaid,
-    costTotal: db.costTotal,
-    profit: db.profit,
-    paymentStatus,
-    delivered: db.delivered,
-    ingredientIds: db.ingredientIds || [],
-    observations: db.observations,
-    cakeName: db.cakeName,
-    cakeSize: db.cakeSize,
-    date: db.date,
-    deliveryDate: db.deliveryDate,
-    orderStatus: db.orderStatus,
-    // Mapear isCancelled: se não vier do DB, verificar orderStatus
-    isCancelled: db.isCancelled !== undefined ? db.isCancelled : (db.orderStatus === 'cancelled'),
-    quantity: db.quantity,
-  };
-}

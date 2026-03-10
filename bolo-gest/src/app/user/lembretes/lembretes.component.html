@@ -1,0 +1,39 @@
+<div class="lembretes-page">
+  <header class="page-header">
+    <a routerLink="/calendario" class="btn-back">← Criar lembrete</a>
+    <div class="header-content">
+      <h1>Visualizar lembretes</h1>
+      <p class="subtitle">Lista de lembretes por data. Pode apagar quando cancelar.</p>
+    </div>
+  </header>
+
+  @if (reminderService.reminders().length === 0) {
+    <section class="card empty-card">
+      <p>Nenhum lembrete. Vá a <a routerLink="/calendario">Lembretes → Criar</a> e crie um.</p>
+    </section>
+  } @else {
+    <section class="card list-section">
+      @for (group of remindersByDate(); track group.date) {
+        <div class="date-group">
+          <h3 class="date-title">{{ formatDate(group.date) }}</h3>
+          <ul class="reminder-list">
+            @for (r of group.reminders; track r.id) {
+              <li class="reminder-item">
+                <div class="reminder-info">
+                  <span class="reminder-name">{{ r.clientName }}</span>
+                  @if (r.address) {
+                    <span class="reminder-address">{{ r.address }}</span>
+                  }
+                  @if (r.description) {
+                    <span class="reminder-desc">{{ r.description }}</span>
+                  }
+                </div>
+                <button type="button" class="btn-remove" (click)="remove(r.id)" title="Apagar lembrete">×</button>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </section>
+  }
+</div>

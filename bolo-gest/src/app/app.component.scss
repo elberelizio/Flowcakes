@@ -1,15 +1,27 @@
-// Shell do app – imports modulares (cada partial < 200 linhas)
 @use './core/styles/sidebar';
 @use './core/styles/navbar';
 @use './core/styles/dropdowns';
 @use './core/styles/layout';
-@use './core/styles/license-popup';
+@use './core/styles/order-alerts-popup';
 @use './core/styles/responsive';
 @use './core/styles/mobile-responsive';
 
+// Garantir que a raiz ocupe o ecrã (também quando só há router-outlet, ex. login)
+:host {
+  display: block;
+  min-height: 100vh;
+  background: var(--secondary, #f8fafc);
+}
+
+/* Safe area para dispositivos com notch (Android/iOS) */
 .app-shell {
   min-height: 100vh;
+  min-height: calc(100vh - env(safe-area-inset-bottom));
   display: flex;
   position: relative;
   background: var(--secondary, #f8fafc);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }

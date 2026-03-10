@@ -1,0 +1,57 @@
+<div class="retiradas-page">
+  <header class="page-header">
+    <a routerLink="/dashboard" class="btn-back">← Dashboard</a>
+    <div class="header-content">
+      <h1>Retiradas de caixa</h1>
+      <p class="subtitle">Registe o valor que tira do negócio (ex.: para uso pessoal, compras). Assim consegue ver quanto ficou disponível na empresa.</p>
+    </div>
+  </header>
+
+  <section class="card form-card">
+    <h2 class="form-title">Nova retirada</h2>
+    <form class="retiradas-form" (ngSubmit)="submit()">
+      <label class="field">
+        <span class="field-label">Valor (MZN)</span>
+        <input type="number" step="0.01" min="0.01" [(ngModel)]="amount" name="amount" placeholder="Ex.: 5000" />
+      </label>
+      <label class="field">
+        <span class="field-label">Data da retirada</span>
+        <input type="date" [(ngModel)]="withdrawalDate" name="withdrawalDate" />
+      </label>
+      <label class="field">
+        <span class="field-label">Motivo (opcional)</span>
+        <input type="text" [(ngModel)]="description" name="description" placeholder="Ex.: Compra de material, uso pessoal" />
+      </label>
+      <button type="submit" class="btn btn-primary">Registar retirada</button>
+    </form>
+  </section>
+
+  <section class="card total-card">
+    <h3>Total retirado</h3>
+    <p class="total-amount">{{ withdrawalService.totalWithdrawn() | number:'1.0-0' }} MZN</p>
+  </section>
+
+  @if (withdrawalService.withdrawals().length === 0) {
+    <section class="card empty-card">
+      <p>Nenhuma retirada registada. Use o formulário acima para registar valores que tirar da caixa.</p>
+    </section>
+  } @else {
+    <section class="card list-card">
+      <h3>Histórico</h3>
+      <ul class="withdrawal-list">
+        @for (w of withdrawalService.withdrawals(); track w.id) {
+          <li class="withdrawal-item">
+            <div class="withdrawal-info">
+              <span class="withdrawal-amount">{{ w.amount | number:'1.0-0' }} MZN</span>
+              <span class="withdrawal-date">{{ formatDate(w.withdrawalDate) }}</span>
+              @if (w.description) {
+                <span class="withdrawal-desc">{{ w.description }}</span>
+              }
+            </div>
+            <button type="button" class="btn-remove" (click)="remove(w)" title="Apagar">×</button>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+</div>

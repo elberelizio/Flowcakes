@@ -1,0 +1,43 @@
+.quick-actions-section {
+  .section-heading {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.action-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.25rem;
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(13, 148, 136, 0.12);
+  }
+
+  .action-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary);
+  }
+
+  .action-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+}

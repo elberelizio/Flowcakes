@@ -3,17 +3,17 @@ export type PaymentStatus = 'pendente' | 'parcial' | 'pago';
 /** Tamanho para doces: por nome ou por número (ex: 15, 20 cm) */
 export type ProductSize = 'Pequeno' | 'Médio' | 'Grande' | 'kg' | (string & {});
 
-/** Tamanhos por nome (pequeno, médio, grande, kg) */
-export const DOCES_SIZES_BY_NAME = ['Pequeno', 'Médio', 'Grande', 'kg'] as const;
+/** Tamanhos por escala (pequeno, médio, grande) */
+export const DOCES_SIZES_BY_NAME = ['Pequeno', 'Médio', 'Grande'] as const;
 
-/** Tamanhos por número (ex: diâmetro em cm) — cada confeiteiro pode usar a sua escala */
-export const DOCES_SIZES_BY_NUMBER = [15, 20, 25, 30, 35, 40] as const;
+/** Tamanhos por número (ex: forma 15, 20, 47) */
+export const DOCES_SIZES_BY_NUMBER = [15, 20, 47] as const;
 
 /** Categoria do pedido */
 export type OrderCategory = 'doces' | 'salgados';
 
-/** Subcategorias de Doces */
-export const DOCES_SUBCATEGORIES = ['Bolos', 'Biscoitos', 'Outros doces'] as const;
+/** Subcategorias de Doces: Bolo, Biscoitos, Outros */
+export const DOCES_SUBCATEGORIES = ['Bolo', 'Biscoitos', 'Outros'] as const;
 /** Subcategorias de Salgados */
 export const SALGADOS_SUBCATEGORIES = ['Chamussas', 'Recois', 'Outros salgados típicos'] as const;
 
@@ -23,6 +23,8 @@ export type SalgadosSubcategory = (typeof SALGADOS_SUBCATEGORIES)[number];
 export interface Order {
   id: string;
   createdAt: string; // ISO date
+  /** Número sequencial da encomenda (por utilizador) */
+  orderNo?: number;
   clientName: string;
   /** Categoria: doces ou salgados (opcional para pedidos antigos) */
   category?: OrderCategory;
@@ -51,8 +53,14 @@ export interface Order {
   /** Campos do backend (compatibilidade) */
   date?: string; // ISO date (data do pedido)
   deliveryDate?: string; // ISO date (data de entrega)
+  /** Endereço do cliente (referência) */
+  clientAddress?: string;
+  /** Endereço de recolha (onde o cliente vem buscar) */
+  pickupAddress?: string;
+  /** Onde deixar a encomenda (quando hasDelivery = true) */
+  deliveryAddress?: string;
   hasDelivery?: boolean; // Se tem transporte/delivery
-  deliveryCost?: number; // Custo de transporte/delivery (incluído nas despesas variáveis)
+  deliveryCost?: number; // Custo de transporte/delivery (preço da viagem)
   orderStatus?: 'ordered' | 'in_progress' | 'completed' | 'cancelled'; // Status do pedido
   isCancelled?: boolean; // Se foi cancelado
   quantity?: number; // Quantidade (backend)
@@ -89,4 +97,15 @@ export function orderDisplaySize(o: Order): string {
   if (o.size) return o.size;
   if (o.cakeSize) return o.cakeSize;
   return '—';
+}
+
+/** Etiqueta do estado do pedido para exibição */
+export function getOrderStatusLabel(status: string | undefined): string {
+  switch (status) {
+    case 'ordered': return 'Encomenda feita';
+    case 'in_progress': return 'Em processo';
+    case 'completed': return 'Finalizada';
+    case 'cancelled': return 'Cancelada';
+    default: return status ?? 'Encomenda feita';
+  }
 }

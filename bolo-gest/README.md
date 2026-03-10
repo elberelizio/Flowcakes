@@ -1,7 +1,7 @@
 # Chef Control
 
 MVP para gestão de pedidos (bolos, salgados e mais): **material, preço e lucro**.  
-Angular 19, PWA e layout responsivo (mobile, tablet e desktop).
+Angular 19 e layout responsivo (mobile, tablet e desktop).
 
 ## Funcionalidades
 
@@ -22,18 +22,10 @@ npm start
 # ou: ng serve
 # Abrir http://localhost:4200
 
-# Build de produção (inclui PWA)
+# Build de produção
 ng build
-# Saída em dist/chef-control/browser/
+# Saída em dist/chef-control/
 ```
-
-## PWA
-
-O projeto está configurado como PWA. O Service Worker é ativado apenas em **build de produção**. Para testar:
-
-1. `ng build`
-2. Servir a pasta `dist/chef-control/browser` (por exemplo com `npx http-server dist/chef-control/browser -p 8080`)
-3. Abrir no browser e, se quiser, “Instalar app” / “Add to Home Screen”
 
 ## Tecnologias
 
@@ -43,7 +35,6 @@ O projeto está configurado como PWA. O Service Worker é ativado apenas em **bu
 - Signals (Auth e Orders)
 - Local Storage (MVP sem backend)
 - SCSS com variáveis CSS
-- PWA (@angular/service-worker)
 
 ## Estrutura principal
 
