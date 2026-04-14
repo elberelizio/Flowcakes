@@ -180,4 +180,8 @@ export class DespesasVariaveisComponent implements OnInit {
     const names = order.variableExpenses?.map(e => e.name).filter(n => n).join(', ');
     return `${fmt} MZN${names ? ` (${names})` : ''}`;
   }
+
+  hasVariableExpenses(order: Order): boolean {
+    return (order.variableExpenses?.length ?? 0) > 0;
+  }
 }

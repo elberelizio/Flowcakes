@@ -11,8 +11,8 @@
   </header>
 
   <section class="add-expense-card card">
-    <h2 class="section-title">Registar despesa extra</h2>
-    <p class="form-hint">Seleccione a encomenda e indique o tipo de despesa com o valor em MZN.</p>
+    <h2 class="section-title">Adicionar despesa rápida</h2>
+    <p class="form-hint">Para registo rápido: escolha a encomenda, informe o tipo de despesa e o valor em MZN.</p>
     <form [formGroup]="expenseForm" (ngSubmit)="submitExpense()" class="expense-form">
       <div class="form-grid">
         <div class="form-group">
@@ -39,7 +39,7 @@
             placeholder="Ex.: Papel decorativo, embalagem"
             class="form-input"
             maxlength="80" />
-          <span class="field-hint">Descreva o custo extra (material adicional, desconto, etc.).</span>
+          <span class="field-hint">Exemplos: Delivery, embalagem, ajudante, desconto concedido.</span>
         </div>
         <div class="form-group">
           <label for="expense-amount">Valor (MZN)</label>
@@ -54,7 +54,7 @@
         </div>
         <div class="form-group form-actions">
           <button type="submit" class="btn btn-primary" [disabled]="expenseForm.invalid || saving()">
-            {{ saving() ? 'A guardar…' : 'Adicionar despesa' }}
+            {{ saving() ? 'A guardar…' : 'Adicionar rápida' }}
           </button>
         </div>
       </div>
@@ -73,6 +73,9 @@
           (input)="filterText.set($any($event.target).value)" />
       </div>
     </div>
+    <p class="section-help">
+      <strong>Adicionar</strong>: encomenda sem despesas extras. <strong>Gerir</strong>: editar/remover despesas já registadas.
+    </p>
 
     @if (filteredOrders().length === 0) {
       <p class="empty">Nenhuma encomenda em curso. <a routerLink="/nova-encomenda">Criar encomenda</a>.</p>
@@ -100,7 +103,13 @@
                   <span class="variable-expenses-display">{{ getVariableExpensesDisplay(o) }}</span>
                 </td>
                 <td data-label="">
-                  <button type="button" class="btn btn-secondary btn-compact" (click)="openModalForOrder(o)">Gerir</button>
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-compact"
+                    (click)="openModalForOrder(o)"
+                    [title]="hasVariableExpenses(o) ? 'Editar/remover despesas desta encomenda' : 'Adicionar primeira despesa desta encomenda'">
+                    {{ hasVariableExpenses(o) ? 'Gerir' : 'Adicionar' }}
+                  </button>
                 </td>
               </tr>
             }
@@ -115,15 +124,25 @@
   <div class="modal-overlay" (click)="closeModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>Despesas extras — Nr. {{ getOrderNumber(mo) }}</h3>
+        <div class="modal-title-wrap">
+          <p class="modal-eyebrow">Encomenda #{{ getOrderNumber(mo) }}</p>
+          <h3>Despesas extras</h3>
+        </div>
         <button type="button" class="modal-close" (click)="closeModal()" aria-label="Fechar">×</button>
       </div>
       <div class="modal-body">
         <p class="modal-product">{{ mo.clientName }} — {{ displayName(mo) }}</p>
+        <p class="modal-hint">Adicione, ajuste ou remova custos extras desta encomenda.</p>
         <div class="modal-expense-form">
-          <input type="text" class="form-input" placeholder="Descrição" [value]="newExpenseName()" (input)="newExpenseName.set($any($event.target).value)" />
-          <input type="number" class="form-input form-input-amount" min="0" step="0.01" placeholder="MZN" [value]="newExpenseAmount() || ''" (input)="newExpenseAmount.set(+$any($event.target).value || 0)" />
-          <button type="button" class="btn btn-add" (click)="addExpenseInModal()">Adicionar</button>
+          <div class="modal-field">
+            <label for="modal-expense-name">Tipo de despesa</label>
+            <input id="modal-expense-name" type="text" class="form-input" placeholder="Ex.: Delivery, embalagem, desconto" [value]="newExpenseName()" (input)="newExpenseName.set($any($event.target).value)" />
+          </div>
+          <div class="modal-field modal-field-amount">
+            <label for="modal-expense-amount">Valor (MZN)</label>
+            <input id="modal-expense-amount" type="number" class="form-input form-input-amount" min="0" step="0.01" placeholder="0" [value]="newExpenseAmount() || ''" (input)="newExpenseAmount.set(+$any($event.target).value || 0)" />
+          </div>
+          <button type="button" class="btn btn-add" (click)="addExpenseInModal()">Adicionar item</button>
         </div>
         @if (modalExpenses().length === 0) {
           <p class="no-expenses">Nenhuma despesa extra nesta lista.</p>
@@ -131,14 +150,19 @@
           <div class="modal-expenses-list">
             @for (e of modalExpenses(); track $index) {
               <div class="expense-item">
-                <span class="expense-item-name">{{ e.name }}</span>
-                <span class="expense-item-amount">{{ e.amount | number:'1.0-2' }} MZN</span>
+                <div class="expense-item-main">
+                  <span class="expense-item-name">{{ e.name }}</span>
+                  <span class="expense-item-amount">{{ e.amount | number:'1.0-2' }} MZN</span>
+                </div>
                 <button type="button" class="btn btn-danger" (click)="removeExpenseInModal($index)" title="Remover">×</button>
               </div>
             }
           </div>
         }
-        <p class="modal-total"><strong>Total:</strong> {{ getModalExpensesTotal() | number:'1.0-2' }} MZN</p>
+        <div class="modal-total">
+          <span>Total de despesas</span>
+          <strong>{{ getModalExpensesTotal() | number:'1.0-2' }} MZN</strong>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
