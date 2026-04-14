@@ -28,7 +28,7 @@ import {
 export class NewOrderComponent implements OnInit {
   step: 1 | 2 = 1;
   category: OrderCategory | null = null;
-  expenseMode: 'detalhado' | 'simples' | null = null;
+  expenseMode: 'detalhado' | 'simples' | null = 'simples';
   submitError = '';
   submitting = false;
   private notification = inject(NotificationService);
@@ -42,7 +42,7 @@ export class NewOrderComponent implements OnInit {
   readonly docesSizesByName = DOCES_SIZES_BY_NAME;
   readonly docesSizesByNumber = DOCES_SIZES_BY_NUMBER;
   /** Doces: por número de forma (15, 20, 47) ou por escala (Pequeno, Médio, Grande) - null = nada selecionado */
-  sizeType: 'nome' | 'numero' | null = null;
+  sizeType: 'nome' | 'numero' | null = 'nome';
 
   form!: FormGroup;
 
@@ -133,11 +133,11 @@ export class NewOrderComponent implements OnInit {
       quantityKg: [null as number | null],
       unitsPerKg: [null as number | null],
       valueCharged: [null as number | null, [Validators.required, Validators.min(1)]],
-      valuePaid: [null as number | null, [Validators.required, Validators.min(0)]],
+      valuePaid: [0 as number | null, [Validators.required, Validators.min(0)]],
       discount: [0 as number | null, [Validators.min(0)]],
       deliveryDate: ['', Validators.required],
-      hasDelivery: [null as boolean | null],  // Nada selecionado
-      deliveryCost: [null as number | null, [Validators.min(0)]],
+      hasDelivery: [false as boolean | null],
+      deliveryCost: [0 as number | null, [Validators.min(0)]],
       observations: [''],
       expenseTotal: [0, [Validators.min(0)]],
       expenseDescription: [''],
@@ -147,14 +147,16 @@ export class NewOrderComponent implements OnInit {
 
   selectCategory(cat: OrderCategory): void {
     this.category = cat;
-    this.sizeType = null;
-    this.expenseMode = null;
+    this.sizeType = cat === 'doces' ? 'nome' : null;
+    this.expenseMode = 'simples';
     this.form.patchValue({
       subcategory: '',
-      hasDelivery: null,
-      valuePaid: null,
-      deliveryCost: null,
+      hasDelivery: false,
+      valuePaid: 0,
+      deliveryCost: 0,
       discount: 0,
+      size: '',
+      sizeNumberCustom: null,
     });
     this.ingredients.clear();
     const defaults =
@@ -251,17 +253,21 @@ export class NewOrderComponent implements OnInit {
     return parts.join(' | ');
   }
 
+  /**
+   * Evita duplicação visual entre tipo/categoria e descrição do produto
+   * (ex.: subcategoria "Bolo" + nome "Bolo de chocolate" => "de chocolate").
+   */
+  private normalizeProductName(subcategoryRaw: unknown, productNameRaw: unknown): string {
+    const subcategory = String(subcategoryRaw ?? '').trim();
+    const productName = String(productNameRaw ?? '').trim();
+    if (!subcategory || !productName) return productName;
+    const pattern = new RegExp(`^${subcategory}\\s+`, 'i');
+    return productName.replace(pattern, '').trim() || productName;
+  }
+
   async submit(): Promise<void> {
     this.submitError = '';
     if (!this.category) return;
-    if (this.form.get('hasDelivery')?.value === null || this.form.get('hasDelivery')?.value === undefined) {
-      this.submitError = 'Selecione se vai precisar de delivery (Sim ou Não).';
-      return;
-    }
-    if (this.expenseMode === null) {
-      this.submitError = 'Selecione o tipo de despesa (Resumida ou Detalhada).';
-      return;
-    }
     if (this.category === 'doces' && this.sizeType === null) {
       this.submitError = 'Selecione o tipo de tamanho (Número ou Escala).';
       return;
@@ -276,6 +282,7 @@ export class NewOrderComponent implements OnInit {
     const ingredients = this.getIngredientsForSubmit();
     const costTotal = this.getCostTotal();
     const energyCost = 0;
+    const normalizedProductName = this.normalizeProductName(raw.subcategory, raw.productName);
 
     const discount = Number(raw.discount ?? 0) || 0;
 
@@ -283,7 +290,7 @@ export class NewOrderComponent implements OnInit {
       clientName: raw.clientName,
       category: this.category,
       subcategory: raw.subcategory,
-      productName: raw.productName,
+      productName: normalizedProductName,
       size: this.isDoces ? this.getSizeValueForSubmit() : undefined,
       quantityKg: this.isSalgados && raw.quantityKg != null ? Number(raw.quantityKg) : undefined,
       unitsPerKg:

@@ -643,6 +643,24 @@
   margin-bottom: 0.35rem;
 }
 
+.reminders-card__close {
+  margin-left: auto;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card-bg);
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.reminders-card__close:hover {
+  color: var(--text);
+  border-color: var(--primary);
+}
+
 .reminders-card__icon {
   width: 44px;
   height: 44px;
@@ -840,6 +858,29 @@
 
 .reminders-card--top {
   margin-bottom: 0;
+}
+
+.reminders-card--floating {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  width: min(28rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  z-index: 900;
+  margin: 0;
+  animation: remindersFloatIn 0.25s ease-out;
+}
+
+@keyframes remindersFloatIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .reminders-card__inner--vertical {
@@ -1146,6 +1187,28 @@
   justify-content: center;
   padding: 0.5rem 1rem;
   font-size: 0.9rem;
+}
+
+.login-summary-reminders {
+  margin: 0 0 0.9rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--secondary);
+}
+
+.login-summary-reminders__title {
+  margin: 0 0 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.login-summary-reminders__line {
+  margin: 0.2rem 0;
+  font-size: 0.85rem;
+  color: var(--text);
 }
 
 // Cards compactos com linha em gradiente e ícone SVG

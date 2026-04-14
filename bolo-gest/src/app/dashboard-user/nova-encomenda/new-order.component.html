@@ -1,13 +1,15 @@
 <div class="new-order">
   <div class="new-order__content">
   <header class="page-header">
-    <div class="header-left">
+    <div class="header-top">
+      <p class="page-header__eyebrow">{{ step === 1 ? 'Passo 1 de 2' : 'Passo 2 de 2' }}</p>
       <a routerLink="/dashboard" class="btn-back">← Voltar</a>
+    </div>
+    <div class="header-left">
       @if (step > 1) {
         <button type="button" class="btn-back-inline" (click)="backToCategory()">Alterar categoria</button>
       }
     </div>
-    <p class="page-header__eyebrow">{{ step === 1 ? 'Passo 1 de 2' : 'Passo 2 de 2' }}</p>
     <h1>Criar encomenda</h1>
     @if (step === 2 && category) {
       <p class="page-header__sub">{{ category === 'doces' ? 'Doces' : 'Salgados' }} — preencha os campos por secções.</p>
@@ -22,12 +24,30 @@
       <p class="step-section__lead">Seleccione uma opção para abrir o formulário.</p>
       <div class="category-cards">
         <button type="button" class="category-card" (click)="selectCategory('doces')">
-          <span class="category-label">Doces</span>
-          <span class="category-desc">Bolos, biscoitos, tortas</span>
+          <span class="category-card__image-wrap">
+            <img
+              class="category-card__image"
+              src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&q=80"
+              alt="Bolo decorado"
+              loading="lazy" />
+          </span>
+          <span class="category-card__body">
+            <span class="category-label">Doces</span>
+            <span class="category-desc">Bolos, biscoitos, tortas</span>
+          </span>
         </button>
         <button type="button" class="category-card" (click)="selectCategory('salgados')">
-          <span class="category-label">Salgados</span>
-          <span class="category-desc">Chamussas, recois</span>
+          <span class="category-card__image-wrap">
+            <img
+              class="category-card__image"
+              src="https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=900&q=80"
+              alt="Salgados fritos"
+              loading="lazy" />
+          </span>
+          <span class="category-card__body">
+            <span class="category-label">Salgados</span>
+            <span class="category-desc">Chamussas, recois</span>
+          </span>
         </button>
       </div>
     </section>
@@ -39,18 +59,18 @@
       <!-- Secção: Dados do cliente -->
       <section class="form-section">
         <h3 class="section-title">Dados do cliente</h3>
-        <div class="section-grid">
+        <div class="section-grid section-grid-client">
           <div class="field-block">
             <label for="doces-clientName">Nome do cliente</label>
             <input id="doces-clientName" formControlName="clientName" placeholder="Nome completo" />
           </div>
           <div class="field-block">
-            <label for="doces-clientContact">Contacto</label>
-            <input id="doces-clientContact" formControlName="clientContact" placeholder="84 123 4567" />
-          </div>
-          <div class="field-block field-block-full">
             <label for="doces-clientAddress">Endereço do cliente</label>
             <input id="doces-clientAddress" formControlName="clientAddress" placeholder="Endereço do cliente (referência)" />
+          </div>
+          <div class="field-block">
+            <label for="doces-clientContact">Contacto</label>
+            <input id="doces-clientContact" formControlName="clientContact" placeholder="84 123 4567" />
           </div>
         </div>
       </section>
@@ -69,8 +89,9 @@
             </select>
           </div>
           <div class="field-block field-block-wide">
-            <label for="doces-productName">Nome do produto</label>
-            <input id="doces-productName" formControlName="productName" placeholder="Ex: Bolo de chocolate" />
+            <label for="doces-productName">Descrição do produto</label>
+            <input id="doces-productName" formControlName="productName" placeholder="Ex: de chocolate" />
+            <span class="field-hint">Dica: não precisa repetir o tipo (ex.: escreva apenas "de chocolate").</span>
           </div>
           <div class="field-block">
             <label>Tamanho</label>
@@ -108,6 +129,13 @@
             <span class="field-hint">Se der desconto ao cliente, registamos como despesa extra desta encomenda.</span>
           </div>
           <div class="field-block">
+            <label for="doces-valuePaid">Valor recebido (MZN) <span class="label-optional">(opcional)</span></label>
+            <input id="doces-valuePaid" type="number" formControlName="valuePaid" min="0" step="1" placeholder="0" />
+            @if (paymentPercentDisplay != null) {
+              <span class="field-hint">Equivale a {{ paymentPercentDisplay }}% do valor cobrado.</span>
+            }
+          </div>
+          <div class="field-block">
             <label for="doces-deliveryDate">Data de entrega</label>
             <input id="doces-deliveryDate" type="date" formControlName="deliveryDate" [min]="today" />
           </div>
@@ -132,20 +160,9 @@
               </div>
             }
           </div>
-        </div>
-      </section>
-
-      <!-- Secção: Pagamento -->
-      <section class="form-section">
-        <h3 class="section-title">Pagamento</h3>
-        <p class="section-hint">Introduza o valor recebido; o sistema calcula automaticamente a percentagem paga.</p>
-        <div class="section-inline">
-          <div class="field-inline">
-            <label for="doces-valuePaid">Valor recebido (MZN)</label>
-            <input id="doces-valuePaid" type="number" formControlName="valuePaid" min="0" step="1" placeholder="0" />
-            @if (paymentPercentDisplay != null) {
-              <span class="field-hint">Equivale a {{ paymentPercentDisplay }}% do valor cobrado.</span>
-            }
+          <div class="field-block field-block-full">
+            <label for="doces-observations">Nota do cliente <span class="label-optional">(opcional)</span></label>
+            <input id="doces-observations" formControlName="observations" placeholder="Ex: Cliente quer bolo sem muito açúcar." />
           </div>
         </div>
       </section>
@@ -191,30 +208,28 @@
         }
       </section>
 
-      <!-- Observações -->
-      <section class="form-section">
-        <h3 class="section-title">Observações</h3>
-        <div class="field-block field-block-full">
-          <label for="doces-observations">Observações (opcional)</label>
-          <input id="doces-observations" formControlName="observations" placeholder="Ex: Bolo sem muito açúcar, massa branca por dentro, etc." />
-        </div>
-      </section>
-
       <!-- Resumo financeiro -->
       <section class="form-section">
         <h3 class="section-title">Resumo da encomenda</h3>
-        <p class="section-hint">Confira os principais valores antes de criar a encomenda.</p>
+        <p class="section-hint">Resumo rápido dos dados principais preenchidos.</p>
         <div class="summary-grid">
           <div class="summary-item">
-            <span class="summary-label">Valor total da encomenda</span>
+            <span class="summary-label">Cliente</span>
+            <span class="summary-value">{{ form.get('clientName')?.value || '—' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Data de entrega</span>
+            <span class="summary-value">{{ form.get('deliveryDate')?.value || '—' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Valor da encomenda</span>
             <span class="summary-value">{{ form.get('valueCharged')?.value || 0 | number:'1.0-0' }} MZN</span>
           </div>
           <div class="summary-item">
-            <span class="summary-label">Despesas desta encomenda</span>
+            <span class="summary-label">Despesa</span>
             <span class="summary-value">{{ costTotalPreview | number:'1.0-0' }} MZN</span>
           </div>
         </div>
-        <p class="summary-note">O lucro final não é mostrado aqui porque ainda existem outras despesas extras do negócio.</p>
       </section>
 
       @if (submitError) {
@@ -236,18 +251,18 @@
       <!-- Secção: Dados do cliente -->
       <section class="form-section">
         <h3 class="section-title">Dados do cliente</h3>
-        <div class="section-grid">
+        <div class="section-grid section-grid-client">
           <div class="field-block">
             <label for="salg-clientName">Nome do cliente</label>
             <input id="salg-clientName" formControlName="clientName" placeholder="Nome completo" />
           </div>
           <div class="field-block">
-            <label for="salg-clientContact">Contacto</label>
-            <input id="salg-clientContact" formControlName="clientContact" placeholder="84 123 4567" />
-          </div>
-          <div class="field-block field-block-full">
             <label for="salg-clientAddress">Endereço do cliente</label>
             <input id="salg-clientAddress" formControlName="clientAddress" placeholder="Endereço do cliente (referência)" />
+          </div>
+          <div class="field-block">
+            <label for="salg-clientContact">Contacto</label>
+            <input id="salg-clientContact" formControlName="clientContact" placeholder="84 123 4567" />
           </div>
         </div>
       </section>
@@ -266,8 +281,9 @@
             </select>
           </div>
           <div class="field-block field-block-wide">
-            <label for="salg-productName">Nome do produto</label>
-            <input id="salg-productName" formControlName="productName" placeholder="Ex: Chamussas" />
+            <label for="salg-productName">Descrição do produto</label>
+            <input id="salg-productName" formControlName="productName" placeholder="Ex: de carne e frango" />
+            <span class="field-hint">Dica: não precisa repetir o tipo.</span>
           </div>
           <div class="field-block">
             <label for="salg-quantityKg">Quantidade (kg)</label>
@@ -288,6 +304,13 @@
             <label for="salg-discount">Desconto (MZN) <span class="label-optional">(opcional)</span></label>
             <input id="salg-discount" type="number" formControlName="discount" min="0" step="1" placeholder="0" />
             <span class="field-hint">Se der desconto ao cliente, registamos como despesa extra desta encomenda.</span>
+          </div>
+          <div class="field-block">
+            <label for="salg-valuePaid">Valor recebido (MZN) <span class="label-optional">(opcional)</span></label>
+            <input id="salg-valuePaid" type="number" formControlName="valuePaid" min="0" step="1" placeholder="0" />
+            @if (paymentPercentDisplay != null) {
+              <span class="field-hint">Equivale a {{ paymentPercentDisplay }}% do valor cobrado.</span>
+            }
           </div>
           <div class="field-block">
             <label for="salg-deliveryDate">Data de entrega</label>
@@ -314,20 +337,9 @@
               </div>
             }
           </div>
-        </div>
-      </section>
-
-      <!-- Secção: Pagamento -->
-      <section class="form-section">
-        <h3 class="section-title">Pagamento</h3>
-        <p class="section-hint">Introduza o valor recebido; o sistema calcula automaticamente a percentagem paga.</p>
-        <div class="section-inline">
-          <div class="field-inline">
-            <label for="salg-valuePaid">Valor recebido (MZN)</label>
-            <input id="salg-valuePaid" type="number" formControlName="valuePaid" min="0" step="1" placeholder="0" />
-            @if (paymentPercentDisplay != null) {
-              <span class="field-hint">Equivale a {{ paymentPercentDisplay }}% do valor cobrado.</span>
-            }
+          <div class="field-block field-block-full">
+            <label for="salg-observations">Nota do cliente <span class="label-optional">(opcional)</span></label>
+            <input id="salg-observations" formControlName="observations" placeholder="Ex: Cliente quer menos picante." />
           </div>
         </div>
       </section>
@@ -373,30 +385,28 @@
         }
       </section>
 
-      <!-- Observações -->
-      <section class="form-section">
-        <h3 class="section-title">Observações</h3>
-        <div class="field-block field-block-full">
-          <label for="salg-observations">Observações (opcional)</label>
-          <input id="salg-observations" formControlName="observations" placeholder="Ex: Bolo sem muito açúcar, massa branca por dentro, etc." />
-        </div>
-      </section>
-
       <!-- Resumo financeiro -->
       <section class="form-section">
         <h3 class="section-title">Resumo da encomenda</h3>
-        <p class="section-hint">Confira os principais valores antes de criar a encomenda.</p>
+        <p class="section-hint">Resumo rápido dos dados principais preenchidos.</p>
         <div class="summary-grid">
           <div class="summary-item">
-            <span class="summary-label">Valor total da encomenda</span>
+            <span class="summary-label">Cliente</span>
+            <span class="summary-value">{{ form.get('clientName')?.value || '—' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Data de entrega</span>
+            <span class="summary-value">{{ form.get('deliveryDate')?.value || '—' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Valor da encomenda</span>
             <span class="summary-value">{{ form.get('valueCharged')?.value || 0 | number:'1.0-0' }} MZN</span>
           </div>
           <div class="summary-item">
-            <span class="summary-label">Despesas desta encomenda</span>
+            <span class="summary-label">Despesa</span>
             <span class="summary-value">{{ costTotalPreview | number:'1.0-0' }} MZN</span>
           </div>
         </div>
-        <p class="summary-note">O lucro final não é mostrado aqui porque ainda existem outras despesas extras do negócio.</p>
       </section>
 
       @if (submitError) {

@@ -59,93 +59,6 @@
       }
     </div>
 
-    @if (upcomingDeliveries().length > 0 || upcomingRemindersWithDays().length > 0) {
-    <section class="section reminders-card reminders-card--top">
-      <div class="reminders-card__inner reminders-card__inner--vertical">
-        <header class="reminders-card__header">
-          <div class="reminders-card__title-row">
-            <span class="reminders-card__icon" aria-hidden="true">
-              <app-icon name="bell" />
-            </span>
-            <h2 class="reminders-card__title">Lembretes e entregas</h2>
-          </div>
-          <p class="reminders-card__subtitle">
-            @if (upcomingDeliveries().length > 0 && upcomingRemindersWithDays().length > 0) {
-              {{ upcomingDeliveries().length }} encomenda(s) para entregar e {{ upcomingRemindersWithDays().length }} lembrete(s) — compre material a tempo
-            } @else if (upcomingDeliveries().length > 0) {
-              {{ upcomingDeliveries().length }} encomenda(s) nos próximos {{ reminderDaysBefore() }} dias
-            } @else {
-              {{ upcomingRemindersWithDays().length }} lembrete(s) na janela de aviso que definiu
-            }
-          </p>
-        </header>
-
-        @if (upcomingNationalHolidays().length > 0) {
-          <div class="reminders-card__block reminders-card__block--holidays">
-            <h3 class="reminders-card__block-title">
-              <span class="reminders-card__badge reminders-card__badge--holiday">Feriados nacionais (Moçambique)</span>
-            </h3>
-            <ul class="reminders-card__list reminders-card__list--holidays">
-              @for (item of upcomingNationalHolidays(); track item.date.toISOString()) {
-                <li class="reminders-card__item reminders-card__item--holiday">
-                  <span class="reminders-card__item-date">{{ item.date | date:'dd/MM/yyyy' }}</span>
-                  <span class="reminders-card__item-name">{{ formatHolidayDate(item.holiday) }} — {{ item.holiday.name }}</span>
-                </li>
-              }
-            </ul>
-          </div>
-        }
-
-        @if (upcomingRemindersWithDays().length > 0) {
-          <div class="reminders-card__block">
-            <h3 class="reminders-card__block-title">
-              <span class="reminders-card__badge reminders-card__badge--reminder">Lembretes</span>
-            </h3>
-            <ul class="reminders-card__list">
-              @for (r of upcomingRemindersWithDays().slice(0, 5); track r.reminder.id) {
-                <li class="reminders-card__item reminders-card__item--reminder">
-                  <span class="reminders-card__item-days">Faltam {{ r.daysUntil }} dia(s)</span>
-                  <span class="reminders-card__item-name">{{ r.reminder.clientName }}</span>
-                  <span class="reminders-card__item-date">{{ r.reminder.deliveryDate | date:'dd/MM/yyyy' }}</span>
-                  <span class="reminders-card__item-hint">Aviso activo nos últimos {{ r.reminder.notifyDaysBefore ?? 5 }} dia(s) antes da data</span>
-                </li>
-              }
-            </ul>
-          </div>
-        }
-
-        @if (upcomingDeliveries().length > 0) {
-          <div class="reminders-card__block">
-            <h3 class="reminders-card__block-title">
-              <span class="reminders-card__badge reminders-card__badge--order">Encomendas</span>
-            </h3>
-            <ul class="reminders-card__list">
-              @for (item of displayedDeliveries(); track item.order.id) {
-                <li class="reminders-card__item reminders-card__item--order" [class.reminders-card__item--urgent]="getDeliveryUrgency(item.date) === 'today'" [class.reminders-card__item--soon]="getDeliveryUrgency(item.date) === 'soon'">
-                  @if (getDeliveryUrgency(item.date) === 'today') {
-                    <span class="reminders-card__item-days reminders-card__item-days--urgent">Hoje</span>
-                  } @else if (getDeliveryUrgency(item.date) === 'soon') {
-                    <span class="reminders-card__item-days reminders-card__item-days--soon">Em breve</span>
-                  } @else {
-                    <span class="reminders-card__item-days">{{ formatDeliveryDate(item.date) }}</span>
-                  }
-                  <span class="reminders-card__item-name">{{ item.order.clientName }}</span>
-                  <span class="reminders-card__item-value">{{ item.order.valueCharged | number:'1.0-0' }} MZN</span>
-                  <a [routerLink]="['/despesas-variaveis']" [queryParams]="{ orderId: item.order.id }" class="reminders-card__item-link" title="Despesas extras">Extras</a>
-                  <span class="reminders-card__item-hint">{{ getProductName(item.order) }} {{ getProductSize(item.order) ? '(' + getProductSize(item.order) + ')' : '' }}</span>
-                </li>
-              }
-            </ul>
-          </div>
-        }
-
-        <footer class="reminders-card__footer">
-          <a routerLink="/lembretes" fragment="lembrete-form-anchor" class="reminders-card__btn reminders-card__btn--primary">Criar lembrete</a>
-        </footer>
-      </div>
-    </section>
-    }
-
     @if (!loginSummaryDismissed()) {
     <div class="login-summary-overlay" role="dialog" aria-modal="true" aria-labelledby="login-summary-title">
       <div class="login-summary-popup" [class.popup--good]="situationGood()" [class.popup--bad]="!situationGood()">
@@ -192,6 +105,24 @@
             }
           </div>
         </div>
+        @if (upcomingDeliveries().length > 0 || upcomingRemindersWithDays().length > 0 || upcomingNationalHolidays().length > 0) {
+          <div class="login-summary-reminders">
+            <h3 class="login-summary-reminders__title">Lembretes e entregas</h3>
+            <p class="login-summary-reminders__line">
+              Entregas: <strong>{{ upcomingDeliveries().length }}</strong> · Lembretes: <strong>{{ upcomingRemindersWithDays().length }}</strong>
+            </p>
+            @if (upcomingNationalHolidays().length > 0) {
+              <p class="login-summary-reminders__line">
+                Próximo feriado: <strong>{{ upcomingNationalHolidays()[0].date | date:'dd/MM/yyyy' }}</strong> — {{ upcomingNationalHolidays()[0].holiday.name }}
+              </p>
+            }
+            @if (displayedDeliveries().length > 0) {
+              <p class="login-summary-reminders__line">
+                Próxima entrega: <strong>{{ displayedDeliveries()[0].order.clientName }}</strong> · {{ displayedDeliveries()[0].order.valueCharged | number:'1.0-0' }} MZN
+              </p>
+            }
+          </div>
+        }
         <button type="button" class="btn btn-primary login-summary-popup__btn" (click)="dismissLoginSummary()">Fechar</button>
       </div>
     </div>

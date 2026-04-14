@@ -8,10 +8,10 @@
 
 /** Largura confortável só para o conteúdo (cabeçalho + passos + formulário). */
 .new-order__content {
-  max-width: 42rem;
+  max-width: none;
   width: 100%;
-  margin: 0 auto;
-  padding: 0 0.35rem;
+  margin: 0;
+  padding: 0 0.25rem;
 }
 
 .page-header {
@@ -25,6 +25,14 @@
   border: 1px solid var(--border);
   background: linear-gradient(145deg, #f0fdfa 0%, #ecfdf5 42%, var(--card-bg, #fff) 100%);
   box-shadow: 0 6px 24px rgba(15, 23, 42, 0.06);
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+  }
 
   .header-left {
     display: flex;
@@ -66,6 +74,7 @@ a.btn-back,
 .btn-back {
   display: inline-flex;
   align-items: center;
+  margin-left: auto;
   padding: 0.5rem 0.75rem;
   font-size: 0.9rem;
   color: var(--text-muted);
@@ -124,37 +133,77 @@ a.btn-back,
 
 .category-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.1rem;
 }
 
 .category-card {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 0.25rem;
-  padding: 1rem 1.25rem;
-  background: var(--secondary);
+  align-items: stretch;
+  gap: 0;
+  min-height: 20rem;
+  padding: 0;
+  background: #ffffff;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 1rem;
   cursor: pointer;
   text-align: left;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+  position: relative;
+
+  .category-card__image-wrap {
+    position: relative;
+    width: 100%;
+    height: 14rem;
+    overflow: hidden;
+    background: #f1f5f9;
+  }
+
+  .category-card__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.25s ease;
+  }
+
+  .category-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1rem 1rem 1.1rem;
+    border-top: 1px solid var(--border);
+    align-items: center;
+    text-align: center;
+  }
 
   .category-label {
-    font-weight: 600;
-    font-size: 1rem;
+    font-weight: 700;
+    font-size: 1.06rem;
     color: var(--text);
   }
 
   .category-desc {
-    font-size: 0.8rem;
+    font-size: 0.87rem;
+    line-height: 1.4;
     color: var(--text-muted);
   }
 
   &:hover {
     border-color: var(--primary);
-    background: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.09);
+
+    .category-card__image {
+      transform: scale(1.03);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
   }
 }
 
@@ -166,33 +215,34 @@ a.btn-back,
 }
 
 .order-form-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
-  overflow: hidden;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  display: grid;
+  gap: 1rem;
 
   .form-section {
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
     margin-bottom: 0;
-    padding: 1.3rem 1.4rem;
-    border-top: 1px solid var(--border);
-
-    &:first-child {
-      border-top: none;
-    }
+    padding: 1.15rem 1.2rem 1.25rem;
   }
 
   .form-error {
-    margin: 0 1.4rem 1rem;
+    margin: 0;
   }
 
   .form-actions {
-    padding: 1.35rem 1.4rem 1.4rem;
+    padding: 1rem 1.2rem;
     margin-top: 0;
+    border-radius: var(--radius-lg);
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+    border-top: 1px solid var(--border);
   }
 }
 
@@ -237,11 +287,11 @@ a.btn-back,
 
 .section-title {
   margin: 0 0 1rem;
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.82rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  color: var(--primary, #0d9488);
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--border);
 }
@@ -261,8 +311,20 @@ a.btn-back,
 
 .section-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem 1rem;
+
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.section-grid-client {
+  grid-template-columns: repeat(3, minmax(160px, 1fr));
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+  }
 
   @media (max-width: 520px) {
     grid-template-columns: 1fr;
@@ -279,7 +341,7 @@ a.btn-back,
   }
 
   &.field-block-wide {
-    grid-column: span 2;
+    grid-column: 1 / -1;
 
     @media (max-width: 520px) {
       grid-column: 1;
@@ -322,6 +384,12 @@ a.btn-back,
       color: var(--text-muted);
       opacity: 0.8;
     }
+  }
+
+  input.ng-valid.ng-dirty,
+  select.ng-valid.ng-dirty {
+    border-color: #16a34a;
+    background: #f0fdf4;
   }
 
   select.select-compact {
@@ -368,6 +436,7 @@ a.btn-back,
 
 .option-btn {
   padding: 0.5rem 1rem;
+  min-width: 6.5rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--secondary);
@@ -386,39 +455,6 @@ a.btn-back,
   &:hover:not(.active) {
     border-color: var(--primary);
     color: var(--primary);
-  }
-}
-
-.section-inline {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 1rem;
-
-  .field-inline {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    min-width: 10rem;
-
-    label {
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: var(--text);
-    }
-
-    input {
-      padding: 0.6rem 0.75rem;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      font-size: 0.95rem;
-      background: var(--input-bg, var(--card-bg));
-
-      &:focus {
-        outline: none;
-        border-color: var(--primary);
-      }
-    }
   }
 }
 
