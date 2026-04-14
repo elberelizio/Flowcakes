@@ -1,5 +1,6 @@
 package com.chefcontrol.dto;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -21,6 +22,12 @@ public class AdminUserRow {
     /** Token opaco para construir o link de ativação (não é o código da licença). */
     private String licenseActivationToken;
     private Instant licenseValidUntil;
+    private Instant licensePaidAt;
+    private BigDecimal licenseAmount;
+    private String licensePaymentReference;
+    private Instant licenseRejectedAt;
+    private boolean blocked;
+    private boolean admin;
 
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
@@ -46,4 +53,16 @@ public class AdminUserRow {
     public void setLicenseActivationToken(String licenseActivationToken) { this.licenseActivationToken = licenseActivationToken; }
     public Instant getLicenseValidUntil() { return licenseValidUntil; }
     public void setLicenseValidUntil(Instant licenseValidUntil) { this.licenseValidUntil = licenseValidUntil; }
+    public Instant getLicensePaidAt() { return licensePaidAt; }
+    public void setLicensePaidAt(Instant licensePaidAt) { this.licensePaidAt = licensePaidAt; }
+    public BigDecimal getLicenseAmount() { return licenseAmount; }
+    public void setLicenseAmount(BigDecimal licenseAmount) { this.licenseAmount = licenseAmount; }
+    public String getLicensePaymentReference() { return licensePaymentReference; }
+    public void setLicensePaymentReference(String licensePaymentReference) { this.licensePaymentReference = licensePaymentReference; }
+    public Instant getLicenseRejectedAt() { return licenseRejectedAt; }
+    public void setLicenseRejectedAt(Instant licenseRejectedAt) { this.licenseRejectedAt = licenseRejectedAt; }
+    public boolean isBlocked() { return blocked; }
+    public void setBlocked(boolean blocked) { this.blocked = blocked; }
+    public boolean isAdmin() { return admin; }
+    public void setAdmin(boolean admin) { this.admin = admin; }
 }

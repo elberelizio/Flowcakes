@@ -1,0 +1,97 @@
+<div class="minha-licenca-page">
+  <header class="page-header">
+    <a routerLink="/dashboard" class="btn-back">
+      <span class="btn-back-icon">←</span>
+      Voltar
+    </a>
+    <h1>Minha Licença</h1>
+    <p class="page-subtitle">Estado da licença, histórico e pagamentos</p>
+  </header>
+
+  @if (loading()) {
+    <div class="loading-state">A carregar...</div>
+  } @else if (status()) {
+    <section
+      class="status-card"
+      [class.paid]="status()?.status === 'paid'"
+      [class.trial]="status()?.status === 'trial'"
+      [class.pending]="status()?.status === 'pending'"
+      [class.expiring-soon]="status()?.showLicenseExpiryWarning">
+      <div class="status-badge">
+        <span class="status-icon">{{ status()?.showLicenseExpiryWarning ? '⚠' : (isPaidOrTrialStatus(status()?.status) ? '✓' : '○') }}</span>
+        <span class="status-text">
+          {{
+            status()?.showLicenseExpiryWarning
+              ? 'Licença a expirar em breve'
+              : status()?.status === 'trial'
+                ? 'Período de teste activo'
+                : status()?.status === 'paid'
+                  ? 'Licença Activa'
+                  : 'Pagamento Pendente'
+          }}
+        </span>
+      </div>
+      @if (status()?.validUntil) {
+        <div class="expiry-info">
+          <span class="expiry-label">Expira em</span>
+          <span class="expiry-date">{{ formatExpiry(status()?.validUntil) }}</span>
+        </div>
+      }
+      @if (status()?.daysRemaining != null) {
+        <div class="days-remaining" [class.warn]="status()?.showLicenseExpiryWarning">
+          <span class="days-number">{{ status()?.daysRemaining }}</span>
+          <span class="days-label">dia(s) restante(s)</span>
+        </div>
+      }
+      @if (status()?.status === 'pending') {
+        <div class="payment-info">
+          <p class="payment-amount">{{ status()?.amount | number:'1.0-0' }} MZN</p>
+          <p class="payment-detail">Pagar via e-Mola {{ status()?.eMolaPhone || '' }}</p>
+        </div>
+      }
+    </section>
+
+    <section class="history-section">
+      <h2>Histórico de pagamentos</h2>
+      @if (paymentsLoading()) {
+        <div class="loading-state">A carregar pagamentos...</div>
+      } @else if (payments().length === 0) {
+        <div class="history-empty">
+          <p>Ainda não existem pagamentos registados.</p>
+        </div>
+      } @else {
+        <div class="history-table-wrap">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Valor</th>
+                <th>Meses</th>
+                <th>ID e-Mola</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of payments(); track row.id) {
+                <tr>
+                  <td>{{ formatDate(row.createdAt) }}</td>
+                  <td>{{ row.amount }} MZN</td>
+                  <td>{{ row.durationMonths }}</td>
+                  <td class="tx-id">{{ txId(row) || '—' }}</td>
+                  <td>
+                    <button class="btn-recibo" (click)="downloadRecibo(row)">Recibo</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="extrato-actions">
+          <button class="btn-extrato" (click)="downloadExtrato()">Descarregar extrato completo</button>
+        </div>
+      }
+    </section>
+  } @else {
+    <div class="empty-state">Não foi possível carregar os dados da licença.</div>
+  }
+</div>

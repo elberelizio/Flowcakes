@@ -4,7 +4,7 @@ spring:
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:chefcontrol2025}
     username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:elber123}
+    password: ${DB_PASSWORD:admin}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -16,6 +16,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
 
+# Por omissão 8081 = mesmo que `bolo-gest` em api.config.ts e `iniciar-backend.bat` (evita 404 no login por porta errada).
 server:
   port: ${SERVER_PORT:8081}
 
@@ -24,6 +25,7 @@ app:
   cors-allowed-origins: http://localhost:4200
   license-amount: 500
   e-mola-phone: "871964887"
+  trial-days: 14
   # SMS (operador nacional) e WhatsApp via Twilio
   # Confirmação de conta (registo) + código de licença (após admin confirmar pagamento)
   twilio-account-sid: ${TWILIO_ACCOUNT_SID:}
@@ -31,3 +33,17 @@ app:
   twilio-from-number: ${TWILIO_FROM_NUMBER:}
   # WhatsApp: número com prefixo whatsapp: (ex.: whatsapp:+14155238886 sandbox). Se vazio, só envia SMS.
   twilio-whatsapp-from: ${TWILIO_WHATSAPP_FROM:}
+  payment:
+    simulation:
+      # Por omissão: pagamento de licença só simulado (M-Pesa/e-Mola fictício); notifica admins. Defina APP_PAYMENT_SIMULATION_ENABLED=false para tentar API real.
+      enabled: ${APP_PAYMENT_SIMULATION_ENABLED:true}
+
+# M-Pesa OpenAPI (sandbox por defeito)
+mpesa:
+  api-key: ${MPESA_API_KEY:}
+  public-key: "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEArv9yxA69XQKBo24BaF/D+fvlqmGdYjqLQ5WtNBb5tquqGvAvG3WMFETVUSow/LizQalxj2ElMVrUmzu5mGGkxK08bWEXF7a1DEvtVJs6nppIlFJc2SnrU14AOrIrB28ogm58JjAl5BOQawOXD5dfSk7MaAA82pVHoIqEu0FxA8BOKU+RGTihRU+ptw1j4bsAJYiPbSX6i71gfPvwHPYamM0bfI4CmlsUUR3KvCG24rB6FNPcRBhM3jDuv8ae2kC33w9hEq8qNB55uw51vK7hyXoAa+U7IqP1y6nBdlN25gkxEA8yrsl1678cspeXr+3ciRyqoRgj9RD/ONbJhhxFvt1cLBh+qwK2eqISfBb06eRnNeC71oBokDm3zyCnkOtMDGl7IvnMfZfEPFCfg5QgJVk1msPpRvQxmEsrX9MQRyFVzgy2CWNIb7c+jPapyrNwoUbANlN8adU1m6yOuoX7F49x+OjiG2se0EJ6nafeKUXw/+hiJZvELUYgzKUtMAZVTNZfT8jjb58j8GVtuS+6TM2AutbejaCV84ZK58E2CRJqhmjQibEUO6KPdD7oTlEkFy52Y1uOOBXgYpqMzufNPmfdqqqSM4dU70PO8ogyKGiLAIxCetMjjm6FCMEA3Kc8K0Ig7/XtFm9By6VxTJK1Mg36TlHaZKP6VzVLXMtesJECAwEAAQ=="
+  environment: sandbox
+  market: vodacomMOZ
+  service-provider-code: ${MPESA_SERVICE_PROVIDER_CODE:171717}
+  # URL pública de callback (ngrok em dev, domínio real em produção)
+  callback-base-url: ${MPESA_CALLBACK_URL:http://localhost:8081}

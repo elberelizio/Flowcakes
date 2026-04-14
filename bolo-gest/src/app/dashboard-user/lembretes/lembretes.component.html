@@ -1,0 +1,135 @@
+<div class="lembretes-layout">
+  <header class="hero">
+    <div class="hero__text">
+      <p class="hero__eyebrow">Planeamento</p>
+      <h1>Lembretes</h1>
+      <p class="hero__sub">
+        Crie lembretes para qualquer data importante. Defina com quantos dias de antecedência quer ver avisos (após login, no resumo e no dashboard).
+      </p>
+      <div class="hero__links">
+        <a routerLink="/dashboard" class="hero__link">Dashboard</a>
+      </div>
+    </div>
+    <div class="hero__accent" aria-hidden="true"></div>
+  </header>
+
+  <div class="grid">
+    <div class="grid__main">
+      <section class="panel panel--form" id="lembrete-form-anchor">
+        <div class="panel__head">
+          <h2>{{ editingId() ? 'Editar lembrete' : 'Novo lembrete' }}</h2>
+          @if (editingId()) {
+            <button type="button" class="btn-text" (click)="resetFormForNew()">Cancelar edição</button>
+          }
+        </div>
+        <form [formGroup]="form" (ngSubmit)="submit()" class="form-modern">
+          <label class="field">
+            <span class="field__label">Título ou nome</span>
+            <input
+              type="text"
+              formControlName="clientName"
+              placeholder="Ex.: Bolo aniversário João, Comprar embalagens…"
+              autocomplete="off" />
+            @if (form.get('clientName')?.invalid && form.get('clientName')?.touched) {
+              <span class="field__error">Indique um título.</span>
+            }
+          </label>
+          <label class="field">
+            <span class="field__label">Data</span>
+            <input type="date" formControlName="deliveryDate" />
+            @if (form.get('deliveryDate')?.invalid && form.get('deliveryDate')?.touched) {
+              <span class="field__error">Escolha a data.</span>
+            }
+          </label>
+          <label class="field">
+            <span class="field__label">Começar avisos faltando (dias)</span>
+            <input
+              type="number"
+              formControlName="notifyDaysBefore"
+              min="0"
+              max="90"
+              title="0 = só no dia do evento; 7 = durante a última semana até ao dia" />
+            <span class="field__hint">0 = só no dia. O sistema mostra o lembrete no resumo após login quando faltar este número de dias ou menos até à data.</span>
+            @if (form.get('notifyDaysBefore')?.invalid && form.get('notifyDaysBefore')?.touched) {
+              <span class="field__error">Use um valor entre 0 e 90.</span>
+            }
+          </label>
+          <label class="field">
+            <span class="field__label">Morada ou local (opcional)</span>
+            <input type="text" formControlName="address" placeholder="Opcional" />
+          </label>
+          <label class="field">
+            <span class="field__label">Notas (opcional)</span>
+            <textarea formControlName="description" rows="2" placeholder="Detalhes, lista de material…"></textarea>
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" [disabled]="form.invalid">
+              {{ editingId() ? 'Guardar alterações' : 'Adicionar lembrete' }}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel panel--list">
+        <div class="panel__head">
+          <h2>Os seus lembretes</h2>
+          <span class="panel__count">{{ reminderService.reminders().length }}</span>
+        </div>
+        @if (reminderService.reminders().length === 0) {
+          <div class="empty">
+            <p>Ainda não tem lembretes. Utilize o formulário acima para criar o primeiro.</p>
+          </div>
+        } @else {
+          @for (group of remindersGrouped(); track group.date) {
+            <article class="date-block">
+              <header class="date-block__head">
+                <time [attr.datetime]="group.date">{{ formatDate(group.date) }}</time>
+                <span class="pill" [class]="'pill--' + statusLabel(group.date).tone">{{ statusLabel(group.date).label }}</span>
+              </header>
+              <ul class="card-list">
+                @for (r of group.reminders; track r.id) {
+                  <li class="rem-card">
+                    <div class="rem-card__body">
+                      <h3 class="rem-card__title">{{ r.clientName }}</h3>
+                      <p class="rem-card__meta">
+                        <span class="chip">Avisos: {{ r.notifyDaysBefore ?? 5 }} dia(s) antes</span>
+                        @if (r.address) {
+                          <span class="rem-card__addr">{{ r.address }}</span>
+                        }
+                      </p>
+                      @if (r.description) {
+                        <p class="rem-card__desc">{{ r.description }}</p>
+                      }
+                    </div>
+                    <div class="rem-card__actions">
+                      <button type="button" class="btn-ghost" (click)="startEdit(r)">Editar</button>
+                      <button type="button" class="btn-danger" (click)="remove(r.id)" title="Apagar">Apagar</button>
+                    </div>
+                  </li>
+                }
+              </ul>
+            </article>
+          }
+        }
+      </section>
+    </div>
+
+    <aside class="grid__aside">
+      <section class="panel panel--holidays">
+        <div class="panel__head">
+          <h2>Feriados nacionais</h2>
+          <span class="panel__tag">Moçambique</span>
+        </div>
+        <p class="aside-intro">Datas fixas no calendário civil (próximos 12 meses a partir de hoje).</p>
+        <ul class="holiday-list">
+          @for (item of nationalHolidays(); track item.date.getTime()) {
+            <li class="holiday-row">
+              <span class="holiday-row__date">{{ item.date | date:'dd/MM/yyyy' }}</span>
+              <span class="holiday-row__name">{{ formatHolidayDate(item.holiday) }} — {{ item.holiday.name }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+    </aside>
+  </div>
+</div>

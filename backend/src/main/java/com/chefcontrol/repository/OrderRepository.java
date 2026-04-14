@@ -4,6 +4,7 @@ import com.chefcontrol.entity.OrderEntity;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,6 +16,9 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
     List<OrderEntity> findAllForAdmin();
 
     List<OrderEntity> findByUserIdOrderByCreatedAtDesc(UUID userId);
+
+    @Query("SELECT COALESCE(MAX(o.orderNo), 0) FROM OrderEntity o WHERE o.user.id = :userId")
+    Optional<Integer> findMaxOrderNoByUserId(UUID userId);
 
     List<OrderEntity> findByUserIdAndCreatedAtBetweenOrderByCreatedAtDesc(UUID userId, Instant from, Instant to);
 

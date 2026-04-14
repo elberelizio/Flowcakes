@@ -1,0 +1,416 @@
+<div class="new-order">
+  <div class="new-order__content">
+  <header class="page-header">
+    <div class="header-left">
+      <a routerLink="/dashboard" class="btn-back">← Voltar</a>
+      @if (step > 1) {
+        <button type="button" class="btn-back-inline" (click)="backToCategory()">Alterar categoria</button>
+      }
+    </div>
+    <p class="page-header__eyebrow">{{ step === 1 ? 'Passo 1 de 2' : 'Passo 2 de 2' }}</p>
+    <h1>Criar encomenda</h1>
+    @if (step === 2 && category) {
+      <p class="page-header__sub">{{ category === 'doces' ? 'Doces' : 'Salgados' }} — preencha os campos por secções.</p>
+    } @else {
+      <p class="page-header__sub">Escolha o tipo de produto para continuar.</p>
+    }
+  </header>
+
+  @if (step === 1) {
+    <section class="step-section">
+      <h2>Que tipo de encomenda?</h2>
+      <p class="step-section__lead">Seleccione uma opção para abrir o formulário.</p>
+      <div class="category-cards">
+        <button type="button" class="category-card" (click)="selectCategory('doces')">
+          <span class="category-label">Doces</span>
+          <span class="category-desc">Bolos, biscoitos, tortas</span>
+        </button>
+        <button type="button" class="category-card" (click)="selectCategory('salgados')">
+          <span class="category-label">Salgados</span>
+          <span class="category-desc">Chamussas, recois</span>
+        </button>
+      </div>
+    </section>
+  }
+
+  @if (step === 2 && category === 'doces') {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="order-form">
+      <div class="order-form-card">
+      <!-- Secção: Dados do cliente -->
+      <section class="form-section">
+        <h3 class="section-title">Dados do cliente</h3>
+        <div class="section-grid">
+          <div class="field-block">
+            <label for="doces-clientName">Nome do cliente</label>
+            <input id="doces-clientName" formControlName="clientName" placeholder="Nome completo" />
+          </div>
+          <div class="field-block">
+            <label for="doces-clientContact">Contacto</label>
+            <input id="doces-clientContact" formControlName="clientContact" placeholder="84 123 4567" />
+          </div>
+          <div class="field-block field-block-full">
+            <label for="doces-clientAddress">Endereço do cliente</label>
+            <input id="doces-clientAddress" formControlName="clientAddress" placeholder="Endereço do cliente (referência)" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Secção: Produto (Doces) -->
+      <section class="form-section">
+        <h3 class="section-title">Produto</h3>
+        <div class="section-grid">
+          <div class="field-block">
+            <label for="doces-subcategory">Tipo</label>
+            <select id="doces-subcategory" formControlName="subcategory">
+              <option value="">Selecione...</option>
+              @for (sub of docesSubcategories; track sub) {
+                <option [value]="sub">{{ sub }}</option>
+              }
+            </select>
+          </div>
+          <div class="field-block field-block-wide">
+            <label for="doces-productName">Nome do produto</label>
+            <input id="doces-productName" formControlName="productName" placeholder="Ex: Bolo de chocolate" />
+          </div>
+          <div class="field-block">
+            <label>Tamanho</label>
+            <div class="option-group option-group-small">
+              <button type="button" class="option-btn" [class.active]="sizeType === 'numero'" (click)="setSizeType('numero')">Número</button>
+              <button type="button" class="option-btn" [class.active]="sizeType === 'nome'" (click)="setSizeType('nome')">Escala</button>
+            </div>
+            @if (sizeType === null) {
+              <p class="section-hint">Selecione o tipo de tamanho acima.</p>
+            } @else if (sizeType === 'numero') {
+              <input
+                type="number"
+                formControlName="sizeNumberCustom"
+                min="0"
+                step="1"
+                placeholder="Ex: 20 (número da forma)"
+                class="input-narrow" />
+            }
+            @if (sizeType === 'nome') {
+              <select formControlName="size" class="select-compact">
+                <option value="">Selecione...</option>
+                @for (s of docesSizesByName; track s) {
+                  <option [value]="s">{{ s }}</option>
+                }
+              </select>
+            }
+          </div>
+          <div class="field-block">
+            <label for="doces-valueCharged">Valor cobrado pela encomenda (MZN)</label>
+            <input id="doces-valueCharged" type="number" formControlName="valueCharged" min="0" step="1" placeholder="5000" />
+          </div>
+          <div class="field-block">
+            <label for="doces-discount">Desconto (MZN) <span class="label-optional">(opcional)</span></label>
+            <input id="doces-discount" type="number" formControlName="discount" min="0" step="1" placeholder="0" />
+            <span class="field-hint">Se der desconto ao cliente, registamos como despesa extra desta encomenda.</span>
+          </div>
+          <div class="field-block">
+            <label for="doces-deliveryDate">Data de entrega</label>
+            <input id="doces-deliveryDate" type="date" formControlName="deliveryDate" [min]="today" />
+          </div>
+          <div class="field-block">
+            <label for="doces-deliveryTime">Hora de entrega</label>
+            <input id="doces-deliveryTime" type="time" formControlName="deliveryTime" />
+          </div>
+          <div class="field-block field-block-full">
+            <label>Vai precisar de delivery?</label>
+            <div class="option-group">
+              <button type="button" class="option-btn" [class.active]="form.get('hasDelivery')?.value === false" (click)="setHasDelivery(false)">Não</button>
+              <button type="button" class="option-btn" [class.active]="form.get('hasDelivery')?.value === true" (click)="setHasDelivery(true)">Sim</button>
+            </div>
+            @if (isDeliveryYes) {
+              <div class="delivery-extra">
+                <label for="doces-deliveryAddress">Local de entrega</label>
+                <input id="doces-deliveryAddress" formControlName="deliveryAddress" placeholder="Onde deve ser entregue o pedido (ex: Matola)" class="input-full-width" />
+                <div class="field-block field-block-narrow">
+                  <label for="doces-deliveryCost">Preço da viagem (MZN)</label>
+                  <input id="doces-deliveryCost" type="number" formControlName="deliveryCost" min="0" placeholder="0" />
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- Secção: Pagamento -->
+      <section class="form-section">
+        <h3 class="section-title">Pagamento</h3>
+        <p class="section-hint">Introduza o valor recebido; o sistema calcula automaticamente a percentagem paga.</p>
+        <div class="section-inline">
+          <div class="field-inline">
+            <label for="doces-valuePaid">Valor recebido (MZN)</label>
+            <input id="doces-valuePaid" type="number" formControlName="valuePaid" min="0" step="1" placeholder="0" />
+            @if (paymentPercentDisplay != null) {
+              <span class="field-hint">Equivale a {{ paymentPercentDisplay }}% do valor cobrado.</span>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- Secção: Despesas -->
+      <section class="form-section">
+        <h3 class="section-title">Despesas</h3>
+        <div class="option-group option-group-small">
+          <button type="button" class="option-btn" [class.active]="expenseMode === 'simples'" (click)="setExpenseMode('simples')">Despesa resumida</button>
+          <button type="button" class="option-btn" [class.active]="expenseMode === 'detalhado'" (click)="setExpenseMode('detalhado')">Despesa detalhada</button>
+        </div>
+        @if (expenseMode === null) {
+          <p class="section-hint">Selecione o tipo de despesa acima.</p>
+        } @else if (expenseMode === 'simples') {
+          <div class="section-grid">
+            <div class="field-block field-block-wide">
+              <label for="doces-expenseDescription">Descrição (opcional)</label>
+              <input id="doces-expenseDescription" formControlName="expenseDescription" placeholder="Ex: Compra de material de bolo, gás, pequena despesa rápida" />
+            </div>
+            <div class="field-block field-block-narrow">
+              <label for="doces-expenseTotal">Despesa total (MZN)</label>
+              <input id="doces-expenseTotal" type="number" formControlName="expenseTotal" min="0" step="1" placeholder="0" />
+            </div>
+          </div>
+        } @else {
+          <div formArrayName="ingredients" class="ingredients-block">
+            <div class="ingredients-header">
+              <span>Ingrediente</span>
+              <span>Quantidade</span>
+              <span>Valor (MZN)</span>
+              <span></span>
+            </div>
+            @for (item of ingredients.controls; track $index) {
+              <div class="ingredient-row" [formGroupName]="$index">
+                <input formControlName="name" placeholder="Nome" class="ing-name" />
+                <input type="number" formControlName="quantity" min="0" step="0.01" class="ing-qty" />
+                <input type="number" formControlName="unitValue" min="0" class="ing-value" />
+                <button type="button" class="btn-remove" (click)="removeIngredient($index)" [disabled]="ingredients.length <= 1" title="Remover">×</button>
+              </div>
+            }
+            <button type="button" class="btn-add-line" (click)="addIngredient()">+ Adicionar ingrediente</button>
+          </div>
+        }
+      </section>
+
+      <!-- Observações -->
+      <section class="form-section">
+        <h3 class="section-title">Observações</h3>
+        <div class="field-block field-block-full">
+          <label for="doces-observations">Observações (opcional)</label>
+          <input id="doces-observations" formControlName="observations" placeholder="Ex: Bolo sem muito açúcar, massa branca por dentro, etc." />
+        </div>
+      </section>
+
+      <!-- Resumo financeiro -->
+      <section class="form-section">
+        <h3 class="section-title">Resumo da encomenda</h3>
+        <p class="section-hint">Confira os principais valores antes de criar a encomenda.</p>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="summary-label">Valor total da encomenda</span>
+            <span class="summary-value">{{ form.get('valueCharged')?.value || 0 | number:'1.0-0' }} MZN</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Despesas desta encomenda</span>
+            <span class="summary-value">{{ costTotalPreview | number:'1.0-0' }} MZN</span>
+          </div>
+        </div>
+        <p class="summary-note">O lucro final não é mostrado aqui porque ainda existem outras despesas extras do negócio.</p>
+      </section>
+
+      @if (submitError) {
+        <p class="form-error">{{ submitError }}</p>
+      }
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || submitting">
+          {{ submitting ? 'A guardar...' : 'Criar encomenda' }}
+        </button>
+        <a routerLink="/dashboard" class="btn btn-secondary">Cancelar</a>
+      </div>
+      </div>
+    </form>
+  }
+
+  @if (step === 2 && category === 'salgados') {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="order-form">
+      <div class="order-form-card">
+      <!-- Secção: Dados do cliente -->
+      <section class="form-section">
+        <h3 class="section-title">Dados do cliente</h3>
+        <div class="section-grid">
+          <div class="field-block">
+            <label for="salg-clientName">Nome do cliente</label>
+            <input id="salg-clientName" formControlName="clientName" placeholder="Nome completo" />
+          </div>
+          <div class="field-block">
+            <label for="salg-clientContact">Contacto</label>
+            <input id="salg-clientContact" formControlName="clientContact" placeholder="84 123 4567" />
+          </div>
+          <div class="field-block field-block-full">
+            <label for="salg-clientAddress">Endereço do cliente</label>
+            <input id="salg-clientAddress" formControlName="clientAddress" placeholder="Endereço do cliente (referência)" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Secção: Produto (Salgados) -->
+      <section class="form-section">
+        <h3 class="section-title">Produto</h3>
+        <div class="section-grid">
+          <div class="field-block">
+            <label for="salg-subcategory">Tipo</label>
+            <select id="salg-subcategory" formControlName="subcategory">
+              <option value="">Selecione...</option>
+              @for (sub of salgadosSubcategories; track sub) {
+                <option [value]="sub">{{ sub }}</option>
+              }
+            </select>
+          </div>
+          <div class="field-block field-block-wide">
+            <label for="salg-productName">Nome do produto</label>
+            <input id="salg-productName" formControlName="productName" placeholder="Ex: Chamussas" />
+          </div>
+          <div class="field-block">
+            <label for="salg-quantityKg">Quantidade (kg)</label>
+            <input id="salg-quantityKg" type="number" formControlName="quantityKg" min="0" step="0.5" placeholder="Ex: 2" />
+          </div>
+          <div class="field-block">
+            <label for="salg-unitsPerKg">Unidades por kg</label>
+            <input id="salg-unitsPerKg" type="number" formControlName="unitsPerKg" min="1" placeholder="Ex: 10" />
+            @if (totalUnitsApprox != null) {
+              <span class="field-hint">≈ {{ totalUnitsApprox }} unidades</span>
+            }
+          </div>
+          <div class="field-block">
+            <label for="salg-valueCharged">Valor cobrado pela encomenda (MZN)</label>
+            <input id="salg-valueCharged" type="number" formControlName="valueCharged" min="0" step="1" placeholder="5000" />
+          </div>
+          <div class="field-block">
+            <label for="salg-discount">Desconto (MZN) <span class="label-optional">(opcional)</span></label>
+            <input id="salg-discount" type="number" formControlName="discount" min="0" step="1" placeholder="0" />
+            <span class="field-hint">Se der desconto ao cliente, registamos como despesa extra desta encomenda.</span>
+          </div>
+          <div class="field-block">
+            <label for="salg-deliveryDate">Data de entrega</label>
+            <input id="salg-deliveryDate" type="date" formControlName="deliveryDate" [min]="today" />
+          </div>
+          <div class="field-block">
+            <label for="salg-deliveryTime">Hora de entrega</label>
+            <input id="salg-deliveryTime" type="time" formControlName="deliveryTime" />
+          </div>
+          <div class="field-block field-block-full">
+            <label>Vai precisar de delivery?</label>
+            <div class="option-group">
+              <button type="button" class="option-btn" [class.active]="form.get('hasDelivery')?.value === false" (click)="setHasDelivery(false)">Não</button>
+              <button type="button" class="option-btn" [class.active]="form.get('hasDelivery')?.value === true" (click)="setHasDelivery(true)">Sim</button>
+            </div>
+            @if (isDeliveryYes) {
+              <div class="delivery-extra">
+                <label for="salg-deliveryAddress">Local de entrega</label>
+                <input id="salg-deliveryAddress" formControlName="deliveryAddress" placeholder="Onde deve ser entregue o pedido (ex: Matola)" class="input-full-width" />
+                <div class="field-block field-block-narrow">
+                  <label for="salg-deliveryCost">Preço da viagem (MZN)</label>
+                  <input id="salg-deliveryCost" type="number" formControlName="deliveryCost" min="0" placeholder="0" />
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- Secção: Pagamento -->
+      <section class="form-section">
+        <h3 class="section-title">Pagamento</h3>
+        <p class="section-hint">Introduza o valor recebido; o sistema calcula automaticamente a percentagem paga.</p>
+        <div class="section-inline">
+          <div class="field-inline">
+            <label for="salg-valuePaid">Valor recebido (MZN)</label>
+            <input id="salg-valuePaid" type="number" formControlName="valuePaid" min="0" step="1" placeholder="0" />
+            @if (paymentPercentDisplay != null) {
+              <span class="field-hint">Equivale a {{ paymentPercentDisplay }}% do valor cobrado.</span>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- Secção: Despesas -->
+      <section class="form-section">
+        <h3 class="section-title">Despesas</h3>
+        <div class="option-group option-group-small">
+          <button type="button" class="option-btn" [class.active]="expenseMode === 'simples'" (click)="setExpenseMode('simples')">Despesa resumida</button>
+          <button type="button" class="option-btn" [class.active]="expenseMode === 'detalhado'" (click)="setExpenseMode('detalhado')">Despesa detalhada</button>
+        </div>
+        @if (expenseMode === null) {
+          <p class="section-hint">Selecione o tipo de despesa acima.</p>
+        } @else if (expenseMode === 'simples') {
+          <div class="section-grid">
+            <div class="field-block field-block-wide">
+              <label for="salg-expenseDescription">Descrição (opcional)</label>
+              <input id="salg-expenseDescription" formControlName="expenseDescription" placeholder="Ex: Compra de material de bolo, gás, pequena despesa rápida" />
+            </div>
+            <div class="field-block field-block-narrow">
+              <label for="salg-expenseTotal">Despesa total (MZN)</label>
+              <input id="salg-expenseTotal" type="number" formControlName="expenseTotal" min="0" step="1" placeholder="0" />
+            </div>
+          </div>
+        } @else {
+          <div formArrayName="ingredients" class="ingredients-block">
+            <div class="ingredients-header">
+              <span>Ingrediente</span>
+              <span>Quantidade</span>
+              <span>Valor (MZN)</span>
+              <span></span>
+            </div>
+            @for (item of ingredients.controls; track $index) {
+              <div class="ingredient-row" [formGroupName]="$index">
+                <input formControlName="name" placeholder="Nome" class="ing-name" />
+                <input type="number" formControlName="quantity" min="0" step="0.01" class="ing-qty" />
+                <input type="number" formControlName="unitValue" min="0" class="ing-value" />
+                <button type="button" class="btn-remove" (click)="removeIngredient($index)" [disabled]="ingredients.length <= 1" title="Remover">×</button>
+              </div>
+            }
+            <button type="button" class="btn-add-line" (click)="addIngredient()">+ Adicionar ingrediente</button>
+          </div>
+        }
+      </section>
+
+      <!-- Observações -->
+      <section class="form-section">
+        <h3 class="section-title">Observações</h3>
+        <div class="field-block field-block-full">
+          <label for="salg-observations">Observações (opcional)</label>
+          <input id="salg-observations" formControlName="observations" placeholder="Ex: Bolo sem muito açúcar, massa branca por dentro, etc." />
+        </div>
+      </section>
+
+      <!-- Resumo financeiro -->
+      <section class="form-section">
+        <h3 class="section-title">Resumo da encomenda</h3>
+        <p class="section-hint">Confira os principais valores antes de criar a encomenda.</p>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="summary-label">Valor total da encomenda</span>
+            <span class="summary-value">{{ form.get('valueCharged')?.value || 0 | number:'1.0-0' }} MZN</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Despesas desta encomenda</span>
+            <span class="summary-value">{{ costTotalPreview | number:'1.0-0' }} MZN</span>
+          </div>
+        </div>
+        <p class="summary-note">O lucro final não é mostrado aqui porque ainda existem outras despesas extras do negócio.</p>
+      </section>
+
+      @if (submitError) {
+        <p class="form-error">{{ submitError }}</p>
+      }
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || submitting">
+          {{ submitting ? 'A guardar...' : 'Criar encomenda' }}
+        </button>
+        <a routerLink="/dashboard" class="btn btn-secondary">Cancelar</a>
+      </div>
+      </div>
+    </form>
+  }
+
+  </div>
+</div>

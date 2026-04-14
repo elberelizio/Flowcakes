@@ -17,14 +17,6 @@ public class RegisterRequest {
     @Size(max = 200)
     private String fullName;
 
-    @NotBlank(message = "Tipo de documento é obrigatório (BI ou NUIT)")
-    @Size(max = 10)
-    private String documentType;
-
-    @NotBlank(message = "Número do documento é obrigatório")
-    @Size(max = 50)
-    private String documentNumber;
-
     @NotBlank(message = "Província é obrigatória")
     @Size(max = 100)
     private String province;
@@ -38,10 +30,6 @@ public class RegisterRequest {
     public void setPassword(String password) { this.password = password; }
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
-    public String getDocumentType() { return documentType; }
-    public void setDocumentType(String documentType) { this.documentType = documentType; }
-    public String getDocumentNumber() { return documentNumber; }
-    public void setDocumentNumber(String documentNumber) { this.documentNumber = documentNumber; }
     public String getProvince() { return province; }
     public void setProvince(String province) { this.province = province; }
     public String getEmail() { return email; }

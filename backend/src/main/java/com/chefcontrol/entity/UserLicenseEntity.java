@@ -23,8 +23,9 @@ public class UserLicenseEntity {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
+    /** EN: DB license state. PT: Estado na BD — pending | trial | paid. */
     @Column(nullable = false, length = 20)
-    private String status; // "pending" | "paid"
+    private String status;
 
     @Column(name = "license_token", unique = true, length = 100)
     private String licenseToken;
@@ -44,6 +45,14 @@ public class UserLicenseEntity {
 
     @Column(name = "payment_reference", length = 200)
     private String paymentReference;
+
+    /** Quando o admin rejeitou; null = não rejeitado. Rejeitados podem ser aprovados depois com ID de pagamento. */
+    @Column(name = "rejected_at")
+    private Instant rejectedAt;
+
+    /** Última vez que o utilizador indicou ter efectuado transferência (e-Mola). */
+    @Column(name = "payment_reported_at")
+    private Instant paymentReportedAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -84,6 +93,10 @@ public class UserLicenseEntity {
     public void setPaymentPhone(String paymentPhone) { this.paymentPhone = paymentPhone; }
     public String getPaymentReference() { return paymentReference; }
     public void setPaymentReference(String paymentReference) { this.paymentReference = paymentReference; }
+    public Instant getRejectedAt() { return rejectedAt; }
+    public void setRejectedAt(Instant rejectedAt) { this.rejectedAt = rejectedAt; }
+    public Instant getPaymentReportedAt() { return paymentReportedAt; }
+    public void setPaymentReportedAt(Instant paymentReportedAt) { this.paymentReportedAt = paymentReportedAt; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }

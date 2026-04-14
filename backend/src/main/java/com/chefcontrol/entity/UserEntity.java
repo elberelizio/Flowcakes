@@ -36,6 +36,9 @@ public class UserEntity {
     @Column(name = "is_admin", nullable = false)
     private boolean admin = false;
 
+    @Column(nullable = false)
+    private boolean blocked = false;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -72,6 +75,8 @@ public class UserEntity {
     public void setEmail(String email) { this.email = email; }
     public boolean isAdmin() { return admin; }
     public void setAdmin(boolean admin) { this.admin = admin; }
+    public boolean isBlocked() { return blocked; }
+    public void setBlocked(boolean blocked) { this.blocked = blocked; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }

@@ -1,0 +1,212 @@
+<div class="register-page landing-page-root font-sans text-gray-800 min-h-screen">
+  <!-- Elementos decorativos de fundo -->
+  <div class="fixed top-0 left-0 w-96 h-96 bg-brand-500/5 rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+  <div class="fixed bottom-0 right-0 w-96 h-96 bg-brand-600/5 rounded-full translate-x-1/2 translate-y-1/2 pointer-events-none"></div>
+
+  <app-public-site-nav />
+
+  <main class="max-w-7xl mx-auto px-6 lg:px-12 pt-28 pb-12 lg:pt-36 lg:pb-20 relative z-10">
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      <!-- Left Section - Benefits -->
+      <section class="space-y-8 opacity-0 animate-fade-in-left hidden lg:block">
+        <div class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-brand-50 to-brand-100 border border-brand-200 shadow-sm hover:shadow-md transition-shadow">
+          <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+          <span class="text-sm font-medium text-brand-800">Cadastro rápido e seguro</span>
+        </div>
+        
+        <div>
+          <h1 class="text-5xl lg:text-6xl font-serif font-bold leading-tight text-gray-900 mb-4">
+            Crie sua conta e comece a <span class="text-gradient-animated">vender melhor</span>.
+          </h1>
+          <p class="text-lg text-gray-600 leading-relaxed opacity-90">
+            Em poucos minutos você entra no ChefControl e começa a organizar seu negócio de forma profissional. Sem complicações.
+          </p>
+        </div>
+      </section>
+
+      <!-- Right Section - Form Card -->
+      <section class="bg-white/80 backdrop-blur-md border border-brand-100/50 rounded-3xl shadow-2xl p-8 sm:p-10 opacity-0 animate-fade-in-right hover:shadow-3xl transition-shadow duration-500 lg:sticky lg:top-32">
+        <div class="space-y-1 mb-8">
+          <h2 class="text-3xl font-bold text-gray-900">Criar conta</h2>
+          <p class="text-sm text-gray-500">Preencha os dados abaixo para começar hoje</p>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
+          <!-- Nome Completo -->
+          <div class="form-group animate-fade-in-up" [style.--delay]="'100ms'" style="animation-delay: 100ms;">
+            <label for="fullName" class="block text-sm font-semibold text-gray-700 mb-2.5">
+              <i class="fa-solid fa-user text-brand-600 mr-2"></i>Nome completo
+            </label>
+            <div class="relative">
+              <input 
+                id="fullName" 
+                type="text" 
+                formControlName="fullName" 
+                placeholder="João da Silva" 
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all duration-300 bg-gray-50 focus:bg-white" 
+              />
+              @if (form.get('fullName')?.valid && form.get('fullName')?.touched) {
+                <span class="absolute right-3 top-3.5 text-green-500"><i class="fa-solid fa-check"></i></span>
+              }
+            </div>
+            @if (form.get('fullName')?.invalid && form.get('fullName')?.touched) {
+              <span class="text-xs text-red-600 mt-1 block"><i class="fa-solid fa-circle-exclamation mr-1"></i>Nome completo é obrigatório.</span>
+            }
+          </div>
+
+          <!-- Província -->
+          <div class="form-group animate-fade-in-up" [style.--delay]="'150ms'" style="animation-delay: 150ms;">
+            <label for="province" class="block text-sm font-semibold text-gray-700 mb-2.5">
+              <i class="fa-solid fa-map-pin text-brand-600 mr-2"></i>Província
+            </label>
+            <select 
+              id="province" 
+              formControlName="province" 
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all duration-300 bg-gray-50 focus:bg-white"
+            >
+              <option value="">Selecione a sua província</option>
+              @for (p of provinces; track p) {
+                <option [value]="p">{{ p }}</option>
+              }
+            </select>
+            @if (form.get('province')?.invalid && form.get('province')?.touched) {
+              <span class="text-xs text-red-600 mt-1 block"><i class="fa-solid fa-circle-exclamation mr-1"></i>Província é obrigatória.</span>
+            }
+          </div>
+
+          <!-- Contacto -->
+          <div class="form-group animate-fade-in-up" [style.--delay]="'200ms'" style="animation-delay: 200ms;">
+            <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2.5">
+              <i class="fa-solid fa-phone text-brand-600 mr-2"></i>Contacto (9 ou 12 dígitos)
+            </label>
+            <div class="relative">
+              <input 
+                id="phone" 
+                type="tel" 
+                formControlName="phone" 
+                placeholder="841234567 ou 258841234567" 
+                inputmode="numeric" 
+                maxlength="12" 
+                (input)="onPhoneInput($event)" 
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all duration-300 bg-gray-50 focus:bg-white" 
+              />
+              @if (form.get('phone')?.valid && form.get('phone')?.touched) {
+                <span class="absolute right-3 top-3.5 text-green-500"><i class="fa-solid fa-check"></i></span>
+              }
+            </div>
+            @if (form.get('phone')?.invalid && form.get('phone')?.touched) {
+              <span class="text-xs text-red-600 mt-1 block"><i class="fa-solid fa-circle-exclamation mr-1"></i>{{ form.get('phone')?.errors?.['mzPhone'] ? 'Use 9 dígitos ou 12 com prefixo 258.' : 'Contacto é obrigatório.' }}</span>
+            }
+          </div>
+
+          <!-- Email -->
+          <div class="form-group animate-fade-in-up" [style.--delay]="'250ms'" style="animation-delay: 250ms;">
+            <label for="email" class="block text-sm font-semibold text-gray-700 mb-2.5">
+              <i class="fa-solid fa-envelope text-brand-600 mr-2"></i>Email (opcional)
+            </label>
+            <div class="relative">
+              <input 
+                id="email" 
+                type="email" 
+                formControlName="email" 
+                placeholder="exemplo&#64;email.com" 
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all duration-300 bg-gray-50 focus:bg-white" 
+              />
+              @if (form.get('email')?.valid && form.get('email')?.touched && form.get('email')?.value) {
+                <span class="absolute right-3 top-3.5 text-green-500"><i class="fa-solid fa-check"></i></span>
+              }
+            </div>
+            @if (form.get('email')?.invalid && form.get('email')?.touched) {
+              <span class="text-xs text-red-600 mt-1 block"><i class="fa-solid fa-circle-exclamation mr-1"></i>Email inválido.</span>
+            }
+          </div>
+
+          <!-- Senha -->
+          <div class="form-group animate-fade-in-up" [style.--delay]="'300ms'" style="animation-delay: 300ms;">
+            <label for="password" class="block text-sm font-semibold text-gray-700 mb-2.5">
+              <i class="fa-solid fa-lock text-brand-600 mr-2"></i>Senha da conta
+            </label>
+            <div class="relative">
+              <input 
+                id="password" 
+                type="password" 
+                formControlName="password" 
+                placeholder="Mín. 4 caracteres" 
+                autocomplete="new-password" 
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all duration-300 bg-gray-50 focus:bg-white" 
+              />
+              @if (form.get('password')?.valid && form.get('password')?.touched) {
+                <span class="absolute right-3 top-3.5 text-green-500"><i class="fa-solid fa-check"></i></span>
+              }
+            </div>
+            @if (form.get('password')?.invalid && form.get('password')?.touched) {
+              <span class="text-xs text-red-600 mt-1 block"><i class="fa-solid fa-circle-exclamation mr-1"></i>{{ form.get('password')?.errors?.['required'] ? 'Senha é obrigatória.' : 'Senha deve ter pelo menos 4 caracteres.' }}</span>
+            }
+          </div>
+
+          <!-- Checkbox Conformidade -->
+          <label class="flex items-start gap-3 text-sm text-gray-700 p-4 rounded-xl bg-brand-50 border border-brand-100 hover:border-brand-200 transition-colors cursor-pointer group animate-fade-in-up" [style.--delay]="'350ms'" style="animation-delay: 350ms;">
+            <input 
+              type="checkbox" 
+              formControlName="dataTrue" 
+              class="mt-1 rounded accent-brand-600 cursor-pointer" 
+            />
+            <span class="group-hover:text-brand-800">Concordo que todos os dados fornecidos são verdadeiros.</span>
+          </label>
+          @if (form.get('dataTrue')?.invalid && form.get('dataTrue')?.touched) {
+            <span class="block text-xs text-red-600 -mt-2 animate-fade-in-up" style="animation-delay: 350ms;"><i class="fa-solid fa-circle-exclamation mr-1"></i>Deve concordar para criar a conta.</span>
+          }
+
+          @if (error) {
+            <div class="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-3 animate-shake">
+              <i class="fa-solid fa-circle-exclamation text-red-600 mt-0.5"></i>
+              <span>{{ error }}</span>
+            </div>
+          }
+
+          <!-- Botões -->
+          <div class="space-y-3 pt-4 animate-fade-in-up" [style.--delay]="'400ms'" style="animation-delay: 400ms;">
+            <button 
+              type="submit" 
+              class="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white font-bold hover:from-brand-700 hover:to-brand-800 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95" 
+              [disabled]="loading || form.invalid"
+            >
+              <i class="fa-solid fa-check-circle mr-2"></i>{{ loading ? 'A carregar...' : 'Criar conta' }}
+            </button>
+            <a 
+              routerLink="/login" 
+              class="block w-full text-center py-3 rounded-xl border-2 border-brand-300 text-brand-700 font-semibold hover:bg-brand-50 hover:border-brand-400 transition-all duration-300 hover:scale-[1.01] active:scale-95"
+            >
+              <i class="fa-solid fa-right-to-bracket mr-2"></i>Já tenho conta — Entrar
+            </a>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <!-- Success Popup -->
+  @if (showSuccessPopup) {
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-[1000] p-4 animate-fade-in">
+      <div class="bg-white/95 backdrop-blur rounded-3xl p-8 max-w-md w-full text-center shadow-2xl" (click)="$event.stopPropagation()" style="animation: slideUp 0.4s ease-out;">
+        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-teal-500 text-white text-3xl mx-auto mb-4 flex items-center justify-center shadow-lg">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-900 mb-2">Conta criada com sucesso!</h3>
+        <p class="text-sm text-gray-600 mb-4 text-left leading-relaxed">{{ successMessage }}</p>
+        <p class="text-sm text-brand-800 font-medium mb-6 px-2 bg-brand-50 py-3 rounded-xl">
+          Para entrar, use o <strong>mesmo contacto</strong> e a <strong>mesma senha</strong> que definiu.
+        </p>
+        <p class="text-xs text-gray-500 mb-6">
+          Redirecionamento automático em <span class="font-bold text-brand-700 text-sm">{{ loginRedirectSecondsLeft }}</span>s
+        </p>
+        <button
+          type="button"
+          class="w-full py-3 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white font-bold hover:from-brand-700 hover:to-brand-800 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95"
+          (click)="goToLoginNow()">
+          <i class="fa-solid fa-arrow-right mr-2"></i>Ir para login agora
+        </button>
+      </div>
+    </div>
+  }
+</div>

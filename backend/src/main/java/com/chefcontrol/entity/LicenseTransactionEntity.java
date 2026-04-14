@@ -1,6 +1,7 @@
 package com.chefcontrol.entity;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -24,6 +25,12 @@ public class LicenseTransactionEntity {
     @Column(name = "e_mola_transaction_id", nullable = false, length = 100)
     private String eMolaTransactionId;
 
+    @Column(name = "amount", precision = 10, scale = 2)
+    private BigDecimal amount;
+
+    @Column(name = "duration_months")
+    private Integer durationMonths;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -40,6 +47,10 @@ public class LicenseTransactionEntity {
     public void setUserLicense(UserLicenseEntity userLicense) { this.userLicense = userLicense; }
     public String getEMolaTransactionId() { return eMolaTransactionId; }
     public void setEMolaTransactionId(String eMolaTransactionId) { this.eMolaTransactionId = eMolaTransactionId; }
+    public BigDecimal getAmount() { return amount; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
+    public Integer getDurationMonths() { return durationMonths; }
+    public void setDurationMonths(Integer durationMonths) { this.durationMonths = durationMonths; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 }

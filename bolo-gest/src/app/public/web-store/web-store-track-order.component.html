@@ -1,0 +1,85 @@
+﻿<div class="web-store-track-page">
+  <header class="web-store-track-header">
+    <div class="web-store-container">
+      <a [routerLink]="publicStoreBasePath()" class="web-store-track-back">← Voltar para o início</a>
+      <h1 class="web-store-track-title">Rastrear <span class="web-store-purple">Pedido</span></h1>
+      <p class="web-store-track-desc">Acompanhe o status do seu pedido em tempo real.</p>
+    </div>
+  </header>
+  <div class="web-store-track-content">
+    <div class="web-store-container web-store-track-narrow">
+      <div class="web-store-track-form-wrap">
+        <form (ngSubmit)="search($event)" class="web-store-track-form">
+          <input type="text" [(ngModel)]="orderId" name="orderId" placeholder="Digite o número do pedido (ex: PED001)" class="web-store-track-input" />
+          <button type="submit" class="web-store-btn web-store-btn-purple" [disabled]="isSearching() || !orderId.trim()">
+            @if (isSearching()) {
+              <span class="web-store-spinner"></span>
+              Buscando...
+            } @else {
+              Rastrear
+            }
+          </button>
+        </form>
+        @if (error()) {
+          <div class="web-store-track-error">{{ error() }}</div>
+        }
+        @if (!order() && !error()) {
+          <p class="web-store-track-hint"><strong>Dica:</strong> Use PED001, PED002 ou PED003 para testar.</p>
+        }
+      </div>
+
+      @if (order(); as o) {
+        <div class="web-store-track-result">
+          <div class="web-store-track-status-card">
+            <h2>{{ statusText(o.status) }}</h2>
+            <div class="web-store-track-progress-wrap">
+              <div class="web-store-track-progress-bar">
+                <div class="web-store-track-progress-fill" [style.width.%]="progress(o.status)" [ngClass]="statusClass(o.status)"></div>
+              </div>
+              <p>{{ progress(o.status) }}% concluído</p>
+            </div>
+          </div>
+          <div class="web-store-track-grid">
+            <div class="web-store-track-timeline">
+              <h3>Histórico do Pedido</h3>
+              @for (item of o.timeline; track item.status) {
+                <div class="web-store-track-timeline-item">
+                  <div class="web-store-track-timeline-dot" [class.web-store-track-timeline-dot--done]="item.completed"></div>
+                  <div>
+                    <p class="web-store-track-timeline-status" [class.web-store-track-timeline-status--done]="item.completed">{{ item.status }}</p>
+                    <p class="web-store-track-timeline-time">{{ item.time }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+            <div class="web-store-track-details">
+              <div class="web-store-track-card">
+                <h3>Itens do Pedido</h3>
+                <ul>
+                  @for (item of o.items; track item) {
+                    <li>{{ item }}</li>
+                  }
+                </ul>
+                <div class="web-store-track-total">
+                  <span>Total</span>
+                  <strong>{{ o.total }}</strong>
+                </div>
+              </div>
+              <div class="web-store-track-card">
+                <h3>Informações de Entrega</h3>
+                <p><strong>Data:</strong> {{ o.date }}</p>
+                <p><strong>Previsão:</strong> {{ o.estimatedDelivery }}</p>
+                <p><strong>Contato:</strong> {{ o.customerPhone }}</p>
+                <p><strong>Endereço:</strong> {{ o.deliveryAddress }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="web-store-track-cta">
+            <p>Alguma dúvida sobre seu pedido?</p>
+            <a [routerLink]="contactRoute()" class="web-store-btn web-store-btn-white">Falar com Atendimento</a>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

@@ -1,0 +1,169 @@
+<div class="configuracoes-page">
+  <header class="page-header">
+    <div class="header-main">
+      <h1>Configurações do Meu site</h1>
+      <p class="subtitle">Personalize a página da loja que os seus clientes verão. As alterações aparecem em tempo real na pré-visualização.</p>
+    </div>
+    <a routerLink="/dashboard" class="btn btn-back">← Voltar</a>
+  </header>
+
+  @if (loading) {
+    <p class="loading-text">A carregar...</p>
+  } @else {
+    <div class="config-layout">
+      <!-- Formulário -->
+      <section class="config-form-section">
+        <h2>Informação do negócio</h2>
+        <p class="section-hint">Personalize o seu site. O <strong>site padrão</strong> (/loja) permanece; o seu site fica em /loja/identificador com a sua marca.</p>
+
+        <form [formGroup]="form" (ngSubmit)="save()" class="config-form">
+          <div class="form-grid">
+            <div class="field field-full">
+              <label for="storeName">Nome do negócio</label>
+              <input id="storeName" type="text" formControlName="storeName" placeholder="Ex: Doce Sabor" />
+              <span class="field-hint">Aparece no menu, rodapé e página de contacto.</span>
+            </div>
+            <div class="field field-full">
+              <label for="storeTagline">Slogan ou frase curta</label>
+              <input id="storeTagline" type="text" formControlName="storeTagline" placeholder="Ex: Confeitaria Artesanal" maxlength="300" />
+              <span class="field-hint">Ex.: badge no hero, subtítulo na página de contacto.</span>
+            </div>
+            <div class="field field-full">
+              <label for="storeDescription">Descrição do negócio (secção Sobre)</label>
+              <textarea id="storeDescription" formControlName="storeDescription" rows="4" placeholder="Apresente o seu negócio aos clientes. Ex: Somos uma confeitaria artesanal dedicada a criar momentos doces e memoráveis..." maxlength="2000"></textarea>
+            </div>
+            <div class="field field-full">
+              <label for="storeFooterTagline">Frase do rodapé</label>
+              <input id="storeFooterTagline" type="text" formControlName="storeFooterTagline" placeholder="Ex: Transformando momentos especiais em experiências doces" maxlength="400" />
+            </div>
+            <div class="field">
+              <label for="storePhone">Telefone</label>
+              <input id="storePhone" type="text" formControlName="storePhone" placeholder="Ex: 87 123 4567" />
+            </div>
+            <div class="field">
+              <label for="storeWhatsapp">WhatsApp</label>
+              <input id="storeWhatsapp" type="text" formControlName="storeWhatsapp" placeholder="Ex: 87 123 4567" />
+              <span class="field-hint">Para encomendas e contacto.</span>
+            </div>
+            <div class="field">
+              <label for="storeEmail">E-mail</label>
+              <input id="storeEmail" type="email" formControlName="storeEmail" placeholder="Ex: contacto&#64;minhaloja.com" />
+            </div>
+            <div class="field">
+              <label for="storeAddress">Endereço</label>
+              <input id="storeAddress" type="text" formControlName="storeAddress" placeholder="Ex: Rua X, nº 123, Maputo" />
+            </div>
+            <div class="field field-full">
+              <label for="storeHours">Horário de funcionamento</label>
+              <input id="storeHours" type="text" formControlName="storeHours" placeholder="Ex: Seg-Sex: 8h às 18h. Sábado: 9h às 14h" maxlength="300" />
+            </div>
+            <div class="field">
+              <label for="storeInstagram">Instagram</label>
+              <input id="storeInstagram" type="text" formControlName="storeInstagram" placeholder="Ex: @minhaloja" />
+            </div>
+            <div class="field">
+              <label for="storeSlug">Identificador do site (URL)</label>
+              <input id="storeSlug" type="text" formControlName="storeSlug" placeholder="Ex: doce-sabor" (input)="onSlugInput()" maxlength="50" />
+              <span class="field-hint">Mín. 3 caracteres. O seu site será /loja/identificador</span>
+            </div>
+          </div>
+
+          <h3 class="config-subsection">Aparência do site</h3>
+          <p class="section-hint">Cores e imagens do hero para espelhar o seu negócio.</p>
+          <div class="form-grid">
+            <div class="field field-full">
+              <label for="storePrimaryColor">Cor primária</label>
+              <div class="color-picker-wrap">
+                <input id="storePrimaryColor" type="color" formControlName="storePrimaryColor" class="color-picker-input" />
+                <input type="text" [value]="form.get('storePrimaryColor')?.value" (input)="form.get('storePrimaryColor')?.setValue($any($event.target).value)" placeholder="#0d9488" maxlength="20" />
+              </div>
+              <span class="field-hint">Usada em botões, links e destaques.</span>
+            </div>
+            <div class="field field-full">
+              <label for="storeHeroImage1">Imagem do hero 1 (URL)</label>
+              <input id="storeHeroImage1" type="url" formControlName="storeHeroImage1" placeholder="https://exemplo.com/imagem1.jpg" />
+            </div>
+            <div class="field field-full">
+              <label for="storeHeroImage2">Imagem do hero 2 (URL)</label>
+              <input id="storeHeroImage2" type="url" formControlName="storeHeroImage2" placeholder="https://exemplo.com/imagem2.jpg" />
+            </div>
+            <div class="field field-full">
+              <label for="storeHeroImage3">Imagem do hero 3 (URL)</label>
+              <input id="storeHeroImage3" type="url" formControlName="storeHeroImage3" placeholder="https://exemplo.com/imagem3.jpg" />
+            </div>
+          </div>
+
+          @if (message) {
+            <p class="message success">{{ message }}</p>
+          }
+          @if (messageError) {
+            <p class="message error">{{ messageError }}</p>
+          }
+
+          <button type="submit" class="btn btn-primary" [disabled]="saving || form.invalid || form.pristine">
+            {{ saving ? 'A guardar...' : 'Guardar alterações' }}
+          </button>
+
+          <div class="store-url-preview">
+            <a routerLink="/loja" target="_blank" rel="noopener" class="store-url-link">Ver site padrão (sempre disponível)</a>
+            @if (storeUrl) {
+              <a [href]="storeUrl" target="_blank" rel="noopener" class="store-url-link">
+                <app-icon name="globe" />
+                O seu site: {{ storeUrl }}
+              </a>
+              <button type="button" class="btn btn-text btn-copy" (click)="copyUrl()" title="Copiar link">
+                {{ copyFeedback ? 'Copiado!' : 'Copiar link' }}
+              </button>
+            } @else {
+              <span class="field-hint">Defina um identificador acima e guarde para obter o link do seu site.</span>
+            }
+          </div>
+        </form>
+      </section>
+
+      <!-- Pré-visualização da loja -->
+      <aside class="config-preview-section">
+        <h2>Pré-visualização da loja</h2>
+        <p class="section-hint">Visualização aproximada de como os clientes verão o seu site. Atualiza ao editar os campos.</p>
+        <div class="loja-preview" [style.--preview-primary]="form.get('storePrimaryColor')?.value || '#0d9488'">
+          <!-- Navbar preview -->
+          <div class="loja-preview-nav">
+            <span class="loja-preview-brand">{{ form.get('storeName')?.value || 'Minha Loja' }}</span>
+            <span class="loja-preview-links">Início · Sobre · Produtos · Contato</span>
+          </div>
+          <!-- Hero preview -->
+          <div class="loja-preview-hero" [style.backgroundImage]="heroPreviewBg()" [class.has-image]="!!form.get('storeHeroImage1')?.value?.trim()">
+            <span class="loja-preview-badge">{{ form.get('storeTagline')?.value || 'Confeitaria Artesanal' }}</span>
+            <h3 class="loja-preview-hero-title">{{ form.get('storeName')?.value || 'Minha Loja' }}</h3>
+            <p class="loja-preview-hero-desc">{{ form.get('storeTagline')?.value || 'Qualidade que surpreende' }}</p>
+          </div>
+          <!-- About preview -->
+          <div class="loja-preview-about">
+            <h4>Bem-vindo à {{ form.get('storeName')?.value || 'Minha Loja' }}!</h4>
+            <p>{{ form.get('storeDescription')?.value || 'Apresente o seu negócio aqui. Esta descrição aparece na secção Sobre da página da loja.' }}</p>
+          </div>
+          <!-- Footer/Contact preview -->
+          <div class="loja-preview-footer">
+            <strong>{{ form.get('storeName')?.value || 'Minha Loja' }}</strong>
+            <p>{{ form.get('storeFooterTagline')?.value || 'Transformando momentos especiais em experiências doces.' }}</p>
+            @if (form.get('storeAddress')?.value) {
+              <p><strong>Endereço:</strong> {{ form.get('storeAddress')?.value }}</p>
+            }
+            @if (form.get('storePhone')?.value || form.get('storeWhatsapp')?.value) {
+              <p><strong>Contacto:</strong> {{ form.get('storePhone')?.value || form.get('storeWhatsapp')?.value }}</p>
+            }
+            @if (form.get('storeEmail')?.value) {
+              <p><strong>E-mail:</strong> {{ form.get('storeEmail')?.value }}</p>
+            }
+            @if (form.get('storeHours')?.value) {
+              <p><strong>Horário:</strong> {{ form.get('storeHours')?.value }}</p>
+            }
+            @if (form.get('storeInstagram')?.value) {
+              <p><strong>Instagram:</strong> {{ form.get('storeInstagram')?.value }}</p>
+            }
+          </div>
+        </div>
+      </aside>
+    </div>
+  }
+</div>

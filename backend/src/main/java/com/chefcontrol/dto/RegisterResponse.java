@@ -6,7 +6,7 @@ public class RegisterResponse {
 
     private UserResponse user;
     private boolean messageSent;
-    private String message = "Sua conta foi criada com sucesso! Enviámos uma mensagem de confirmação para o seu WhatsApp/SMS.";
+    private String message = "Sua conta foi criada com sucesso! Tem um período de teste gratuito. Consulte os detalhes da licença na aplicação.";
 
     public static RegisterResponse of(UserResponse user, boolean messageSent) {
         RegisterResponse r = new RegisterResponse();

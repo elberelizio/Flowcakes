@@ -11,6 +11,7 @@ public class OrderResponse {
 
     private UUID id;
     private String createdAt; // ISO
+    private Integer orderNo; // Número sequencial da encomenda (por utilizador)
     private String clientName;
     private String category;
     private String subcategory;
@@ -29,6 +30,9 @@ public class OrderResponse {
     private String cakeName;
     private String cakeSize;
     private String deliveryDate; // ISO date string
+    private String clientAddress;
+    private String pickupAddress;
+    private String deliveryAddress;
     private boolean hasDelivery;
     private BigDecimal deliveryCost;
     private String orderStatus;
@@ -39,6 +43,7 @@ public class OrderResponse {
         OrderResponse r = new OrderResponse();
         r.setId(o.getId());
         r.setCreatedAt(o.getCreatedAt() != null ? o.getCreatedAt().toString() : null);
+        r.setOrderNo(o.getOrderNo());
         r.setClientName(o.getClientName());
         r.setCategory(o.getCategory());
         r.setSubcategory(o.getSubcategory());
@@ -57,6 +62,9 @@ public class OrderResponse {
         r.setCakeName(o.getCakeName());
         r.setCakeSize(o.getCakeSize());
         r.setDeliveryDate(o.getDeliveryDate() != null ? o.getDeliveryDate().toString() : null);
+        r.setClientAddress(o.getClientAddress());
+        r.setPickupAddress(o.getPickupAddress());
+        r.setDeliveryAddress(o.getDeliveryAddress());
         r.setHasDelivery(o.isHasDelivery());
         r.setDeliveryCost(o.getDeliveryCost());
         r.setOrderStatus(o.getOrderStatus());
@@ -67,6 +75,8 @@ public class OrderResponse {
 
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
+    public Integer getOrderNo() { return orderNo; }
+    public void setOrderNo(Integer orderNo) { this.orderNo = orderNo; }
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
     public String getClientName() { return clientName; }
@@ -105,6 +115,12 @@ public class OrderResponse {
     public void setCakeSize(String cakeSize) { this.cakeSize = cakeSize; }
     public String getDeliveryDate() { return deliveryDate; }
     public void setDeliveryDate(String deliveryDate) { this.deliveryDate = deliveryDate; }
+    public String getClientAddress() { return clientAddress; }
+    public void setClientAddress(String clientAddress) { this.clientAddress = clientAddress; }
+    public String getPickupAddress() { return pickupAddress; }
+    public void setPickupAddress(String pickupAddress) { this.pickupAddress = pickupAddress; }
+    public String getDeliveryAddress() { return deliveryAddress; }
+    public void setDeliveryAddress(String deliveryAddress) { this.deliveryAddress = deliveryAddress; }
     public boolean isHasDelivery() { return hasDelivery; }
     public void setHasDelivery(boolean hasDelivery) { this.hasDelivery = hasDelivery; }
     public BigDecimal getDeliveryCost() { return deliveryCost; }

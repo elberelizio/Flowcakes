@@ -1,0 +1,67 @@
+<nav
+  class="public-site-nav fixed w-full z-50 transition-all duration-300 px-6 lg:px-12"
+  [class.py-4]="!navScrolled"
+  [class.py-2]="navScrolled"
+  [ngClass]="{ 'public-site-nav--scrolled': navScrolled }"
+>
+  <div class="max-w-7xl w-full mx-auto flex justify-between items-center">
+    <a routerLink="/" class="flex items-center gap-3 group" (click)="closeMobileMenu()">
+      <img src="/logotipo.png" alt="ChefControl" class="h-10 w-auto object-contain" />
+      <span class="text-2xl font-serif font-bold text-brand-800 tracking-wide">Chef<span class="text-brand-600">Control</span></span>
+    </a>
+    <div class="hidden md:flex items-center gap-8">
+      <a [routerLink]="['/']" fragment="features" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">Funcionalidades</a>
+      <a [routerLink]="['/']" fragment="pricing" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">Preços</a>
+      <a [routerLink]="['/']" fragment="testimonials" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">Depoimentos</a>
+      <a
+        routerLink="/contacto"
+        routerLinkActive="text-brand-700 font-semibold"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="text-gray-600 hover:text-brand-600 font-medium transition-colors"
+        >Contacto</a
+      >
+    </div>
+    <div class="hidden md:flex items-center gap-3">
+      <a
+        routerLink="/login"
+        class="inline-flex items-center justify-center px-6 py-2.5 rounded-full font-semibold border-2 border-brand-600 text-brand-700 hover:bg-brand-50 hover:border-brand-700 transition-all duration-300"
+      >
+        Entrar
+      </a>
+      <a
+        routerLink="/register"
+        class="inline-flex items-center justify-center bg-brand-600 text-white px-6 py-2.5 rounded-full font-medium hover:bg-brand-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+      >
+        Começar Grátis
+      </a>
+    </div>
+    <button type="button" (click)="toggleMobileMenu()" class="md:hidden text-brand-800 text-2xl focus:outline-none" aria-label="Menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+  <div
+    class="absolute top-full left-0 w-full bg-white shadow-xl border-t border-gray-100 md:hidden flex-col p-4 gap-4"
+    [class.hidden]="!mobileMenuOpen"
+    [class.flex]="mobileMenuOpen"
+  >
+    <a [routerLink]="['/']" fragment="features" (click)="closeMobileMenu()" class="block py-2 text-gray-600 hover:text-brand-600">Funcionalidades</a>
+    <a [routerLink]="['/']" fragment="pricing" (click)="closeMobileMenu()" class="block py-2 text-gray-600 hover:text-brand-600">Preços</a>
+    <a [routerLink]="['/']" fragment="testimonials" (click)="closeMobileMenu()" class="block py-2 text-gray-600 hover:text-brand-600">Depoimentos</a>
+    <a routerLink="/contacto" (click)="closeMobileMenu()" class="block py-2 text-gray-600 hover:text-brand-600">Contacto</a>
+    <hr class="border-gray-100" />
+    <a
+      routerLink="/login"
+      (click)="closeMobileMenu()"
+      class="block w-full text-center py-3 rounded-full font-semibold border-2 border-brand-600 text-brand-700 hover:bg-brand-50 transition-colors"
+    >
+      Entrar
+    </a>
+    <a
+      routerLink="/register"
+      (click)="closeMobileMenu()"
+      class="block w-full bg-brand-600 text-white py-3 rounded-full font-medium text-center hover:bg-brand-700 transition-colors"
+    >
+      Começar Grátis
+    </a>
+  </div>
+</nav>

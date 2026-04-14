@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { SnackbarComponent } from '../components/snackbar/snackbar.component';
+import { SnackbarComponent } from '../ui/snackbar/snackbar.component';
 
 interface QueuedNotification {
   message: string;

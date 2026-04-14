@@ -43,6 +43,9 @@ public class OrderRequest {
     private String cakeName;
     private String cakeSize;
     private LocalDate deliveryDate;
+    private String clientAddress;
+    private String pickupAddress;
+    private String deliveryAddress;
     private boolean hasDelivery = false;
     private BigDecimal deliveryCost = BigDecimal.ZERO;
     private String orderStatus = "ordered"; // "ordered" | "in_progress" | "completed" | "cancelled"
@@ -85,6 +88,12 @@ public class OrderRequest {
     public void setCakeSize(String cakeSize) { this.cakeSize = cakeSize; }
     public LocalDate getDeliveryDate() { return deliveryDate; }
     public void setDeliveryDate(LocalDate deliveryDate) { this.deliveryDate = deliveryDate; }
+    public String getClientAddress() { return clientAddress; }
+    public void setClientAddress(String clientAddress) { this.clientAddress = clientAddress; }
+    public String getPickupAddress() { return pickupAddress; }
+    public void setPickupAddress(String pickupAddress) { this.pickupAddress = pickupAddress; }
+    public String getDeliveryAddress() { return deliveryAddress; }
+    public void setDeliveryAddress(String deliveryAddress) { this.deliveryAddress = deliveryAddress; }
     public boolean isHasDelivery() { return hasDelivery; }
     public void setHasDelivery(boolean hasDelivery) { this.hasDelivery = hasDelivery; }
     public BigDecimal getDeliveryCost() { return deliveryCost; }

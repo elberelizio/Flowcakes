@@ -1,0 +1,340 @@
+<div class="admin-page licenses-page">
+  <header class="page-header">
+    <div class="header-content">
+      <div>
+        <h1>Gestão de licenças</h1>
+        <p class="subtitle">Licenças activas, utilizadores associados e contas bloqueadas ou licenças expiradas. Estender prazos e bloquear/desbloquear utilizadores.</p>
+      </div>
+      <a routerLink="/admin-dashboard" class="btn btn-secondary btn-back">Voltar ao painel</a>
+    </div>
+  </header>
+
+  @if (loading) {
+    <div class="state-message">
+      <p class="loading">A carregar...</p>
+    </div>
+  } @else if (error) {
+    <div class="state-message">
+      <p class="msg-error">{{ error }}</p>
+    </div>
+  } @else {
+    <section class="stats-section">
+      <h2 class="section-title">Resumo</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-value">{{ stats?.totalUsers ?? 0 }}</span>
+          <span class="stat-label">Utilizadores registados</span>
+        </div>
+        <div class="stat-card stat-paid">
+          <span class="stat-value">{{ (stats?.licensesPaid ?? 0) + (stats?.licensesTrial ?? 0) }}</span>
+          <span class="stat-label"
+            >Licenças activas
+            <span class="stat-sublabel">({{ stats?.licensesPaid ?? 0 }} pagas · {{ stats?.licensesTrial ?? 0 }} teste)</span></span
+          >
+        </div>
+        <div class="stat-card stat-expired">
+          <span class="stat-value">{{ expiredCount() }}</span>
+          <span class="stat-label">Expiradas</span>
+        </div>
+        <div class="stat-card stat-expiring">
+          <span class="stat-value">{{ expiringLicenses().length }}</span>
+          <span class="stat-label">A expirar (10 dias)</span>
+        </div>
+        <div class="stat-card stat-admin">
+          <span class="stat-value">{{ adminUsers().length }}</span>
+          <span class="stat-label">Administradores</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="users-section">
+      <h2 class="section-title">Utilizadores por estado da licença</h2>
+      <div class="filter-tabs">
+        <button type="button" class="tab" [class.active]="filterTab() === 'activas'" (click)="setFilter('activas')">
+          Licenças activas
+        </button>
+        <button type="button" class="tab" [class.active]="filterTab() === 'expiradas'" (click)="setFilter('expiradas')">
+          Expiradas
+        </button>
+        <button type="button" class="tab tab-expiring" [class.active]="filterTab() === 'expiring'" (click)="setFilter('expiring')">
+          A expirar
+          @if (expiringLicenses().length > 0) {
+            <span class="tab-badge">{{ expiringLicenses().length }}</span>
+          }
+        </button>
+        <button type="button" class="tab" [class.active]="filterTab() === 'admins'" (click)="setFilter('admins')">
+          Administradores
+        </button>
+      </div>
+
+      @if (filterTab() === 'expiring') {
+        <div class="table-wrap">
+          @if (expiringLoading()) {
+            <p class="loading">A carregar licenças a expirar...</p>
+          } @else if (expiringLicenses().length === 0) {
+            <div class="empty-row-box">Nenhuma licença a expirar nos próximos 10 dias.</div>
+          } @else {
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Contacto</th>
+                  <th>Válida até</th>
+                  <th>Dias restantes</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (e of expiringLicenses(); track e.userId) {
+                  <tr [class.row-expiring-critical]="(e.daysRemaining ?? 0) <= 3">
+                    <td>{{ e.fullName || '—' }}</td>
+                    <td>{{ e.phone || '—' }}</td>
+                    <td>{{ formatDate(e.validUntil) }}</td>
+                    <td>
+                      <span class="days-badge" [class.critical]="(e.daysRemaining ?? 0) <= 3">
+                        {{ e.daysRemaining }} dia(s)
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Contacto</th>
+                <th>Província</th>
+                <th>Data de registo</th>
+                <th>Estado</th>
+                <th>Código</th>
+                <th>Válida até</th>
+                <th>Período</th>
+                <th>Tempo restante</th>
+                <th class="th-actions">Acções</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if (filteredUsers().length === 0) {
+                <tr class="empty-row">
+                  <td colspan="10">
+                    @if (filterTab() === 'expiradas') {
+                      Nenhuma licença expirada.
+                    } @else if (filterTab() === 'admins') {
+                      Nenhum administrador encontrado.
+                    } @else {
+                      Nenhuma licença activa.
+                    }
+                  </td>
+                </tr>
+              } @else {
+                @for (u of filteredUsers(); track u.id) {
+                  <tr [class.row-blocked]="u.blocked">
+                    <td>{{ u.fullName || '—' }}</td>
+                    <td>{{ u.phone }}</td>
+                    <td>{{ u.province || '—' }}</td>
+                    <td>{{ formatDate(u.createdAt) }}</td>
+                    <td>
+                      @if (u.blocked) {
+                        <span class="badge badge-blocked">Bloqueado</span>
+                      } @else if (filterTab() === 'expiradas') {
+                        <span class="badge badge-expired">Expirada</span>
+                      } @else if (filterTab() === 'admins') {
+                        <span class="badge">Administrador</span>
+                      } @else {
+                        <span
+                          class="badge"
+                          [class.badge-paid]="u.licenseStatus === 'paid'"
+                          [class.badge-trial]="u.licenseStatus === 'trial'"
+                          [class.badge-pending]="u.licenseStatus === 'pending'">
+                          {{ licenseStatusLabelPt(u.licenseStatus) }}
+                        </span>
+                      }
+                    </td>
+                    <td class="code">{{ u.licenseToken || '—' }}</td>
+                    <td>{{ u.licenseValidUntil ? formatDate(u.licenseValidUntil) : '—' }}</td>
+                    <td>{{ formatLicensePeriod(u.licensePaidAt, u.licenseValidUntil) }}</td>
+                    <td>{{ formatTimeRemaining(u.licenseValidUntil) }}</td>
+                    <td class="action-cell">
+                      <div class="action-buttons">
+                        <button type="button" class="btn btn-sm btn-secondary" (click)="openUserDetail(u)">Detalhes</button>
+                        @if (!u.admin) {
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline"
+                            (click)="openExtendModal(u)"
+                            title="Estender prazo da licença"
+                          >
+                            Estender
+                          </button>
+                        }
+                        @if (u.blocked && !u.admin) {
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-success"
+                            [disabled]="actionLoadingId === u.id"
+                            (click)="unblockUser(u)"
+                          >
+                            {{ actionLoadingId === u.id ? '...' : 'Desbloquear' }}
+                          </button>
+                        } @else if (!u.blocked && !u.admin) {
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-warn"
+                            [disabled]="actionLoadingId === u.id"
+                            (click)="blockUser(u)"
+                          >
+                            {{ actionLoadingId === u.id ? '...' : 'Bloquear' }}
+                          </button>
+                        }
+                        @if (u.licenseActivationToken && (u.licenseStatus === 'paid' || u.licenseStatus === 'trial')) {
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline"
+                            (click)="copyActivationLink(u)"
+                            title="Copiar link de ativação"
+                          >
+                            {{ copiedForUserId === u.id ? 'Copiado!' : 'Link' }}
+                          </button>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+</div>
+
+<!-- Modal: Estender prazo (z-index maior para ficar por cima do modal de detalhes) -->
+@if (extendUser) {
+  <div class="overlay overlay-extend" (click)="closeExtendModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <button type="button" class="modal-close" (click)="closeExtendModal()" aria-label="Fechar">×</button>
+      <h3 class="modal-title">Estender prazo da licença</h3>
+      <p class="modal-subtitle">{{ extendUser.fullName || extendUser.phone }}</p>
+      <div class="modal-field">
+        <label for="extendMonths">Adicionar (meses)</label>
+        <select id="extendMonths" [(ngModel)]="extendMonths">
+          @for (m of extendOptions; track m) {
+            <option [value]="m">{{ m }} {{ m === 1 ? 'mês' : 'meses' }}</option>
+          }
+        </select>
+      </div>
+      @if (extendError) {
+        <p class="modal-error">{{ extendError }}</p>
+      }
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeExtendModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" [disabled]="extendingUserId === extendUser.id" (click)="submitExtendLicense()">
+          {{ extendingUserId === extendUser.id ? 'A processar...' : 'Estender prazo' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal: Detalhes do utilizador (único) -->
+@if (selectedUserDetail(); as d) {
+  <div class="overlay" (click)="closeUserDetail()">
+    <div class="detail-panel" (click)="$event.stopPropagation()">
+      <button type="button" class="modal-close" (click)="closeUserDetail()" aria-label="Fechar">×</button>
+      <h2 class="detail-title">{{ d.fullName || d.phone }}</h2>
+
+      @if (detailLoading()) {
+        <p class="detail-loading">A carregar...</p>
+      } @else {
+        @if (detailError()) {
+          <p class="detail-error">{{ detailError() }}</p>
+        }
+
+        <section class="detail-section">
+          <h3>Licença</h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Estado</span>
+              <span class="detail-value">
+                @if (d.blocked) {
+                  <span class="badge badge-blocked">Bloqueado</span>
+                } @else {
+                  <span
+                    class="badge"
+                    [class.badge-paid]="d.licenseStatus === 'paid'"
+                    [class.badge-trial]="d.licenseStatus === 'trial'"
+                    [class.badge-pending]="d.licenseStatus === 'pending'">
+                    {{ licenseStatusLabelPt(d.licenseStatus) }}
+                  </span>
+                }
+              </span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Número da licença</span>
+              <span class="detail-value code">{{ d.licenseToken || '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Válida até</span>
+              <span class="detail-value">{{ formatDate(d.licenseValidUntil) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Período</span>
+              <span class="detail-value">{{ formatLicensePeriod(d.licensePaidAt, d.licenseValidUntil) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Ciclo de renovação</span>
+              <span class="detail-value">{{ formatRenewalCycle(d.licensePaidAt, d.licenseValidUntil) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Ref. pagamento</span>
+              <span class="detail-value">{{ d.licensePaymentReference || '—' }}</span>
+            </div>
+          </div>
+          @if (d.blocked) {
+            <div class="detail-actions">
+              <button type="button" class="btn btn-success" (click)="unblockUserById(d.id)">Desbloquear</button>
+            </div>
+          } @else {
+            <div class="detail-actions">
+              <button type="button" class="btn btn-warn" (click)="blockUserById(d.id)">Bloquear conta</button>
+            </div>
+          }
+        </section>
+
+        <section class="detail-section">
+          <h3>Histórico de uso</h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Total de logins</span>
+              <span class="detail-value">{{ d.totalLogins ?? 0 }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Primeiro acesso</span>
+              <span class="detail-value">{{ formatDateTime(d.firstLoginAt) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Último acesso</span>
+              <span class="detail-value">{{ formatDateTime(d.lastLoginAt) }}</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="detail-footer">
+          <button type="button" class="btn btn-primary btn-footer" (click)="openExtendModalFromDetail()">
+            Estender prazo
+          </button>
+          @if (d.licenseActivationToken) {
+            <button type="button" class="btn btn-primary btn-footer" (click)="copyActivationLink(d)">
+              Copiar link de ativação
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}

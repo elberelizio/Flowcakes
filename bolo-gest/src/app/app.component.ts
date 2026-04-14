@@ -2,17 +2,19 @@ import { Component, signal, HostListener, OnInit, OnDestroy, AfterViewInit, effe
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from './services/auth.service';
-import { ThemeService } from './services/theme.service';
+// import { ThemeService } from './services/theme.service';
 import { LanguageService } from './services/language.service';
-import { IconComponent, IconName } from './components/icons/icons.component';
-import { SnackbarComponent } from './components/snackbar/snackbar.component';
+import { IconComponent, IconName } from './ui/icon/icon.component';
+import { SnackbarComponent } from './ui/snackbar/snackbar.component';
 import { NotificationService } from './services/notification.service';
 import { LicenseStatusResponse } from './services/auth.service';
 import { OrdersService } from './services/orders.service';
 import { ReminderService } from './services/reminder.service';
 import { OrderAlertsPopupService } from './services/order-alerts-popup.service';
 import { AdminStatsService } from './services/admin-stats.service';
+import { LicenseExpiryPopupService } from './services/license-expiry-popup.service';
 import { orderDisplayName } from './models/order.model';
+import { isPaidOrTrialStatus } from './core/license/license-status';
 
 @Component({
   selector: 'app-root',
@@ -28,7 +30,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   notificationsOpen = signal(false);
   userMenuOpen = signal(false);
   encomendasExpanded = signal(true);
-  lembretesExpanded = signal(true);
   /** Contagens para a sidebar (lembretes, encomendas, dívidas) */
   reminderCount = signal(0);
   orderCount = signal(0);
@@ -42,6 +43,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   private reminders = inject(ReminderService);
   orderAlertsPopup = inject(OrderAlertsPopupService);
   adminStats = inject(AdminStatsService);
+  licenseExpiryPopup = inject(LicenseExpiryPopupService);
   displayName = orderDisplayName;
 
   /** Nome do ícone para o item Retiradas (evita erro de tipo no template). */
@@ -49,23 +51,30 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
 
   constructor(
     public auth: AuthService,
-    public theme: ThemeService,
+    // public theme: ThemeService,
     public lang: LanguageService,
     private router: Router
   ) {
     effect(() => {
-      if (
-        this.auth.isLoggedIn() &&
-        !this.auth.isAdmin() &&
-        this.orders.allOrders().length > 0
-      ) {
-        this.orderAlertsPopup.tryShowSessionPopup();
-      }
-    });
-    effect(() => {
       this.reminderCount.set(this.reminders.reminders().length);
       this.orderCount.set(this.orders.allOrders().length);
       this.debtCount.set(this.orders.ordersWithPendingBalance().length);
+    });
+    effect(() => {
+      const logged = this.auth.isLoggedIn();
+      const admin = this.auth.isAdmin();
+      if (!logged) {
+        this.licenseStatus.set(null);
+        return;
+      }
+      if (admin) {
+        this.licenseStatus.set(null);
+        return;
+      }
+      void this.auth.getLicenseStatus().then((s) => {
+        this.licenseStatus.set(s);
+        this.licenseExpiryPopup.tryShowFromStatus(s);
+      });
     });
   }
 
@@ -80,8 +89,9 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
       if (this.auth.isAdmin()) {
         this.adminStats.loadStats();
       } else {
-        this.orders.loadOrders();
-        this.reminders.loadReminders();
+        void Promise.all([this.orders.loadOrders(), this.reminders.loadReminders()]).then(() => {
+          this.orderAlertsPopup.tryShowSessionPopup();
+        });
       }
     }
     const updateDateTime = () => {
@@ -94,9 +104,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     };
     updateDateTime();
     this.dateTimeInterval = setInterval(updateDateTime, 60000); // atualizar a cada minuto
-    if (!this.auth.isAdmin()) {
-      this.auth.getLicenseStatus().then((s) => this.licenseStatus.set(s));
-    }
   }
 
   ngOnDestroy(): void {
@@ -108,16 +115,23 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     return new Date(validUntil).toLocaleDateString('pt-MZ', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
+  /** EN: Sidebar license chip text. Pt: Texto do chip da licença na barra lateral. */
+  sidebarLicenseBadgeText(s: LicenseStatusResponse | null | undefined): string {
+    if (!s) return '';
+    if (s.showLicenseExpiryWarning) return 'A expirar';
+    if (s.status === 'paid') return 'Activa';
+    if (s.status === 'trial') return 'Teste';
+    return 'Pendente';
+  }
+
+  readonly isPaidOrTrialStatus = isPaidOrTrialStatus;
+
   toggleSidebar(): void {
     this.sidebarCollapsed.update(v => !v);
   }
 
   toggleEncomendas(): void {
     this.encomendasExpanded.update(v => !v);
-  }
-
-  toggleLembretes(): void {
-    this.lembretesExpanded.update(v => !v);
   }
 
 
@@ -150,10 +164,16 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     this.closeNavDropdowns();
   }
 
-  /** Páginas públicas: sem app-shell (login, ativação de licença, loja pública). */
+  /** Páginas públicas: sem app-shell (início, login, registo/register, ativação de licença, loja pública). */
   isPublicPage(): boolean {
-    const url = this.router.url;
-    return url === '/login' || url.startsWith('/login?') || url.includes('/ativar-licenca') || url.startsWith('/loja');
+    const url = this.router.url.split('?')[0];
+    if (url === '/' || url === '') return true;
+    if (url === '/login' || url === '/register') return true;
+    if (url.startsWith('/ativar-licenca')) return true;
+    if (url.startsWith('/loja')) return true;
+    if (url.startsWith('/recuperar-senha')) return true;
+    if (url === '/pagamento-licenca') return true;
+    return false;
   }
 
   getPageTitle(): string {
@@ -163,26 +183,28 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     if (url.includes('/admin-logs')) return 'Logs de acesso';
     if (url.includes('/admin-encomendas')) return 'Encomendas';
     if (url.includes('/recuperar-senha')) return 'Recuperar senha';
-    if (url.includes('/calendario')) return 'Lembretes – Criar';
-    if (url.includes('/lembretes')) return 'Lembretes – Visualizar';
-    if (url.includes('/despesas-variaveis')) return 'Cadastro de despesas eventuais';
+    if (url.includes('/lembretes')) return 'Lembretes';
+    if (url.includes('/despesas-variaveis')) return 'Despesas extras';
     if (url.includes('/gestao-dividas')) return 'Gestão de dívidas';
     if (url.includes('/clientes')) return 'Clientes';
     if (url.includes('/minha-licenca')) return 'Minha Licença';
     if (url.includes('/encomendas/detalhes')) return 'Detalhes dos pedidos';
     if (url.match(/\/encomendas\/[^/]+/)) return 'Detalhes da encomenda';
-    if (url.includes('/encomendas')) return 'Visualização de encomendas';
+    if (url.includes('/encomendas')) return 'Encomendas';
     if (url.includes('/satisfacao')) return 'Satisfação';
     if (url.includes('/gestao-notificacoes')) return 'Notificações';
     if (url.includes('/admin-novos-utilizadores')) return 'Novos utilizadores';
     if (url.includes('/admin-perfis')) return 'Utilizadores e perfis';
     if (url.includes('/admin-configuracoes')) return 'Configurações';
+    if (url.includes('/configuracoes')) return 'Configurações do Meu site';
     if (url.includes('/admin-ranking')) return 'Ranking';
-    if (url.includes('/finalizar-conta')) return 'Finalizar conta';
-    if (url.includes('/nova-encomenda')) return 'Nova Encomenda';
-    if (url.includes('/encomendas')) return 'Encomendas';
+    if (url.includes('/pagamentos')) return 'Pagamentos';
+    if (url.includes('/nova-encomenda')) return 'Criar encomenda';
     if (url.includes('/relatorios')) return 'Relatórios';
-    if (url.includes('/dashboard') || url === '/') return 'Dashboard';
+    if (url.includes('/dashboard')) return 'Dashboard';
+    if (url === '/' || url === '') return 'Início';
+    if (url.includes('/register')) return 'Criar conta';
+    if (url.includes('/pagamento-licenca')) return 'Pagamento da licença';
     return 'Chef Control';
   }
 }

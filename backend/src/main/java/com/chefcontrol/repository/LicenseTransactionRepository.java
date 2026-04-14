@@ -13,6 +13,8 @@ public interface LicenseTransactionRepository extends JpaRepository<LicenseTrans
 
     List<LicenseTransactionEntity> findByUserLicenseIdOrderByCreatedAtDesc(UUID userLicenseId);
 
+    boolean existsByUserLicenseId(UUID userLicenseId);
+
     @Query("SELECT COUNT(e) > 0 FROM LicenseTransactionEntity e WHERE e.eMolaTransactionId = :id")
     boolean existsByEMolaTransactionId(@Param("id") String eMolaTransactionId);
 }

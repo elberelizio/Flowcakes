@@ -1,0 +1,104 @@
+﻿<nav class="web-store-nav" [class.web-store-nav--scrolled]="isScrolled()">
+  <div class="web-store-nav-inner">
+    <a [routerLink]="publicStoreBasePath()" class="web-store-nav-brand">
+      <span class="web-store-nav-brand-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 6c1.11 0 2-.9 2-2 0-.38-.1-.73-.29-1.03L12 0l-1.71 2.97c-.19.3-.29.65-.29 1.03 0 1.1.9 2 2 2zm-2 4.24V20h2v-2h2v2h2V10.24l-3-2.12-3 2.12z"/></svg>
+      </span>
+      <span class="web-store-nav-brand-text">{{ storeContext.storeName() }}</span>
+    </a>
+    <div class="web-store-nav-links">
+      <a [routerLink]="publicStoreBasePath()" fragment="hero" (click)="handleSectionClick($event, 'hero')">Início</a>
+      <a [routerLink]="publicStoreBasePath()" fragment="sobre" (click)="handleSectionClick($event, 'sobre')">Sobre</a>
+      <a [routerLink]="publicStoreBasePath()" fragment="produtos" (click)="handleSectionClick($event, 'produtos')">Produtos</a>
+      <a [routerLink]="publicStoreBasePath()" fragment="galeria" (click)="handleSectionClick($event, 'galeria')">Galeria</a>
+      <a [routerLink]="publicStoreBasePath()" fragment="projetos" (click)="handleSectionClick($event, 'projetos')">Projetos</a>
+      <a [routerLink]="contactRoute()">Contato</a>
+      <a [routerLink]="publicStoreBasePath()" fragment="faq" (click)="handleSectionClick($event, 'faq')">FAQ</a>
+      <a [routerLink]="trackOrderRoute()">Rastrear</a>
+    </div>
+    <div class="web-store-nav-cta">
+      <a [routerLink]="contactRoute()" class="web-store-nav-btn-primary">Encomende Já</a>
+    </div>
+    <button type="button" class="web-store-nav-mobile-btn" (click)="toggleMobileMenu()" [attr.aria-expanded]="mobileMenuOpen()" aria-label="Menu">
+      @if (mobileMenuOpen()) {
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      } @else {
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      }
+    </button>
+  </div>
+</nav>
+
+<div class="web-store-mobile-menu" [class.web-store-mobile-menu--open]="mobileMenuOpen()">
+  <div class="web-store-mobile-menu-backdrop" (click)="closeMobileMenu()"></div>
+  <div class="web-store-mobile-menu-panel">
+    <a [routerLink]="publicStoreBasePath()" fragment="hero" (click)="handleSectionClick($event, 'hero')">Início</a>
+    <a [routerLink]="publicStoreBasePath()" fragment="sobre" (click)="handleSectionClick($event, 'sobre')">Sobre</a>
+    <a [routerLink]="publicStoreBasePath()" fragment="produtos" (click)="handleSectionClick($event, 'produtos')">Produtos</a>
+    <a [routerLink]="publicStoreBasePath()" fragment="galeria" (click)="handleSectionClick($event, 'galeria')">Galeria</a>
+    <a [routerLink]="publicStoreBasePath()" fragment="projetos" (click)="handleSectionClick($event, 'projetos')">Projetos</a>
+    <a [routerLink]="contactRoute()" (click)="closeMobileMenu()">Contato</a>
+    <a [routerLink]="publicStoreBasePath()" fragment="faq" (click)="handleSectionClick($event, 'faq')">FAQ</a>
+    <a [routerLink]="trackOrderRoute()" (click)="closeMobileMenu()">Rastrear</a>
+    <a [routerLink]="contactRoute()" (click)="closeMobileMenu()" class="web-store-mobile-menu-cta">Encomende Já</a>
+  </div>
+</div>
+
+<main class="web-store-main">
+  <router-outlet></router-outlet>
+</main>
+
+<footer class="web-store-footer">
+  <div class="web-store-footer-bg"></div>
+  <div class="web-store-footer-inner">
+    <div class="web-store-footer-grid">
+      <div class="web-store-footer-brand">
+        <a [routerLink]="publicStoreBasePath()" class="web-store-footer-brand-link">
+          <span class="web-store-footer-brand-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M12 6c1.11 0 2-.9 2-2 0-.38-.1-.73-.29-1.03L12 0l-1.71 2.97c-.19.3-.29.65-.29 1.03 0 1.1.9 2 2 2zm-2 4.24V20h2v-2h2v2h2V10.24l-3-2.12-3 2.12z"/></svg>
+          </span>
+          <span class="web-store-footer-brand-name">{{ storeContext.storeName() }}</span>
+        </a>
+        <p class="web-store-footer-tagline">{{ storeContext.storeFooterTagline() || 'Transformando momentos especiais em experiências doces e inesquecíveis.' }}</p>
+        <div class="web-store-footer-social">
+          @if (storeContext.storeInstagram()) {
+            <a [href]="'https://instagram.com/' + (storeContext.storeInstagram().replace('@',''))" target="_blank" rel="noopener noreferrer" aria-label="Instagram">IG</a>
+          }
+        </div>
+      </div>
+      <div class="web-store-footer-col">
+        <h3 class="web-store-footer-title">Links Rápidos</h3>
+        <a [routerLink]="publicStoreBasePath()" fragment="hero" (click)="handleSectionClick($event, 'hero')">Início</a>
+        <a [routerLink]="publicStoreBasePath()" fragment="sobre" (click)="handleSectionClick($event, 'sobre')">Sobre Nós</a>
+        <a [routerLink]="publicStoreBasePath()" fragment="produtos" (click)="handleSectionClick($event, 'produtos')">Produtos</a>
+        <a [routerLink]="publicStoreBasePath()" fragment="galeria" (click)="handleSectionClick($event, 'galeria')">Galeria</a>
+        <a [routerLink]="contactRoute()">Contato</a>
+        <a [routerLink]="publicStoreBasePath()" fragment="faq" (click)="handleSectionClick($event, 'faq')">FAQ</a>
+        <a [routerLink]="trackOrderRoute()">Rastrear Pedido</a>
+      </div>
+      <div class="web-store-footer-col">
+        <h3 class="web-store-footer-title">Contato</h3>
+        @if (storeContext.storeAddress() || storeContext.storePhone() || storeContext.storeWhatsapp() || storeContext.storeEmail() || storeContext.storeHours()) {
+          @if (storeContext.storeAddress()) {
+            <p [innerHTML]="nl2br(storeContext.storeAddress())"></p>
+          }
+          @if (storeContext.storePhone() || storeContext.storeWhatsapp()) {
+            <a [href]="'tel:' + (storeContext.storeWhatsapp() || storeContext.storePhone())">{{ storeContext.storeWhatsapp() || storeContext.storePhone() }}</a>
+          }
+          @if (storeContext.storeEmail()) {
+            <a [href]="'mailto:' + storeContext.storeEmail()">{{ storeContext.storeEmail() }}</a>
+          }
+          @if (storeContext.storeHours()) {
+            <p [innerHTML]="nl2br(storeContext.storeHours())"></p>
+          }
+        } @else {
+          <p>Configure os dados na área de configurações.</p>
+        }
+      </div>
+    </div>
+    <div class="web-store-footer-bottom">
+      <p>© {{ currentYear }} {{ storeContext.storeName() }}. Todos os direitos reservados.</p>
+      <p>Feito com muito açúcar</p>
+    </div>
+  </div>
+</footer>

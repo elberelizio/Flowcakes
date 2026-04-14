@@ -49,15 +49,22 @@ public class CorsConfig implements Filter {
     }
 
     private boolean isAllowedOrigin(String origin) {
-        if (corsAllowedOrigins == null || corsAllowedOrigins.isEmpty()) {
-            return false;
-        }
-        String[] allowed = corsAllowedOrigins.split(",");
-        for (String allowedOrigin : allowed) {
-            if (origin.trim().equals(allowedOrigin.trim())) {
-                return true;
+        if (origin == null || origin.isEmpty()) return false;
+        String o = origin.trim();
+
+        // Lista explícita (application.yml)
+        if (corsAllowedOrigins != null && !corsAllowedOrigins.isEmpty()) {
+            for (String allowed : corsAllowedOrigins.split(",")) {
+                if (o.equals(allowed.trim())) return true;
             }
         }
+
+        // Rede local: 192.168.x.x, 10.x.x.x, 172.16-31.x.x (para teste no Android)
+        try {
+            String host = new java.net.URL(o).getHost();
+            return host.startsWith("192.168.") || host.startsWith("10.")
+                || host.matches("172\\.(1[6-9]|2[0-9]|3[0-1])\\..*");
+        } catch (Exception ignore) {}
         return false;
     }
 }

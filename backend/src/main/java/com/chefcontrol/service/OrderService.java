@@ -50,6 +50,8 @@ public class OrderService {
         OrderEntity order = new OrderEntity();
         mapRequestToEntity(request, order);
         order.setUser(user);
+        int nextNo = orderRepository.findMaxOrderNoByUserId(userId).orElse(0) + 1;
+        order.setOrderNo(nextNo);
         order = orderRepository.save(order);
         return OrderResponse.fromEntity(order);
     }
@@ -102,6 +104,9 @@ public class OrderService {
         order.setCakeName(request.getCakeName());
         order.setCakeSize(request.getCakeSize());
         order.setDeliveryDate(request.getDeliveryDate());
+        order.setClientAddress(request.getClientAddress());
+        order.setPickupAddress(request.getPickupAddress());
+        order.setDeliveryAddress(request.getDeliveryAddress());
         order.setHasDelivery(request.isHasDelivery());
         order.setDeliveryCost(request.getDeliveryCost() != null ? request.getDeliveryCost() : BigDecimal.ZERO);
         order.setOrderStatus(request.getOrderStatus() != null ? request.getOrderStatus() : "ordered");

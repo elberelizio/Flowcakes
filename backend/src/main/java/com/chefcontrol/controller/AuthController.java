@@ -2,20 +2,22 @@ package com.chefcontrol.controller;
 
 import com.chefcontrol.config.CurrentUserId;
 import com.chefcontrol.config.SessionConfig;
-import com.chefcontrol.config.SessionInfo;
 import com.chefcontrol.dto.*;
-import com.chefcontrol.entity.UserLicenseEntity;
 import com.chefcontrol.service.AuthService;
+import com.chefcontrol.service.AccessLogService;
 import com.chefcontrol.service.LicenseService;
+import com.chefcontrol.service.StoreSettingsService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -24,21 +26,26 @@ public class AuthController {
 
     private final AuthService authService;
     private final LicenseService licenseService;
+    private final AccessLogService accessLogService;
+    private final StoreSettingsService storeSettingsService;
 
-    public AuthController(AuthService authService, LicenseService licenseService) {
+    public AuthController(AuthService authService, LicenseService licenseService, AccessLogService accessLogService, StoreSettingsService storeSettingsService) {
         this.authService = authService;
         this.licenseService = licenseService;
+        this.accessLogService = accessLogService;
+        this.storeSettingsService = storeSettingsService;
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<UserResponse> login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
+    @PostMapping(value = {"/login", "/login/"}, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UserResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest, HttpServletResponse response) {
         UserResponse user = authService.login(request);
+        accessLogService.logLogin(user.getId(), user.getPhone(), user.getFullName(), Boolean.TRUE.equals(user.getAdmin()), getClientIp(httpRequest), httpRequest.getHeader("User-Agent"));
         UUID sessionId = SessionConfig.createSession(user.getId());
         addSessionCookie(response, sessionId);
         return ResponseEntity.ok(user);
     }
 
-    @PostMapping("/register")
+    @PostMapping(value = {"/register", "/register/"}, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request, HttpServletResponse response) {
         RegisterResponse reg = authService.register(request);
         UUID sessionId = SessionConfig.createSession(reg.getUser().getId());
@@ -53,8 +60,6 @@ public class AuthController {
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
         }
         UserResponse user = authService.getProfile(userId);
-        SessionInfo info = (SessionInfo) request.getAttribute(SessionConfig.ATTR_SESSION_INFO);
-        if (info != null) user.setLicenseCodeValidated(info.isLicenseCodeValidated());
         return ResponseEntity.ok(user);
     }
 
@@ -95,45 +100,48 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/license-status")
-    public ResponseEntity<LicenseStatusResponse> licenseStatus(@CurrentUserId UUID userId) {
-        LicenseStatusResponse r = new LicenseStatusResponse();
-        r.setAmount(licenseService.getLicenseAmount());
-        r.setEMolaPhone(licenseService.getEMolaPhone());
-        r.setAccountFinalized(licenseService.isLicensePaid(userId));
-        licenseService.findByUserId(userId).ifPresent(lic -> {
-            r.setStatus(lic.getStatus());
-            r.setLicenseToken(lic.getLicenseToken());
-        });
-        if (r.getStatus() == null) r.setStatus("pending");
-        return ResponseEntity.ok(r);
-    }
-
-    @PostMapping("/validate-license-code")
-    public ResponseEntity<Void> validateLicenseCode(HttpServletRequest request, @RequestBody java.util.Map<String, String> body) {
-        SessionInfo info = (SessionInfo) request.getAttribute(SessionConfig.ATTR_SESSION_INFO);
-        if (info == null) return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
-        String code = body != null ? body.get("code") : null;
-        if (!licenseService.validateLicenseCode(info.getUserId(), code)) {
-            return ResponseEntity.status(org.springframework.http.HttpStatus.BAD_REQUEST).build();
-        }
-        info.setLicenseCodeValidated(true);
+    @PostMapping("/change-phone/request")
+    public ResponseEntity<Void> startPhoneChange(
+            @CurrentUserId UUID userId,
+            @RequestBody java.util.Map<String, String> body) {
+        String currentPassword = body != null ? body.get("currentPassword") : null;
+        String newPhone = body != null ? body.get("newPhone") : null;
+        authService.startPhoneChange(userId, currentPassword, newPhone);
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/confirm-payment")
-    public ResponseEntity<LicenseStatusResponse> confirmPayment(
+    @PostMapping("/change-phone/confirm")
+    public ResponseEntity<Void> confirmPhoneChange(
             @CurrentUserId UUID userId,
-            @RequestBody(required = false) ConfirmPaymentRequest body) {
-        String ref = body != null ? body.getPaymentReference() : null;
-        UserLicenseEntity lic = licenseService.confirmPayment(userId, ref, 1);
+            @RequestBody java.util.Map<String, String> body) {
+        String newPhone = body != null ? body.get("newPhone") : null;
+        String code = body != null ? body.get("code") : null;
+        authService.confirmPhoneChange(userId, newPhone, code);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/store-settings")
+    public ResponseEntity<StoreSettingsDto> storeSettings(@CurrentUserId UUID userId) {
+        return ResponseEntity.ok(storeSettingsService.getForUser(userId));
+    }
+
+    @PutMapping("/store-settings")
+    public ResponseEntity<StoreSettingsDto> updateStoreSettings(
+            @CurrentUserId UUID userId,
+            @Valid @RequestBody StoreSettingsRequest request) {
+        return ResponseEntity.ok(storeSettingsService.update(userId, request));
+    }
+
+    @GetMapping("/license-status")
+    public ResponseEntity<LicenseStatusResponse> licenseStatus(@CurrentUserId UUID userId) {
         LicenseStatusResponse r = new LicenseStatusResponse();
-        r.setStatus(lic.getStatus());
-        r.setAmount(lic.getAmount());
-        r.setEMolaPhone(licenseService.getEMolaPhone());
-        r.setLicenseToken(lic.getLicenseToken());
-        r.setAccountFinalized(true);
+        licenseService.fillLicenseStatusResponse(userId, r);
         return ResponseEntity.ok(r);
+    }
+
+    @GetMapping("/license-payments")
+    public ResponseEntity<List<com.chefcontrol.dto.LicensePaymentDto>> licensePayments(@CurrentUserId UUID userId) {
+        return ResponseEntity.ok(licenseService.listLicensePaymentsForUser(userId));
     }
 
     private void addSessionCookie(HttpServletResponse response, UUID sessionId) {
@@ -157,5 +165,13 @@ public class AuthController {
                 .sameSite("Lax")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String xff = request.getHeader("X-Forwarded-For");
+        if (xff != null && !xff.isEmpty()) {
+            return xff.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }

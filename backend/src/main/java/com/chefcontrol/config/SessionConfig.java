@@ -11,8 +11,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Sessão por cookie HttpOnly. Guarda userId e se o código da licença já foi validado.
- * O popup do código só fecha após validação (código associado ao NUIT do utilizador).
+ * Sessão por cookie HttpOnly. Guarda userId.
  */
 @Component
 @Order(1)

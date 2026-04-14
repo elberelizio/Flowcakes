@@ -2,7 +2,6 @@ import { Injectable, signal, inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { OrdersService } from './orders.service';
 import { ReminderService } from './reminder.service';
-import { UserSettingsService } from './user-settings.service';
 import { Order } from '../models/order.model';
 import { Reminder } from '../models/reminder.model';
 
@@ -11,47 +10,72 @@ export interface UpcomingReminderWithDays {
   daysUntil: number;
 }
 
+/** Evita o mesmo resumo em cada refresh do browser até nova sessão de login (logout limpa). */
+const SESSION_STORAGE_KEY = 'chefcontrol_order_alerts_popup_consumed';
+
 /**
  * Controla o popup de alerta ao iniciar sessão (encomendas + lembretes).
- * Estado apenas em memória (signal) — nada é gravado no browser (sem localStorage/sessionStorage).
- * OrdersService e ReminderService são obtidos via Injector para evitar dependência circular com AuthService.
+ * Usa sessionStorage para não voltar a mostrar ao recarregar a página no mesmo login.
  */
 @Injectable({ providedIn: 'root' })
 export class OrderAlertsPopupService {
   private readonly injector = inject(Injector);
   private readonly router = inject(Router);
-  private readonly userSettings = inject(UserSettingsService);
-
-  /** Flag em memória: popup já foi mostrado nesta sessão da app. Não persiste no browser. */
+  /** Evita múltiplas aberturas na mesma instância da app (sem refresh). */
   private popupAlreadyShown = signal(false);
 
   visible = signal(false);
   upcomingOrders = signal<Order[]>([]);
   upcomingRemindersWithDays = signal<UpcomingReminderWithDays[]>([]);
 
+  private isConsumedInBrowserSession(): boolean {
+    if (typeof sessionStorage === 'undefined') return false;
+    return sessionStorage.getItem(SESSION_STORAGE_KEY) === '1';
+  }
+
+  private markConsumedInBrowserSession(): void {
+    if (typeof sessionStorage === 'undefined') return;
+    try {
+      sessionStorage.setItem(SESSION_STORAGE_KEY, '1');
+    } catch {
+      /* quota / modo privado */
+    }
+  }
+
   /** Chamar ao fazer logout para o popup poder aparecer no próximo login. */
   resetForNextLogin(): void {
     this.popupAlreadyShown.set(false);
     this.visible.set(false);
+    this.upcomingOrders.set([]);
+    this.upcomingRemindersWithDays.set([]);
+    if (typeof sessionStorage !== 'undefined') {
+      try {
+        sessionStorage.removeItem(SESSION_STORAGE_KEY);
+      } catch {
+        /* ignore */
+      }
+    }
   }
 
-  /** Chamar quando os dados estiverem carregados. Mostra o popup no máximo uma vez por sessão (em memória). */
+  /**
+   * Mostra o popup no máximo uma vez por login no browser (sessionStorage + memória).
+   * Ao fechar o popup também fica marcado como consumido para não reaparecer após refresh.
+   */
   tryShowSessionPopup(): void {
+    if (this.isConsumedInBrowserSession()) return;
     if (this.popupAlreadyShown()) return;
+
     const ordersService = this.injector.get(OrdersService);
     const reminderService = this.injector.get(ReminderService);
-    const reminderDays = this.userSettings.getReminderDaysBefore();
-    const orders = ordersService.ordersByDeliveryDateRange(Math.max(7, reminderDays)).filter(o => !o.delivered);
-    const reminders = reminderService.upcomingReminders(reminderDays);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const withDays: UpcomingReminderWithDays[] = reminders.map((r) => {
-      const d = new Date(r.deliveryDate + 'T12:00:00');
-      d.setHours(0, 0, 0, 0);
-      const daysUntil = Math.ceil((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-      return { reminder: r, daysUntil };
-    });
+    const orders = ordersService.ordersByDeliveryDateRange(14).filter((o) => !o.delivered);
+    const reminders = reminderService.remindersInNotifyWindow();
+    const withDays: UpcomingReminderWithDays[] = reminders.map((r) => ({
+      reminder: r,
+      daysUntil: reminderService.daysUntilDelivery(r.deliveryDate),
+    }));
     if (orders.length === 0 && withDays.length === 0) return;
+
+    this.markConsumedInBrowserSession();
     this.popupAlreadyShown.set(true);
     this.upcomingOrders.set(orders);
     this.upcomingRemindersWithDays.set(withDays);
@@ -60,6 +84,8 @@ export class OrderAlertsPopupService {
 
   close(): void {
     this.visible.set(false);
+    this.markConsumedInBrowserSession();
+    this.popupAlreadyShown.set(true);
   }
 
   goToOrders(): void {
@@ -67,8 +93,8 @@ export class OrderAlertsPopupService {
     this.router.navigate(['/encomendas']);
   }
 
-  goToCalendar(): void {
+  goToReminders(): void {
     this.close();
-    this.router.navigate(['/calendario']);
+    this.router.navigate(['/lembretes']);
   }
 }

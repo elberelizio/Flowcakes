@@ -5,5 +5,7 @@ export interface Reminder {
   address: string;
   deliveryDate: string; // YYYY-MM-DD
   description: string;
+  /** Começar a mostrar avisos quando faltarem N dias ou menos até à data (0 = só no dia). */
+  notifyDaysBefore: number;
   createdAt: string; // ISO
 }

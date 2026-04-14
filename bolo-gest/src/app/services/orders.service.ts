@@ -1,7 +1,7 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from './auth.service';
-import { API_URL } from '../core/api.config';
+import { API_URL } from '../core/config/api.config';
 import { Order, OrderCategory, PaymentStatus, ProductSize } from '../models/order.model';
 
 export interface OrderCreateInput {

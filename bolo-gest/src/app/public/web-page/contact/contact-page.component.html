@@ -1,0 +1,125 @@
+<div class="contact-shell landing-page-root font-sans text-gray-800">
+  <app-public-site-nav />
+
+  <div class="contact-shell__bg" aria-hidden="true"></div>
+
+  <main class="contact-shell__main">
+    @if (step === 'form') {
+      <div class="contact-hero">
+        <p class="contact-hero__eyebrow">Fale connosco</p>
+        <h1 class="contact-hero__title">Contacto</h1>
+        <p class="contact-hero__lead">
+          Reclamação, sugestão de melhoria ou dúvida sobre o ChefControl. O envio abre a sua app de e-mail ou SMS — sem armazenamento no servidor nesta página.
+        </p>
+      </div>
+
+      <div class="contact-card">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="contact-card__form" novalidate>
+          <fieldset class="contact-fieldset">
+            <legend class="contact-fieldset__legend">Tipo de mensagem</legend>
+            <div class="contact-kind" role="radiogroup" aria-label="Tipo de mensagem">
+              <label class="contact-kind__option">
+                <input type="radio" formControlName="messageKind" value="reclamacao" />
+                <span class="contact-kind__label">Reclamação</span>
+              </label>
+              <label class="contact-kind__option">
+                <input type="radio" formControlName="messageKind" value="melhoria" />
+                <span class="contact-kind__label">Melhorias / sugestão</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="contact-fieldset">
+            <legend class="contact-fieldset__legend">Os seus dados</legend>
+            <div class="contact-grid">
+              <div class="contact-row contact-row--full">
+                <label for="cc-name">Nome completo *</label>
+                <input id="cc-name" type="text" formControlName="fullName" autocomplete="name" />
+                @if (form.controls.fullName.touched && form.controls.fullName.hasError('required')) {
+                  <span class="contact-hint contact-hint--error">Indique o seu nome.</span>
+                }
+              </div>
+              <div class="contact-row">
+                <label for="cc-email">E-mail</label>
+                <input id="cc-email" type="email" formControlName="email" autocomplete="email" [attr.required]="form.controls.channelEmail.value ? true : null" />
+                @if (form.controls.channelEmail.value && form.controls.email.touched && form.controls.email.hasError('required')) {
+                  <span class="contact-hint contact-hint--error">Obrigatório para envio por e-mail.</span>
+                }
+                @if (form.controls.email.touched && form.controls.email.hasError('email')) {
+                  <span class="contact-hint contact-hint--error">E-mail inválido.</span>
+                }
+              </div>
+              <div class="contact-row">
+                <label for="cc-phone">Telefone (SMS)</label>
+                <input id="cc-phone" type="tel" formControlName="phone" autocomplete="tel" placeholder="84 123 4567 ou 258…" />
+                @if (form.controls.channelSms.value && form.controls.phone.touched && form.controls.phone.hasError('required')) {
+                  <span class="contact-hint contact-hint--error">Obrigatório se escolher SMS.</span>
+                }
+                @if (form.controls.phone.touched && form.controls.phone.hasError('pattern')) {
+                  <span class="contact-hint contact-hint--error">Use números, espaços ou + (mín. 9 dígitos).</span>
+                }
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="contact-fieldset">
+            <legend class="contact-fieldset__legend">Como prefere enviar?</legend>
+            <div class="contact-channels">
+              <label class="contact-channels__item">
+                <input type="checkbox" formControlName="channelEmail" />
+                <i class="fa-solid fa-envelope contact-channels__fa" aria-hidden="true"></i>
+                <span>E-mail</span>
+              </label>
+              <label class="contact-channels__item">
+                <input type="checkbox" formControlName="channelSms" />
+                <i class="fa-solid fa-mobile-screen-button contact-channels__fa" aria-hidden="true"></i>
+                <span>SMS</span>
+              </label>
+            </div>
+            <p class="contact-muted">Pode marcar os dois: no passo seguinte abrimos e-mail e/ou SMS.</p>
+          </fieldset>
+
+          <div class="contact-row contact-row--full">
+            <label for="cc-msg">Mensagem *</label>
+            <textarea id="cc-msg" formControlName="message" rows="6" placeholder="Descreva a situação ou a sua ideia de melhoria…"></textarea>
+            @if (form.controls.message.touched && form.controls.message.hasError('required')) {
+              <span class="contact-hint contact-hint--error">Escreva a mensagem.</span>
+            }
+            @if (form.controls.message.touched && form.controls.message.hasError('minlength')) {
+              <span class="contact-hint contact-hint--error">Mínimo 15 caracteres.</span>
+            }
+          </div>
+
+          @if (formError) {
+            <p class="contact-banner contact-banner--error" role="alert">{{ formError }}</p>
+          }
+
+          <div class="contact-actions">
+            <button type="submit" class="contact-btn contact-btn--primary">Continuar para enviar</button>
+          </div>
+        </form>
+      </div>
+    } @else {
+      <div class="contact-card contact-card--success">
+        <div class="contact-success-icon" aria-hidden="true">✓</div>
+        <h2 class="contact-card__title">Pronto para enviar</h2>
+        <p class="contact-muted">
+          Nada foi gravado no ChefControl. Abra a app de e-mail ou SMS do seu telemóvel para concluir o envio.
+        </p>
+        <div class="contact-launch">
+          @if (mailtoHref) {
+            <a class="contact-btn contact-btn--primary" [href]="mailtoHref">Abrir e-mail</a>
+          }
+          @if (smsHref) {
+            <a class="contact-btn contact-btn--secondary" [href]="smsHref">Abrir SMS</a>
+          }
+        </div>
+        <div class="contact-secondary-actions">
+          <button type="button" class="contact-link-btn" (click)="copyBodyToClipboard()">Copiar texto</button>
+          <button type="button" class="contact-link-btn" (click)="resetForm()">Nova mensagem</button>
+          <a routerLink="/" class="contact-link-btn">Início</a>
+        </div>
+      </div>
+    }
+  </main>
+</div>

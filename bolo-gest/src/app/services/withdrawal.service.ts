@@ -1,7 +1,7 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Withdrawal, WithdrawalCreate } from '../models/withdrawal.model';
-import { API_URL } from '../core/api.config';
+import { API_URL } from '../core/config/api.config';
 import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })

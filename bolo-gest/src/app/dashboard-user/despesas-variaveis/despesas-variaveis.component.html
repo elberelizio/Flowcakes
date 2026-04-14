@@ -1,0 +1,151 @@
+<div class="despesas-variaveis-page">
+  <header class="page-hero">
+    <a routerLink="/dashboard" class="btn-back">← Voltar</a>
+    <div class="page-hero__main">
+      <p class="page-hero__eyebrow">Custos</p>
+      <h1>Despesas extras</h1>
+      <p class="page-hero__sub">
+        Registe custos adicionais por encomenda (material, embalagem, descontos, etc.). Pedidos entregues ou cancelados não aparecem na lista.
+      </p>
+    </div>
+  </header>
+
+  <section class="add-expense-card card">
+    <h2 class="section-title">Registar despesa extra</h2>
+    <p class="form-hint">Seleccione a encomenda e indique o tipo de despesa com o valor em MZN.</p>
+    <form [formGroup]="expenseForm" (ngSubmit)="submitExpense()" class="expense-form">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="order-select">Encomenda</label>
+          <select
+            id="order-select"
+            formControlName="orderId"
+            (change)="onOrderSelectChange()"
+            class="form-select">
+            <option [ngValue]="null">Seleccionar encomenda…</option>
+            @for (o of filteredOrders(); track o.id) {
+              <option [value]="o.id">
+                Nr. {{ getOrderNumber(o) }} — {{ o.clientName }} — {{ displayName(o) }} ({{ formatDate(o.deliveryDate || o.createdAt) }})
+              </option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="expense-name">Tipo de despesa</label>
+          <input
+            id="expense-name"
+            type="text"
+            formControlName="name"
+            placeholder="Ex.: Papel decorativo, embalagem"
+            class="form-input"
+            maxlength="80" />
+          <span class="field-hint">Descreva o custo extra (material adicional, desconto, etc.).</span>
+        </div>
+        <div class="form-group">
+          <label for="expense-amount">Valor (MZN)</label>
+          <input
+            id="expense-amount"
+            type="number"
+            formControlName="amount"
+            min="0"
+            step="0.01"
+            class="form-input"
+            placeholder="0" />
+        </div>
+        <div class="form-group form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="expenseForm.invalid || saving()">
+            {{ saving() ? 'A guardar…' : 'Adicionar despesa' }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </section>
+
+  <section class="orders-section card">
+    <div class="section-header-row">
+      <h2 class="section-title">Encomendas activas</h2>
+      <div class="filter-row">
+        <input
+          type="text"
+          class="filter-input"
+          placeholder="Filtrar por cliente ou produto…"
+          [value]="filterText()"
+          (input)="filterText.set($any($event.target).value)" />
+      </div>
+    </div>
+
+    @if (filteredOrders().length === 0) {
+      <p class="empty">Nenhuma encomenda em curso. <a routerLink="/nova-encomenda">Criar encomenda</a>.</p>
+    } @else {
+      <div class="table-wrap">
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>Nº</th>
+              <th>Cliente</th>
+              <th>Produto</th>
+              <th>Entrega</th>
+              <th>Despesas extras</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (o of filteredOrders(); track o.id) {
+              <tr>
+                <td class="order-no-cell" data-label="Nº">{{ getOrderNumber(o) }}</td>
+                <td data-label="Cliente">{{ o.clientName }}</td>
+                <td data-label="Produto">{{ displayName(o) }} · {{ displaySize(o) }}</td>
+                <td data-label="Entrega">{{ formatDate(o.deliveryDate || o.createdAt) }}</td>
+                <td data-label="Despesas extras">
+                  <span class="variable-expenses-display">{{ getVariableExpensesDisplay(o) }}</span>
+                </td>
+                <td data-label="">
+                  <button type="button" class="btn btn-secondary btn-compact" (click)="openModalForOrder(o)">Gerir</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</div>
+
+@if (modalOrder(); as mo) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Despesas extras — Nr. {{ getOrderNumber(mo) }}</h3>
+        <button type="button" class="modal-close" (click)="closeModal()" aria-label="Fechar">×</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-product">{{ mo.clientName }} — {{ displayName(mo) }}</p>
+        <div class="modal-expense-form">
+          <input type="text" class="form-input" placeholder="Descrição" [value]="newExpenseName()" (input)="newExpenseName.set($any($event.target).value)" />
+          <input type="number" class="form-input form-input-amount" min="0" step="0.01" placeholder="MZN" [value]="newExpenseAmount() || ''" (input)="newExpenseAmount.set(+$any($event.target).value || 0)" />
+          <button type="button" class="btn btn-add" (click)="addExpenseInModal()">Adicionar</button>
+        </div>
+        @if (modalExpenses().length === 0) {
+          <p class="no-expenses">Nenhuma despesa extra nesta lista.</p>
+        } @else {
+          <div class="modal-expenses-list">
+            @for (e of modalExpenses(); track $index) {
+              <div class="expense-item">
+                <span class="expense-item-name">{{ e.name }}</span>
+                <span class="expense-item-amount">{{ e.amount | number:'1.0-2' }} MZN</span>
+                <button type="button" class="btn btn-danger" (click)="removeExpenseInModal($index)" title="Remover">×</button>
+              </div>
+            }
+          </div>
+        }
+        <p class="modal-total"><strong>Total:</strong> {{ getModalExpensesTotal() | number:'1.0-2' }} MZN</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="saveModalExpenses()">
+          {{ saving() ? 'A guardar…' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

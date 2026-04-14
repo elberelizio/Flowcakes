@@ -107,7 +107,7 @@ FOR /F "tokens=1,2 delims==" %%A IN ("%MAVEN_PROJECTBASEDIR%\.mvn\wrapper\maven-
  IF "%%A"=="wrapperUrl" SET DOWNLOAD_URL=%%B
 )
 
-if exist %WRAPPER_JAR% goto run
+if not exist %WRAPPER_JAR% (
 if not "%MVNW_REPOURL%" == "" SET DOWNLOAD_URL="%MVNW_REPOURL%/io/takari/maven-wrapper/0.5.6/maven-wrapper-0.5.6.jar"
 if "%MVNW_VERBOSE%" == "true" (
  echo Couldn't find %WRAPPER_JAR%, downloading ...
@@ -115,8 +115,9 @@ if "%MVNW_VERBOSE%" == "true" (
 )
 powershell -Command "&{[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $wc = New-Object System.Net.WebClient; $wc.DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')}"
 if "%MVNW_VERBOSE%" == "true" echo Finished downloading %WRAPPER_JAR%
+)
 
-:run
+:launch
 set MAVEN_CMD_LINE_ARGS=%*
 
 "%JAVA_HOME%\bin\java.exe" %JVM_CONFIG_MAVEN_PROPS% %MAVEN_OPTS% %MAVEN_DEBUG_OPTS% -classpath %WRAPPER_JAR% "-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%" %WRAPPER_LAUNCHER% %MAVEN_CONFIG% %*

@@ -11,10 +11,12 @@ public class UserResponse {
     private String documentNumber;
     private String province;
     private String email;
-    private String licenseStatus; // "pending" | "paid"
+    /** EN: pending | trial | paid. PT: pendente | teste | pago. */
+    private String licenseStatus;
     private Boolean accountFinalized;
-    private Boolean licenseCodeValidated;
     private Boolean admin;
+    private Long licenseDaysRemaining;
+    private Boolean showLicenseExpiryWarning;
 
     public static UserResponse fromEntity(com.chefcontrol.entity.UserEntity u) {
         return fromEntity(u, null);
@@ -30,7 +32,7 @@ public class UserResponse {
         r.setProvince(u.getProvince());
         r.setEmail(u.getEmail());
         r.setLicenseStatus(licenseStatus);
-        r.setAccountFinalized("paid".equals(licenseStatus));
+        r.setAccountFinalized("paid".equals(licenseStatus) || "trial".equals(licenseStatus));
         r.setAdmin(u.isAdmin());
         return r;
     }
@@ -53,8 +55,10 @@ public class UserResponse {
     public void setLicenseStatus(String licenseStatus) { this.licenseStatus = licenseStatus; }
     public Boolean getAccountFinalized() { return accountFinalized; }
     public void setAccountFinalized(Boolean accountFinalized) { this.accountFinalized = accountFinalized; }
-    public Boolean getLicenseCodeValidated() { return licenseCodeValidated; }
-    public void setLicenseCodeValidated(Boolean licenseCodeValidated) { this.licenseCodeValidated = licenseCodeValidated; }
     public Boolean getAdmin() { return admin; }
     public void setAdmin(Boolean admin) { this.admin = admin; }
+    public Long getLicenseDaysRemaining() { return licenseDaysRemaining; }
+    public void setLicenseDaysRemaining(Long licenseDaysRemaining) { this.licenseDaysRemaining = licenseDaysRemaining; }
+    public Boolean getShowLicenseExpiryWarning() { return showLicenseExpiryWarning; }
+    public void setShowLicenseExpiryWarning(Boolean showLicenseExpiryWarning) { this.showLicenseExpiryWarning = showLicenseExpiryWarning; }
 }

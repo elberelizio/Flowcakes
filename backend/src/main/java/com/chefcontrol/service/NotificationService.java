@@ -39,6 +39,9 @@ public class NotificationService {
     @Value("${app.e-mola-phone:871964887}")
     private String adminPhone;
 
+    @Value("${app.license-amount:500}")
+    private java.math.BigDecimal licenseAmount;
+
     /**
      * Envia ao utilizador: confirmação de conta criada e lembreta de credenciais (telefone + senha que definiu).
      * Envia ao admin (871964887): aviso de nova conta e credenciais de acesso.
@@ -62,17 +65,37 @@ public class NotificationService {
     private String buildAccountCreatedMessageToUser(String fullName, String phone) {
         String nome = (fullName != null && !fullName.isBlank()) ? fullName : "Utilizador";
         return String.format(
-            "Chef Control: Olá %s! A sua conta foi criada com sucesso. Os seus dados de acesso: use o número %s e a senha que definiu. Para activar a conta, efectue 500 MZN para o número 871964887 (e-Mola). Obrigado!",
-            nome.trim(), phone
+            "Chef Control: Olá %s! A sua conta foi criada com sucesso. Os seus dados de acesso: use o número %s e a senha que definiu. Para activar a conta, efectue %s MZN para o número %s (e-Mola). Obrigado!",
+            nome.trim(), phone, licenseAmount.toPlainString(), adminPhone
         );
     }
 
     private String buildNewAccountMessageToAdmin(String phone, String fullName) {
         String nome = (fullName != null && !fullName.isBlank()) ? fullName : "-";
         return String.format(
-            "Chef Control: Nova conta criada. Nome: %s. Telefone (login): %s. Credenciais de acesso: número %s e a senha que o cliente definiu. Peça ao cliente para pagar 500 MZN para este número (e-Mola) para activar.",
-            nome, phone, phone
+            "Chef Control: Nova conta criada. Nome: %s. Telefone (login): %s. Credenciais de acesso: número %s e a senha que o cliente definiu. Peça ao cliente para pagar %s MZN para este número (e-Mola) para activar.",
+            nome, phone, phone, licenseAmount.toPlainString()
         );
+    }
+
+    /**
+     * Avisa o admin que um utilizador indicou ter efectuado o pagamento da licença (e-Mola).
+     */
+    public void sendLicensePaymentReported(String fullName, String userPhone, java.math.BigDecimal amountMzn) {
+        String nome = (fullName != null && !fullName.isBlank()) ? fullName.trim() : "—";
+        String amt = amountMzn != null ? amountMzn.toPlainString() : "500";
+        String message = String.format(
+            "Chef Control: O utilizador %s (%s) indicou que transferiu %s MZN para a licença. Consulte e confirme o pagamento na gestão de licenças.",
+            nome, userPhone != null ? userPhone : "—", amt
+        );
+        if (isTwilioConfigured()) {
+            boolean ok = sendSms(normalizePhone(adminPhone), message);
+            if (!ok) {
+                log.warn("Falha ao enviar SMS ao admin sobre pagamento de licença.");
+            }
+        } else {
+            log.info("SMS não configurado. Mensagem ao admin ({}): {}", adminPhone, message);
+        }
     }
 
     private boolean isTwilioConfigured() {

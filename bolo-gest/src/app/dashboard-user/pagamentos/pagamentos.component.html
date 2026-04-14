@@ -1,0 +1,44 @@
+<div class="pagamentos-page">
+  <header class="page-head">
+    <h1>Pagamentos da licença</h1>
+    <p class="lead">Histórico de pagamentos confirmados pelo administrador. Pode imprimir ou guardar como PDF a partir do diálogo de impressão do navegador.</p>
+  </header>
+
+  @if (loading) {
+    <p class="muted">A carregar...</p>
+  } @else if (error) {
+    <p class="error">{{ error }}</p>
+  } @else if (rows.length === 0) {
+    <p class="muted">Ainda não há pagamentos registados. Após o administrador confirmar um pagamento, aparecerá aqui.</p>
+  } @else {
+    <div class="toolbar">
+      <button type="button" class="btn btn-secondary" (click)="downloadExtrato()">Descarregar extrato (imprimir / PDF)</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Valor</th>
+            <th>Duração</th>
+            <th>ID e-Mola</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of rows; track r.id) {
+            <tr>
+              <td>{{ formatDate(r.createdAt) }}</td>
+              <td>{{ r.amount | number: '1.0-0' }} MZN</td>
+              <td>{{ r.durationMonths }} mês(es)</td>
+              <td class="mono">{{ txId(r) }}</td>
+              <td>
+                <button type="button" class="btn-link" (click)="downloadRecibo(r)">Recibo</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

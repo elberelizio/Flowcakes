@@ -1,0 +1,190 @@
+﻿<div class="web-store-contact-page">
+  <header class="web-store-contact-header">
+    <div class="web-store-container">
+      <a [routerLink]="publicStoreBasePath()" class="web-store-contact-back">← Voltar para o início</a>
+      <h1 class="web-store-contact-title">Encomende <span class="web-store-pink">Já</span></h1>
+      <p class="web-store-contact-desc">Preencha o formulário com os dados da sua encomenda. Entraremos em contacto para confirmar.</p>
+    </div>
+  </header>
+  <div class="web-store-contact-content">
+    <div class="web-store-container">
+      <div class="web-store-contact-grid">
+        <div class="web-store-contact-form-wrap">
+          @if (isSubmitted()) {
+            <div class="web-store-contact-success">
+              <div class="web-store-contact-success-icon">✓</div>
+              <h3>Pedido de encomenda enviado!</h3>
+              <p>Obrigado. Entraremos em contacto em breve para confirmar a sua encomenda.</p>
+            </div>
+          } @else if (category() === null) {
+            <h2>Seleção de categoria</h2>
+            <p class="web-store-form-hint">Escolha o tipo de encomenda.</p>
+            <div class="web-store-category-buttons">
+              <button type="button" class="web-store-category-btn" (click)="setCategory('doces')">
+                <span class="web-store-category-label">Doces</span>
+                <span class="web-store-category-desc">Bolos, biscoitos, tortas</span>
+              </button>
+              <button type="button" class="web-store-category-btn" (click)="setCategory('salgados')">
+                <span class="web-store-category-label">Salgados</span>
+                <span class="web-store-category-desc">Chamussas, recois</span>
+              </button>
+            </div>
+          } @else {
+            <h2>Dados da encomenda</h2>
+            <button type="button" class="web-store-contact-back-cat" (click)="setCategory(null!)">← Alterar categoria</button>
+            <form (ngSubmit)="submit()" class="web-store-contact-form">
+              <div class="web-store-form-section">
+                <h3>Dados do cliente</h3>
+                <div class="web-store-form-row">
+                  <label for="clientName">Nome completo *</label>
+                  <input id="clientName" type="text" [(ngModel)]="formData.clientName" name="clientName" placeholder="Nome completo" required />
+                </div>
+                <div class="web-store-form-row">
+                  <label for="clientContact">Contacto (telefone) *</label>
+                  <input id="clientContact" type="text" [(ngModel)]="formData.clientContact" name="clientContact" placeholder="84 123 4567" required />
+                </div>
+                <div class="web-store-form-row">
+                  <label for="email">E-mail</label>
+                  <input id="email" type="email" [(ngModel)]="formData.email" name="email" placeholder="seu&#64;email.com" />
+                </div>
+                <div class="web-store-form-row">
+                  <label for="clientAddress">Endereço</label>
+                  <input id="clientAddress" type="text" [(ngModel)]="formData.clientAddress" name="clientAddress" placeholder="Endereço (referência)" />
+                </div>
+              </div>
+
+              <div class="web-store-form-section">
+                <h3>Produto</h3>
+                <div class="web-store-form-row">
+                  <label for="subcategory">Tipo *</label>
+                  <select id="subcategory" [(ngModel)]="formData.subcategory" name="subcategory" required>
+                    <option value="">Selecione...</option>
+                    @if (isDoces) {
+                      @for (sub of docesSubcategories; track sub) {
+                        <option [value]="sub">{{ sub }}</option>
+                      }
+                    } @else {
+                      @for (sub of salgadosSubcategories; track sub) {
+                        <option [value]="sub">{{ sub }}</option>
+                      }
+                    }
+                  </select>
+                </div>
+                <div class="web-store-form-row">
+                  <label for="productName">Nome do produto *</label>
+                  <input id="productName" type="text" [(ngModel)]="formData.productName" name="productName" [placeholder]="isDoces ? 'Ex: Bolo de chocolate' : 'Ex: Chamussas'" required />
+                </div>
+                @if (isDoces) {
+                  <div class="web-store-form-row">
+                    <label>Tamanho</label>
+                    <div class="web-store-option-group">
+                      <button type="button" class="web-store-option-btn" [class.active]="sizeType === 'numero'" (click)="setSizeType('numero')">Número</button>
+                      <button type="button" class="web-store-option-btn" [class.active]="sizeType === 'nome'" (click)="setSizeType('nome')">Escala</button>
+                    </div>
+                    @if (sizeType === 'numero') {
+                      <input type="number" [(ngModel)]="formData.sizeNumberCustom" name="sizeNumberCustom" min="0" placeholder="Ex: 20 (número da forma)" class="web-store-input-inline" />
+                    }
+                    @if (sizeType === 'nome') {
+                      <select [(ngModel)]="formData.size" name="size" class="web-store-select-inline">
+                        <option value="">Selecione...</option>
+                        @for (s of docesSizesByName; track s) {
+                          <option [value]="s">{{ s }}</option>
+                        }
+                      </select>
+                    }
+                  </div>
+                }
+                @if (isSalgados) {
+                  <div class="web-store-form-row web-store-form-row-two">
+                    <div>
+                      <label for="quantityKg">Quantidade (kg)</label>
+                      <input id="quantityKg" type="number" [(ngModel)]="formData.quantityKg" name="quantityKg" min="0" step="0.5" placeholder="Ex: 2" />
+                    </div>
+                    <div>
+                      <label for="unitsPerKg">Unidades por kg</label>
+                      <input id="unitsPerKg" type="number" [(ngModel)]="formData.unitsPerKg" name="unitsPerKg" min="1" placeholder="Ex: 10" />
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <div class="web-store-form-section">
+                <h3>Entrega</h3>
+                <div class="web-store-form-row">
+                  <label for="deliveryDate">Data de entrega *</label>
+                  <input id="deliveryDate" type="date" [(ngModel)]="formData.deliveryDate" name="deliveryDate" [min]="today" required />
+                </div>
+                <div class="web-store-form-row">
+                  <label for="deliveryTime">Hora de entrega</label>
+                  <input id="deliveryTime" type="time" [(ngModel)]="formData.deliveryTime" name="deliveryTime" />
+                </div>
+                <div class="web-store-form-row">
+                  <label>Precisa de entrega ao domicílio?</label>
+                  <div class="web-store-option-group">
+                    <button type="button" class="web-store-option-btn" [class.active]="formData.hasDelivery === false" (click)="setHasDelivery(false)">Não</button>
+                    <button type="button" class="web-store-option-btn" [class.active]="formData.hasDelivery === true" (click)="setHasDelivery(true)">Sim</button>
+                  </div>
+                </div>
+                @if (formData.hasDelivery === true) {
+                  <div class="web-store-form-row">
+                    <label for="deliveryAddress">Local de entrega</label>
+                    <input id="deliveryAddress" type="text" [(ngModel)]="formData.deliveryAddress" name="deliveryAddress" placeholder="Onde deve ser entregue (ex: Matola)" />
+                  </div>
+                  <p class="web-store-delivery-hint">A entrega ao domicílio terá custos adicionais indicados no orçamento.</p>
+                }
+              </div>
+
+              <div class="web-store-form-section">
+                <div class="web-store-form-row">
+                  <label for="observations">Observações</label>
+                  <textarea id="observations" [(ngModel)]="formData.observations" name="observations" rows="3" placeholder="Ex: Bolo sem muito açúcar, preferência de sabores..."></textarea>
+                </div>
+              </div>
+
+              <button type="submit" class="web-store-btn web-store-btn-primary web-store-btn-full">Enviar pedido de encomenda</button>
+            </form>
+          }
+        </div>
+        <div class="web-store-contact-info">
+          <div class="web-store-contact-card-img">
+            <img src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&q=80" alt="Atendimento Doce Sabor" />
+            <div class="web-store-contact-card-overlay">
+              <span class="web-store-contact-card-icon">🍰</span>
+              <p><strong>{{ storeContext.storeName() }}</strong></p>
+              <p>{{ storeContext.storeTagline() || 'Confeitaria Artesanal' }}</p>
+            </div>
+          </div>
+          <div class="web-store-contact-cards">
+            @if (storeContext.storeAddress()) {
+              <div class="web-store-contact-card">
+                <h4>Endereço</h4>
+                <p [innerHTML]="nl2br(storeContext.storeAddress())"></p>
+              </div>
+            }
+            @if (storeContext.storePhone() || storeContext.storeWhatsapp()) {
+              <div class="web-store-contact-card">
+                <h4>Telefone / WhatsApp</h4>
+                <p>
+                  <a [href]="'tel:' + (storeContext.storeWhatsapp() || storeContext.storePhone())">{{ storeContext.storeWhatsapp() || storeContext.storePhone() }}</a>
+                </p>
+              </div>
+            }
+            @if (storeContext.storeEmail()) {
+              <div class="web-store-contact-card">
+                <h4>E-mail</h4>
+                <p><a [href]="'mailto:' + storeContext.storeEmail()">{{ storeContext.storeEmail() }}</a></p>
+              </div>
+            }
+            @if (storeContext.storeHours()) {
+              <div class="web-store-contact-card">
+                <h4>Horário</h4>
+                <p [innerHTML]="nl2br(storeContext.storeHours())"></p>
+              </div>
+            }
+          </div>
+          <p class="web-store-contact-mzn">Todos os valores em <strong>Meticais (MZN)</strong>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

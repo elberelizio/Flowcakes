@@ -1,0 +1,112 @@
+<div class="login-page">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="card-panel card-welcome">
+        <img src="/logotipo.png" alt="Chef Control" class="card-logo" />
+        <h2 class="welcome-title">Bem-vindo</h2>
+        <p class="welcome-text">Sistema de Gestão de Doces e Salgados</p>
+        <span class="version">v 001</span>
+      </div>
+      <div class="card-panel card-form">
+        <h2 class="form-title" id="login-form-heading">Entrar</h2>
+        @if (showPostRegisterHint) {
+          <p class="msg-success" role="status">
+            Conta criada com sucesso. Introduza a mesma senha que definiu no registo para iniciar sessão.
+          </p>
+        }
+        <form id="login-form" [formGroup]="form" (ngSubmit)="submit()" class="form" aria-labelledby="login-form-heading">
+          <div class="field">
+            <label for="phone">Contacto (9 dígitos ou 258…)</label>
+            <input
+              id="phone"
+              type="tel"
+              formControlName="phone"
+              placeholder="841234567 ou 258841234567"
+              inputmode="numeric"
+              maxlength="12"
+              (input)="onPhoneInput($event)" />
+            @if (form.get('phone')?.invalid && form.get('phone')?.touched) {
+              <span class="error">{{
+                form.get('phone')?.errors?.['required']
+                  ? 'Contacto é obrigatório.'
+                  : 'Use 9 dígitos ou 12 com prefixo 258.'
+              }}</span>
+            }
+          </div>
+          <div class="field">
+            <label for="password">Senha da conta</label>
+            <input id="password" type="password" formControlName="password" placeholder="Senha para entrar na aplicação" autocomplete="current-password" />
+            @if (form.get('password')?.invalid && form.get('password')?.touched) {
+              <span class="error">{{ form.get('password')?.errors?.['required'] ? 'Senha é obrigatória.' : 'Senha inválida.' }}</span>
+            }
+          </div>
+          <button type="button" class="link-btn" (click)="goToForgotPassword()">
+            Esqueci a senha
+          </button>
+          @if (error) {
+            <p class="msg-error">{{ error }}</p>
+          }
+          @if (showLoginDiagHint) {
+            <p class="msg-hint-diag" role="note">
+              Se continuar a falhar: F12 → Rede → pedido POST <code>…/auth/login</code> → resposta JSON e campo
+              <code>message</code> («Conta não encontrada» vs «Telefone ou senha incorretos»). Um 401 em GET
+              <code>…/auth/me</code> antes do login é normal (sem sessão). Confirme o telefone na base de dados do
+              backend e o prefixo 258 / 9 dígitos.
+            </p>
+          }
+          @if (showNoAccountInfo) {
+            <div class="no-account-box">
+              <p class="no-account-text">Não tem conta? Crie a sua conta para ter acesso ao sistema. Após o registo terá um período de teste gratuito.</p>
+              <a routerLink="/register" class="btn btn-primary">Criar conta</a>
+            </div>
+          }
+          <button
+            type="submit"
+            class="btn btn-primary btn-main"
+            [disabled]="loading || form.get('phone')?.invalid || !form.get('password')?.value">
+            {{ loading ? 'A carregar...' : 'Entrar' }}
+          </button>
+          <a routerLink="/recuperar-senha" class="btn btn-switch"><span class="switch-highlight">Recuperar senha</span></a>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  @if (licenseBlock) {
+    <div class="license-modal-backdrop" aria-hidden="true"></div>
+    <div class="license-modal" role="dialog" aria-modal="true" aria-labelledby="license-modal-title" (click)="$event.stopPropagation()">
+      <div class="license-modal__header">
+        <div>
+          <div class="license-modal__badge" aria-hidden="true">Licença</div>
+          <h3 id="license-modal-title" class="license-modal__title">{{ assistantTitle() }}</h3>
+        </div>
+        <button type="button" class="license-modal__close" (click)="dismissAssistant()">Fechar</button>
+      </div>
+      <div class="license-modal__body license-modal__body--compact">
+        <p class="license-modal__alert">{{ primaryAlertText() }}</p>
+        @if (formatValidUntil()) {
+          <p class="license-modal__date">Validade de referência: <strong>{{ formatValidUntil() }}</strong></p>
+        }
+
+        <div class="license-modal__price-box" aria-labelledby="license-price-label">
+          <p id="license-price-label" class="license-modal__price-label">Valor da licença</p>
+          <p class="license-modal__price-amount">{{ licenseMonthAmountMzn }}&nbsp;<span class="license-modal__price-currency">MZN</span></p>
+          <p class="license-modal__price-per">por mês · escolha a duração na página de pagamento</p>
+        </div>
+
+        <a
+          [routerLink]="['/pagamento-licenca']"
+          [queryParams]="paymentPageQueryParams()"
+          class="license-modal__btn-paypage">
+          Ir para pagamento / renovação
+        </a>
+        <p class="license-modal__hint-inline">Na página seguinte escolhe <strong>M-Pesa</strong> ou <strong>e-Mola</strong> e o número de meses.</p>
+        <p class="license-modal__footer-short">Vai precisar do contacto e da senha que acabou de usar.</p>
+      </div>
+    </div>
+  }
+
+  @if (showLoginSuccessModal) {
+    <app-login-success-modal (closed)="onLoginSuccessModalClosed()" />
+  }
+</div>

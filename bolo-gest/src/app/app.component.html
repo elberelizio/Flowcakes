@@ -1,5 +1,5 @@
 @if (auth.isLoggedIn() && !isPublicPage()) {
-  <div class="app-shell">
+  <div class="app-shell" [class.app-shell--admin]="auth.isAdmin()">
     <aside class="sidebar" [class.collapsed]="sidebarCollapsed()" [class.visible-mobile]="sidebarOpen()">
       <div class="sidebar-header">
         <a [routerLink]="auth.isAdmin() ? '/admin-dashboard' : '/dashboard'" class="brand">
@@ -7,6 +7,7 @@
           <div class="brand-inner">
             <span class="brand-text">Chef Control</span>
             <span class="brand-tagline">Gestão de doces e salgados</span>
+            <span class="brand-profile">{{ auth.isAdmin() ? 'Administrador' : 'Utilizador' }}</span>
           </div>
         </a>
         <button type="button" class="sidebar-toggle" (click)="toggleSidebar()" [attr.aria-label]="sidebarCollapsed() ? 'Expandir menu' : 'Recolher menu'">
@@ -19,6 +20,7 @@
       </div>
       <nav class="sidebar-nav">
         @if (auth.isAdmin()) {
+          <p class="sidebar-nav-section" role="presentation">Administração</p>
           <a routerLink="/admin-dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
             <app-icon name="dashboard" />
             <span class="nav-label">Painel</span>
@@ -26,6 +28,9 @@
           <a routerLink="/gestao-licencas" routerLinkActive="active" class="nav-item">
             <app-icon name="user" />
             <span class="nav-label">Licenças</span>
+            @if (adminStats.expiringLicensesCount() > 0) {
+              <span class="nav-badge">{{ adminStats.expiringLicensesCount() }}</span>
+            }
           </a>
           <a routerLink="/admin-logs" routerLinkActive="active" class="nav-item">
             <app-icon name="clock" />
@@ -67,22 +72,13 @@
             <app-icon name="dashboard" />
             <span class="nav-label">Dashboard</span>
           </a>
-          <div class="nav-group">
-            <button type="button" class="nav-item nav-group-toggle" (click)="toggleLembretes()">
-              <app-icon name="bell" />
-              <span class="nav-label">Lembretes</span>
-              @if (reminderCount() > 0) {
-                <span class="nav-badge">{{ reminderCount() }}</span>
-              }
-              <app-icon name="chevron-down" class="nav-chevron" [class.rotated]="!lembretesExpanded()" />
-            </button>
-            @if (lembretesExpanded()) {
-              <div class="nav-sub">
-                <a routerLink="/calendario" routerLinkActive="active" class="nav-item nav-sub-item">Criar</a>
-                <a routerLink="/lembretes" routerLinkActive="active" class="nav-item nav-sub-item">Visualizar</a>
-              </div>
+          <a routerLink="/lembretes" routerLinkActive="active" class="nav-item">
+            <app-icon name="bell" />
+            <span class="nav-label">Lembretes</span>
+            @if (reminderCount() > 0) {
+              <span class="nav-badge">{{ reminderCount() }}</span>
             }
-          </div>
+          </a>
           <div class="nav-group">
             <button type="button" class="nav-item nav-group-toggle" (click)="toggleEncomendas()">
               <app-icon name="list" />
@@ -94,13 +90,19 @@
             </button>
             @if (encomendasExpanded()) {
               <div class="nav-sub">
-                <a routerLink="/nova-encomenda" routerLinkActive="active" class="nav-item nav-sub-item">Cadastro</a>
+                <a routerLink="/nova-encomenda" routerLinkActive="active" class="nav-item nav-sub-item">Criar</a>
                 <a routerLink="/encomendas" routerLinkActive="active" class="nav-item nav-sub-item">Visualizar <span class="nav-badge-inline">@if (orderCount() > 0) { {{ orderCount() }} }</span></a>
-                <a routerLink="/despesas-variaveis" routerLinkActive="active" class="nav-item nav-sub-item">Despesas eventuais</a>
-                <a routerLink="/gestao-dividas" routerLinkActive="active" class="nav-item nav-sub-item">Gestão de dívidas @if (debtCount() > 0) { <span class="nav-badge-inline">{{ debtCount() }}</span> }</a>
+                <a routerLink="/despesas-variaveis" routerLinkActive="active" class="nav-item nav-sub-item">Despesas extras</a>
               </div>
             }
           </div>
+          <a routerLink="/gestao-dividas" routerLinkActive="active" class="nav-item">
+            <app-icon name="wallet" />
+            <span class="nav-label">Dívidas</span>
+            @if (debtCount() > 0) {
+              <span class="nav-badge">{{ debtCount() }}</span>
+            }
+          </a>
           <a routerLink="/relatorios" routerLinkActive="active" class="nav-item">
             <app-icon name="chart" />
             <span class="nav-label">Relatório</span>
@@ -113,12 +115,25 @@
             <app-icon name="user" />
             <span class="nav-label">Clientes</span>
           </a>
+          <a routerLink="/minha-licenca" routerLinkActive="active" class="nav-item">
+            <app-icon name="receipt" />
+            <span class="nav-label">Licença e Pagamentos</span>
+          </a>
+          <a routerLink="/configuracoes" routerLinkActive="active" class="nav-item">
+            <app-icon name="settings" />
+            <span class="nav-label">Configurações</span>
+          </a>
           @if (licenseStatus()) {
-            <div class="sidebar-license">
+            <div class="sidebar-license" [class.license-warning]="licenseStatus()?.showLicenseExpiryWarning">
               <div class="license-header">
                 <span class="license-label">Minha Licença</span>
-                <span class="license-badge" [class.paid]="licenseStatus()?.status === 'paid'" [class.pending]="licenseStatus()?.status === 'pending'">
-                  {{ licenseStatus()?.status === 'paid' ? 'Activa' : 'Pendente' }}
+                <span
+                  class="license-badge"
+                  [class.paid]="licenseStatus()?.status === 'paid'"
+                  [class.trial]="licenseStatus()?.status === 'trial'"
+                  [class.pending]="licenseStatus()?.status === 'pending'"
+                  [class.expiring]="licenseStatus()?.showLicenseExpiryWarning">
+                  {{ sidebarLicenseBadgeText(licenseStatus()) }}
                 </span>
               </div>
               @if (licenseStatus()?.validUntil) {
@@ -126,6 +141,11 @@
                   <span class="license-expiry-label">Expira em</span>
                   <span class="license-expiry-date">{{ formatLicenseExpiry(licenseStatus()?.validUntil) }}</span>
                 </div>
+                @if (licenseStatus()?.daysRemaining != null) {
+                  <div class="license-days-remaining" [class.warn]="licenseStatus()?.showLicenseExpiryWarning">
+                    Faltam {{ licenseStatus()?.daysRemaining }} dia(s)
+                  </div>
+                }
               }
               @if (licenseStatus()?.status === 'pending') {
                 <div class="license-payment">
@@ -133,7 +153,7 @@
                   <span class="license-payment-hint">via e-Mola {{ licenseStatus()?.eMolaPhone || '' }}</span>
                 </div>
               }
-              <a routerLink="/minha-licenca" class="license-link">Ver histórico e pagamentos</a>
+              <a routerLink="/minha-licenca" class="license-link">Ver licença e pagamentos</a>
             </div>
           }
         }
@@ -179,6 +199,7 @@
               <span class="lang-option" [class.active]="lang.currentLang() === 'en'">EN</span>
             </button>
           </div>
+          <!-- Dark mode desativado: botão de tema comentado.
           <div class="navbar-theme-toggle" title="Tema">
             <button type="button" class="navbar-toggle-btn" (click)="theme.toggle()" [attr.aria-label]="theme.isDark() ? 'Modo claro' : 'Modo escuro'">
               @if (theme.isDark()) {
@@ -188,8 +209,9 @@
               }
             </button>
           </div>
+          -->
           <a routerLink="/lembretes" class="navbar-icon-btn" aria-label="Lembretes" title="Lembretes">
-            <app-icon name="calendar" />
+            <app-icon name="bell" />
           </a>
           <div class="navbar-dropdown-wrap">
             <button type="button" class="navbar-icon-btn" (click)="toggleNotifications($event); $event.stopPropagation()" aria-label="Notificações" [class.active]="notificationsOpen()">
@@ -224,21 +246,48 @@
     </div>
   </div>
 
+  <!-- Aviso: licença a expirar em ≤10 dias -->
+  @if (licenseExpiryPopup.visible() && auth.isAccountFinalized() && !auth.isAdmin()) {
+    <div class="order-alerts-overlay" (click)="licenseExpiryPopup.close()">
+      <div class="order-alerts-popup" (click)="$event.stopPropagation()">
+        <button type="button" class="popup-close" (click)="licenseExpiryPopup.close()" aria-label="Fechar">×</button>
+        <div class="popup-header">
+          <app-icon name="alert-circle" />
+          <h3>Licença a expirar</h3>
+          <p class="popup-subtitle">
+            Faltam {{ licenseExpiryPopup.daysRemaining() ?? '—' }} dia(s) para a sua licença expirar. Renove a tempo para não perder o acesso ao Chef Control.
+          </p>
+        </div>
+        <div class="popup-actions">
+          <button type="button" class="btn btn-primary" (click)="licenseExpiryPopup.close()">Entendi</button>
+        </div>
+      </div>
+    </div>
+  }
+
   <!-- Popup de alerta ao fazer login (encomendas + lembretes) -->
-  @if (orderAlertsPopup.visible() && !auth.isAccountFinalized()) {
+  @if (orderAlertsPopup.visible() && auth.isAccountFinalized()) {
     <div class="order-alerts-overlay" (click)="orderAlertsPopup.close()">
       <div class="order-alerts-popup" (click)="$event.stopPropagation()">
         <button type="button" class="popup-close" (click)="orderAlertsPopup.close()" aria-label="Fechar">×</button>
         <div class="popup-header">
-          <app-icon name="calendar" />
-          <h3>Lembretes</h3>
+          @if (orderAlertsPopup.upcomingRemindersWithDays().length > 0 && orderAlertsPopup.upcomingOrders().length === 0) {
+            <app-icon name="bell" />
+            <h3>Lembretes</h3>
+          } @else if (orderAlertsPopup.upcomingOrders().length > 0 && orderAlertsPopup.upcomingRemindersWithDays().length === 0) {
+            <app-icon name="package" />
+            <h3>Encomendas próximas</h3>
+          } @else {
+            <app-icon name="calendar" />
+            <h3>Resumo</h3>
+          }
           <p class="popup-subtitle">
             @if (orderAlertsPopup.upcomingOrders().length > 0 && orderAlertsPopup.upcomingRemindersWithDays().length > 0) {
-              {{ orderAlertsPopup.upcomingOrders().length }} encomenda(s) e {{ orderAlertsPopup.upcomingRemindersWithDays().length }} lembrete(s) nos próximos dias.
+              {{ orderAlertsPopup.upcomingOrders().length }} encomenda(s) com entrega nos próximos 14 dias e {{ orderAlertsPopup.upcomingRemindersWithDays().length }} lembrete(s) na sua janela de aviso.
             } @else if (orderAlertsPopup.upcomingOrders().length > 0) {
-              {{ orderAlertsPopup.upcomingOrders().length }} encomenda(s) para entregar nos próximos 7 dias.
+              {{ orderAlertsPopup.upcomingOrders().length }} encomenda(s) com data de entrega nos próximos 14 dias (por entregar).
             } @else {
-              {{ orderAlertsPopup.upcomingRemindersWithDays().length }} lembrete(s) — compre material a tempo.
+              {{ orderAlertsPopup.upcomingRemindersWithDays().length }} lembrete(s) na janela de aviso que definiu.
             }
           </p>
         </div>
@@ -253,7 +302,7 @@
           @for (r of orderAlertsPopup.upcomingRemindersWithDays().slice(0, 4); track r.reminder.id) {
             <li class="popup-item popup-item-reminder">
               <span class="popup-client">{{ r.reminder.clientName }}</span>
-              <span class="popup-product">Faltam {{ r.daysUntil }} dia(s) — compre material</span>
+              <span class="popup-product">Faltam {{ r.daysUntil }} dia(s) · aviso até {{ r.reminder.notifyDaysBefore ?? 5 }} dia(s) antes</span>
               <span class="popup-date">{{ r.reminder.deliveryDate | date:'dd/MM' }}</span>
             </li>
           }
@@ -261,9 +310,9 @@
         @if (orderAlertsPopup.upcomingOrders().length + orderAlertsPopup.upcomingRemindersWithDays().length > 8) {
           <p class="popup-more">... e mais.</p>
         }
-        <p class="popup-advice">Ver calendário ou todos os lembretes.</p>
+        <p class="popup-advice">Gerir lembretes na página dedicada.</p>
         <div class="popup-actions">
-          <button type="button" class="btn btn-primary" (click)="orderAlertsPopup.goToCalendar()">Calendário</button>
+          <button type="button" class="btn btn-primary" (click)="orderAlertsPopup.goToReminders()">Lembretes</button>
           <a routerLink="/lembretes" (click)="orderAlertsPopup.close()" class="btn btn-secondary">Todos os lembretes</a>
           <button type="button" class="btn btn-secondary" (click)="orderAlertsPopup.goToOrders()">Encomendas</button>
         </div>

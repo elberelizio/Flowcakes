@@ -1,0 +1,375 @@
+@use '../../core/styles/variables' as v;
+
+.configuracoes-page {
+  padding: 0 1rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.header-main {
+  flex: 1;
+  min-width: 0;
+
+  h1 {
+    margin: 0 0 0.35rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: v.$text;
+  }
+
+  .subtitle {
+    margin: 0;
+    font-size: 0.95rem;
+    color: v.$text-muted;
+    line-height: 1.4;
+  }
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: v.$text-muted;
+  background: transparent;
+  border: none;
+  border-radius: v.$radius;
+  text-decoration: none;
+  transition: color 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    color: v.$primary;
+  }
+}
+
+.config-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 900px) {
+  .config-layout {
+    grid-template-columns: 1fr 360px;
+  }
+}
+
+.config-form-section,
+.config-preview-section {
+  background: v.$card-bg;
+  border: 1px solid v.$border;
+  border-radius: v.$radius-lg;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+
+  h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: v.$text;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid v.$border;
+  }
+}
+
+.section-hint {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: v.$text-muted;
+  line-height: 1.4;
+
+  strong {
+    color: v.$text;
+  }
+}
+
+.config-subsection {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: v.$text;
+  padding-top: 1rem;
+  border-top: 1px solid v.$border;
+}
+
+.color-picker-wrap {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+
+  .color-picker-input {
+    width: 48px;
+    height: 38px;
+    padding: 2px;
+    border: 1px solid v.$border;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #fff;
+  }
+
+  input[type="text"] {
+    flex: 1;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid v.$border;
+    border-radius: 8px;
+    font-size: 0.95rem;
+  }
+}
+
+.config-form {
+  margin-top: 0.5rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (min-width: 480px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.field {
+  min-width: 0;
+
+  &.field-full {
+    grid-column: 1 / -1;
+  }
+
+  label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: v.$text;
+    margin-bottom: 0.35rem;
+  }
+
+  input,
+  textarea {
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid v.$border;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: var(--input-bg, #fff);
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: v.$primary;
+      box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.15);
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 90px;
+  }
+
+  .field-hint {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.78rem;
+    color: v.$text-muted;
+    line-height: 1.3;
+  }
+}
+
+.store-url-preview {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid v.$border;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.store-url-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: v.$primary;
+  text-decoration: none;
+  word-break: break-all;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.btn-copy {
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+  color: v.$text-muted;
+
+  &:hover {
+    color: v.$primary;
+  }
+}
+
+.message {
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+
+  &.success {
+    background: var(--success-bg, #dcfce7);
+    color: var(--success, #15803d);
+  }
+  &.error {
+    background: var(--danger-bg, #fef2f2);
+    color: var(--danger, #b91c1c);
+  }
+}
+
+.btn-primary {
+  padding: 0.7rem 1.25rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background: v.$primary;
+  color: white;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  &:hover:not(:disabled) {
+    background: var(--primary-dark, #0d9488);
+  }
+}
+
+.loading-text {
+  text-align: center;
+  color: v.$text-muted;
+  padding: 2rem;
+}
+
+/* Pré-visualização da loja */
+.loja-preview {
+  border: 1px solid v.$border;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.loja-preview-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.9rem;
+  background: linear-gradient(135deg, var(--preview-primary, #0d9488) 0%, #0f766e 100%);
+  color: #fff;
+
+  .loja-preview-brand {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  .loja-preview-links {
+    font-size: 0.7rem;
+    opacity: 0.9;
+  }
+}
+
+.loja-preview-hero {
+  padding: 1.25rem 0.9rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%);
+  background-size: cover;
+  background-position: center;
+  text-align: center;
+
+  &.has-image {
+    background-color: #1e293b;
+    .loja-preview-hero-title, .loja-preview-hero-desc, .loja-preview-badge {
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+    .loja-preview-badge {
+      background: rgba(0,0,0,0.4);
+      color: #fff;
+    }
+  }
+
+  .loja-preview-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #92400e;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+  }
+
+  .loja-preview-hero-title {
+    margin: 0 0 0.25rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .loja-preview-hero-desc {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+}
+
+.loja-preview-about {
+  padding: 1rem 0.9rem;
+  border-bottom: 1px solid v.$border;
+
+  h4 {
+    margin: 0 0 0.5rem;
+    font-size: 0.95rem;
+    color: v.$text;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: v.$text-muted;
+    line-height: 1.45;
+  }
+}
+
+.loja-preview-footer {
+  padding: 1rem 0.9rem;
+  background: #f8fafc;
+  font-size: 0.78rem;
+  color: v.$text-muted;
+
+  strong {
+    color: v.$text;
+  }
+
+  p {
+    margin: 0.25rem 0;
+    line-height: 1.4;
+  }
+}

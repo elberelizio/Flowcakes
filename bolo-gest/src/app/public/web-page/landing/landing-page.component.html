@@ -1,0 +1,439 @@
+<div class="landing-page-root font-sans text-gray-800 bg-brand-50 overflow-x-hidden">
+  <app-public-site-nav />
+
+  <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden hero-bg">
+    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-float"></div>
+    <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-orange-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-float" style="animation-delay: 2s"></div>
+    <div class="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div class="space-y-8 opacity-0 animate-fade-in-up" style="animation-delay: 0.1s">
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-brand-200 shadow-sm">
+            <span class="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+            <span class="text-sm font-medium text-brand-800">Novidade: Integração com iFood 🚀</span>
+          </div>
+          <h1 class="text-5xl lg:text-7xl font-serif font-bold leading-tight text-gray-900">
+            Transforme sua <br />
+            <span class="text-gradient">paixão</span> em lucro.
+          </h1>
+          <p class="text-lg text-gray-600 max-w-lg leading-relaxed">
+            O sistema completo para confeiteiras gerenciarem pedidos, estoque de ingredientes, finanças e clientes. Tudo em um só lugar, com a doçura que você merece.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4">
+            <a
+              routerLink="/register"
+              class="px-8 py-4 bg-brand-600 text-white rounded-full font-semibold shadow-lg hover:bg-brand-700 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2"
+            >
+              Experimente Grátis <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <button
+              type="button"
+              (click)="playDemo()"
+              class="px-8 py-4 bg-white text-brand-800 border border-brand-200 rounded-full font-semibold shadow-sm hover:bg-brand-50 transition-all duration-300 flex items-center justify-center gap-2"
+            >
+              <i class="fa-solid fa-play text-brand-600"></i> Ver Demo
+            </button>
+          </div>
+          <div class="flex items-center gap-4 text-sm text-gray-500 pt-4">
+            <div class="flex -space-x-3">
+              <img src="https://i.pravatar.cc/100?img=1" class="w-10 h-10 rounded-full border-2 border-white" alt="" />
+              <img src="https://i.pravatar.cc/100?img=5" class="w-10 h-10 rounded-full border-2 border-white" alt="" />
+              <img src="https://i.pravatar.cc/100?img=8" class="w-10 h-10 rounded-full border-2 border-white" alt="" />
+            </div>
+            <p>Junte-se a <strong>+2.500</strong> confeiteiras</p>
+          </div>
+        </div>
+        <div class="relative lg:h-[600px] flex items-center justify-center opacity-0 animate-fade-in-up" style="animation-delay: 0.3s">
+          <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 transform rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
+            <div class="bg-brand-600 p-4 flex justify-between items-center">
+              <div class="flex gap-2">
+                <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                <div class="w-3 h-3 rounded-full bg-green-400"></div>
+              </div>
+              <span class="text-white text-xs font-medium">Dashboard ChefControl</span>
+            </div>
+            <div class="p-6 space-y-6">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-brand-50 p-4 rounded-xl">
+                  <p class="text-xs text-brand-600 mb-1">Pedidos Hoje</p>
+                  <p class="text-2xl font-bold text-gray-800">12</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-xl">
+                  <p class="text-xs text-green-600 mb-1">Faturamento</p>
+                  <p class="text-2xl font-bold text-gray-800">MZN 1.240</p>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div class="flex justify-between text-xs text-gray-500">
+                  <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span>
+                </div>
+                <div class="flex items-end gap-2 h-24">
+                  <div class="w-full bg-brand-200 rounded-t-sm h-[40%] hover:bg-brand-400 transition-colors cursor-pointer relative group">
+                    <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">MZN 400</div>
+                  </div>
+                  <div class="w-full bg-brand-300 rounded-t-sm h-[60%] hover:bg-brand-500 transition-colors cursor-pointer relative group">
+                    <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">MZN 600</div>
+                  </div>
+                  <div class="w-full bg-brand-400 rounded-t-sm h-[30%] hover:bg-brand-600 transition-colors cursor-pointer relative group">
+                    <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">MZN 300</div>
+                  </div>
+                  <div class="w-full bg-brand-500 rounded-t-sm h-[80%] hover:bg-brand-700 transition-colors cursor-pointer relative group">
+                    <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">MZN 800</div>
+                  </div>
+                  <div class="w-full bg-brand-600 rounded-t-sm h-[95%] hover:bg-brand-800 transition-colors cursor-pointer relative group">
+                    <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">MZN 950</div>
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 text-xs"><i class="fa-solid fa-cake-candles"></i></div>
+                    <div>
+                      <p class="text-sm font-semibold text-gray-800">Bolo Red Velvet</p>
+                      <p class="text-xs text-gray-500">Entrega: 15:00</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-bold text-green-600">MZN 85,00</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 text-xs"><i class="fa-solid fa-cookie-bite"></i></div>
+                    <div>
+                      <p class="text-sm font-semibold text-gray-800">Caixa de Brigadeiros</p>
+                      <p class="text-xs text-gray-500">Retirada: 18:00</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-bold text-green-600">MZN 45,00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="absolute -top-10 -right-10 bg-white p-4 rounded-xl shadow-xl animate-float hidden md:block">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600"><i class="fa-solid fa-check"></i></div>
+              <div>
+                <p class="text-xs text-gray-500">Pagamento Recebido</p>
+                <p class="font-bold text-gray-800">MZN 120,00</p>
+              </div>
+            </div>
+          </div>
+          <div class="absolute -bottom-5 -left-10 bg-white p-4 rounded-xl shadow-xl animate-float hidden md:block" style="animation-delay: 1s">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600"><i class="fa-solid fa-bell"></i></div>
+              <div>
+                <p class="text-xs text-gray-500">Alerta de Estoque</p>
+                <p class="font-bold text-gray-800">Farinha em 20%</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-brand-600 font-semibold tracking-wide uppercase text-sm mb-2">Funcionalidades</h2>
+        <h3 class="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4">Tudo que você precisa para <span class="text-brand-600">crescer</span></h3>
+        <p class="text-gray-600">Deixe a planilha de lado. Gerencie seu negócio de confeitaria com ferramentas pensadas especificamente para o seu dia a dia.</p>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="group p-8 rounded-2xl bg-brand-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-brand-100">
+          <div class="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand-600 text-2xl mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-box-open"></i></div>
+          <h4 class="text-xl font-bold text-gray-900 mb-3">Controle de Estoque</h4>
+          <p class="text-gray-600 text-sm leading-relaxed">Saiba exatamente quanto de farinha, chocolate e ovos você tem. Alertas automáticos quando os ingredientes estão acabando.</p>
+        </div>
+        <div class="group p-8 rounded-2xl bg-brand-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-brand-100">
+          <div class="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand-600 text-2xl mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-calendar-check"></i></div>
+          <h4 class="text-xl font-bold text-gray-900 mb-3">Agenda de Pedidos</h4>
+          <p class="text-gray-600 text-sm leading-relaxed">Visualize seus pedidos em uma timeline intuitiva. Nunca mais perca uma data de entrega ou se confunda com encomendas.</p>
+        </div>
+        <div class="group p-8 rounded-2xl bg-brand-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-brand-100">
+          <div class="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand-600 text-2xl mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+          <h4 class="text-xl font-bold text-gray-900 mb-3">Orçamentos Inteligentes</h4>
+          <p class="text-gray-600 text-sm leading-relaxed">Calcule o preço ideal dos seus doces com base no custo real dos ingredientes e na sua mão de obra.</p>
+        </div>
+        <div class="group p-8 rounded-2xl bg-brand-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-brand-100">
+          <div class="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand-600 text-2xl mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-users"></i></div>
+          <h4 class="text-xl font-bold text-gray-900 mb-3">Cadastro de Clientes</h4>
+          <p class="text-gray-600 text-sm leading-relaxed">Mantenha um histórico de compras e preferências de cada cliente. Crie relacionamentos duradouros.</p>
+        </div>
+        <div class="group p-8 rounded-2xl bg-brand-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-brand-100">
+          <div class="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand-600 text-2xl mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-chart-pie"></i></div>
+          <h4 class="text-xl font-bold text-gray-900 mb-3">Relatórios Financeiros</h4>
+          <p class="text-gray-600 text-sm leading-relaxed">Saiba exatamente quanto você lucra por bolo. Relatórios de vendas, despesas e lucratividade em poucos cliques.</p>
+        </div>
+        <div class="group p-8 rounded-2xl bg-brand-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-brand-100">
+          <div class="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand-600 text-2xl mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-mobile-screen"></i></div>
+          <h4 class="text-xl font-bold text-gray-900 mb-3">Acesso Mobile</h4>
+          <p class="text-gray-600 text-sm leading-relaxed">Acesse seu sistema na cozinha, no mercado ou na entrega. Tudo sincronizado na nuvem em tempo real.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-20 bg-brand-900 text-white relative overflow-hidden">
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
+      <div class="absolute top-10 left-10 w-64 h-64 bg-white rounded-full filter blur-3xl"></div>
+      <div class="absolute bottom-10 right-10 w-96 h-96 bg-brand-500 rounded-full filter blur-3xl"></div>
+    </div>
+    <div class="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+        <div>
+          <h2 class="text-3xl md:text-4xl font-serif font-bold mb-6">Pare de vender no escuro. Comece a lucrar em MZN.</h2>
+          <p class="text-brand-200 mb-8 text-lg">
+            Confeiteiras que começaram ontem já organizam preços, lucros e pedidos com confiança. Se elas conseguem, você também consegue — e com o ChefControl fica muito mais fácil.
+          </p>
+          <ul class="space-y-4">
+            <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-brand-400"></i><span>Defina preços em MZN com lucro real, sem adivinhação</span></li>
+            <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-brand-400"></i><span>Descubra rapidamente quanto cada bolo precisa render</span></li>
+            <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-brand-400"></i><span>Converta organização em mais vendas e crescimento</span></li>
+          </ul>
+        </div>
+        <figure class="relative overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10 aspect-[4/3] lg:min-h-[400px] bg-brand-950">
+          <img
+            src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=1200&q=80"
+            alt="Profissional de pastelaria e confeitaria em laboratório de cozinha"
+            class="h-full w-full object-cover object-center"
+            loading="lazy"
+            width="1200"
+            height="800"
+          />
+          <figcaption
+            class="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-950 via-brand-950/70 to-transparent px-5 pt-20 pb-5 text-center text-xs text-brand-100/95 sm:text-sm"
+          >
+            *Em MZN, no ChefControl o cálculo de custos, tempo e margem é automático e ligado aos seus pedidos — sem folhas à parte.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="testimonials" class="py-20 bg-brand-50">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-serif font-bold text-gray-900">O que as confeiteiras dizem</h2>
+      </div>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex text-yellow-400 mb-4">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p class="text-gray-600 mb-6 italic">"Finalmente parei de usar caderninhos e planilhas bagunçadas. O controle de estoque me salvou de ficar sem chocolate no meio da semana!"</p>
+          <div class="flex items-center gap-4">
+            <img src="https://i.pravatar.cc/100?img=44" alt="" class="w-12 h-12 rounded-full object-cover" />
+            <div>
+              <h5 class="font-bold text-gray-900">Ana Paula</h5>
+              <p class="text-xs text-gray-500">&#64;doces_da_ana</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex text-yellow-400 mb-4">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p class="text-gray-600 mb-6 italic">"A calculadora de preços mudou minha vida. Descobri que estava cobrando muito barato pelos meus bolos customizados."</p>
+          <div class="flex items-center gap-4">
+            <img src="https://i.pravatar.cc/100?img=32" alt="" class="w-12 h-12 rounded-full object-cover" />
+            <div>
+              <h5 class="font-bold text-gray-900">Bruna Silva</h5>
+              <p class="text-xs text-gray-500">Confeitaria Artesanal</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex text-yellow-400 mb-4">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+          </div>
+          <p class="text-gray-600 mb-6 italic">"Suporte incrível e sistema muito intuitivo. Consigo ver meu lucro real no final do mês sem dor de cabeça."</p>
+          <div class="flex items-center gap-4">
+            <img src="https://i.pravatar.cc/100?img=12" alt="" class="w-12 h-12 rounded-full object-cover" />
+            <div>
+              <h5 class="font-bold text-gray-900">Carla Mendes</h5>
+              <p class="text-xs text-gray-500">Carla Cakes</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="relative py-20 lg:py-24 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-brand-50/40">
+    <div class="pointer-events-none absolute inset-0 opacity-[0.35]" aria-hidden="true">
+      <div class="absolute top-20 right-[10%] h-72 w-72 rounded-full bg-brand-200/60 blur-3xl"></div>
+      <div class="absolute bottom-10 left-[5%] h-64 w-64 rounded-full bg-teal-100/80 blur-3xl"></div>
+    </div>
+    <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-12">
+      <div class="text-center max-w-2xl mx-auto mb-14 lg:mb-16">
+        <p class="text-brand-600 text-xs font-bold uppercase tracking-[0.2em] mb-3">Preços em MZN</p>
+        <h2 class="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4">Planos simples e transparentes</h2>
+        <p class="text-gray-600 text-lg leading-relaxed">14 dias de teste grátis; depois continue com o plano Pro por MZN 500/mês.</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6 lg:gap-8 max-w-4xl mx-auto items-stretch">
+        <article
+          class="group flex flex-col h-full rounded-3xl border border-slate-200/90 bg-white/90 backdrop-blur-sm p-8 shadow-sm hover:shadow-xl hover:border-brand-200/80 hover:-translate-y-0.5 transition-all duration-300"
+        >
+          <div class="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 group-hover:bg-brand-50 group-hover:text-brand-700 transition-colors">
+            <i class="fa-solid fa-gift text-lg" aria-hidden="true"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900">Teste grátis</h3>
+          <p class="mt-1 text-sm text-gray-500">Experimente o ChefControl</p>
+          <div class="mt-6 border-b border-slate-100 pb-6">
+            <p class="text-3xl font-bold tracking-tight text-gray-900">Grátis</p>
+            <p class="mt-1 text-sm font-medium text-brand-700">14 dias · sem pagar</p>
+          </div>
+          <ul class="mt-8 flex-1 space-y-3.5">
+            <li class="flex gap-3 text-sm text-gray-600 leading-snug">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
+              Acesso às funcionalidades do plano Pro durante o teste
+            </li>
+            <li class="flex gap-3 text-sm text-gray-600 leading-snug">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
+              Pedidos, stock e calculadora de preços em MZN
+            </li>
+            <li class="flex gap-3 text-sm text-gray-600 leading-snug">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
+              Relatórios e cadastro de clientes
+            </li>
+          </ul>
+          <a
+            routerLink="/register"
+            class="mt-8 block w-full rounded-xl border-2 border-slate-200 bg-white py-3.5 text-center text-sm font-bold text-gray-800 hover:border-brand-300 hover:bg-brand-50/50 transition-colors"
+          >
+            Começar teste
+          </a>
+        </article>
+
+        <article
+          class="relative z-[1] flex flex-col h-full rounded-3xl border-2 border-brand-400/50 bg-gradient-to-b from-white via-white to-brand-50/90 p-8 shadow-2xl shadow-brand-900/10 ring-1 ring-brand-200/60 md:scale-[1.02] md:-my-1 transition-transform duration-300 hover:shadow-brand-900/15"
+        >
+          <div
+            class="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-gradient-to-r from-brand-600 to-teal-500 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white shadow-lg"
+          >
+            Mais popular
+          </div>
+          <div class="mb-6 mt-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-600 text-white shadow-md shadow-brand-600/30">
+            <i class="fa-solid fa-bolt text-lg" aria-hidden="true"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900">Pro</h3>
+          <p class="mt-1 text-sm text-gray-500">Para confeiteiras ativas</p>
+          <div class="mt-6 flex items-baseline gap-1 border-b border-brand-100 pb-6">
+            <span class="text-sm font-semibold text-brand-700">MZN</span>
+            <span class="text-4xl font-bold tracking-tight text-gray-900">500</span>
+            <span class="text-base font-medium text-gray-500">/mês</span>
+          </div>
+          <ul class="mt-8 flex-1 space-y-3.5">
+            <li class="flex gap-3 text-sm text-gray-700 leading-snug">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
+              Pedidos ilimitados
+            </li>
+            <li class="flex gap-3 text-sm text-gray-700 leading-snug">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
+              Estoque completo
+            </li>
+            <li class="flex gap-3 text-sm text-gray-700 leading-snug">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
+              Relatórios financeiros
+            </li>
+            <li class="flex gap-3 text-sm text-gray-700 leading-snug">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
+              Cadastro de clientes
+            </li>
+          </ul>
+          <a
+            routerLink="/register"
+            class="mt-8 block w-full rounded-xl bg-gradient-to-r from-brand-600 to-teal-600 py-3.5 text-center text-sm font-bold text-white shadow-lg shadow-brand-600/25 hover:from-brand-700 hover:to-teal-700 transition-all"
+          >
+            Comprar agora
+          </a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="landing-footer relative overflow-hidden border-t border-brand-700/40 bg-gradient-to-b from-brand-900 via-brand-950 to-slate-950 text-brand-200/95">
+    <div class="pointer-events-none absolute inset-0 opacity-[0.07]" aria-hidden="true">
+      <div class="absolute -top-24 right-0 h-64 w-64 rounded-full bg-brand-400 blur-3xl"></div>
+      <div class="absolute bottom-0 left-1/4 h-48 w-96 rounded-full bg-teal-600 blur-3xl"></div>
+    </div>
+    <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pt-14 pb-10 lg:pt-16 lg:pb-14">
+      <div class="grid gap-12 lg:gap-10 lg:grid-cols-12">
+        <div class="lg:col-span-5 space-y-5">
+          <div class="flex items-center gap-3">
+            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-800/80 ring-1 ring-brand-500/25 shadow-lg">
+              <i class="fa-solid fa-whisk text-brand-300 text-xl" aria-hidden="true"></i>
+            </span>
+            <span class="text-2xl font-serif font-bold text-white tracking-tight">ChefControl</span>
+          </div>
+          <p class="text-sm leading-relaxed text-brand-100/80 max-w-sm">
+            Sistema de gestão completo para confeiteiras e pequenas empresas do ramo da confeitaria — pedidos, stock e lucro em MZN.
+          </p>
+          <div class="flex flex-wrap gap-3 pt-1">
+            <a
+              routerLink="/register"
+              class="inline-flex items-center justify-center rounded-full bg-brand-500 px-5 py-2.5 text-sm font-semibold text-brand-950 shadow-md hover:bg-brand-400 hover:shadow-lg transition-all duration-300"
+            >
+              Começar grátis
+            </a>
+            <a
+              routerLink="/contacto"
+              class="inline-flex items-center justify-center rounded-full border border-brand-500/50 bg-brand-900/40 px-5 py-2.5 text-sm font-semibold text-white hover:border-brand-400 hover:bg-brand-800/50 transition-all duration-300"
+            >
+              Contacto
+            </a>
+          </div>
+        </div>
+        <div class="lg:col-span-3">
+          <h4 class="text-xs font-bold uppercase tracking-[0.2em] text-brand-400/90 mb-5">Produto</h4>
+          <ul class="space-y-3 text-sm">
+            <li>
+              <a [routerLink]="['/']" fragment="features" class="inline-flex text-brand-100/90 hover:text-white transition-colors">Funcionalidades</a>
+            </li>
+            <li>
+              <a [routerLink]="['/']" fragment="pricing" class="inline-flex text-brand-100/90 hover:text-white transition-colors">Preços</a>
+            </li>
+            <li>
+              <a [routerLink]="['/']" fragment="testimonials" class="inline-flex text-brand-100/90 hover:text-white transition-colors">Depoimentos</a>
+            </li>
+            <li>
+              <a routerLink="/contacto" class="inline-flex text-brand-100/90 hover:text-white transition-colors">Suporte e contacto</a>
+            </li>
+            <li>
+              <a routerLink="/loja/contato" class="inline-flex text-brand-100/90 hover:text-white transition-colors">Encomendar na loja</a>
+            </li>
+          </ul>
+        </div>
+        <div class="lg:col-span-2">
+          <h4 class="text-xs font-bold uppercase tracking-[0.2em] text-brand-400/90 mb-5">Conta</h4>
+          <ul class="space-y-3 text-sm">
+            <li>
+              <a routerLink="/login" class="inline-flex text-brand-100/90 hover:text-white transition-colors">Entrar</a>
+            </li>
+            <li>
+              <a routerLink="/register" class="inline-flex text-brand-100/90 hover:text-white transition-colors">Criar conta</a>
+            </li>
+          </ul>
+        </div>
+        <div class="lg:col-span-2 rounded-2xl border border-brand-600/25 bg-brand-950/50 p-5 backdrop-blur-sm">
+          <p class="text-xs font-bold uppercase tracking-wider text-brand-400 mb-2">Dúvidas?</p>
+          <p class="text-sm text-brand-100/85 leading-snug mb-4">Reclamações, sugestões ou ajuda com o software.</p>
+          <a
+            routerLink="/contacto"
+            class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 py-2.5 text-sm font-semibold text-white ring-1 ring-white/10 hover:bg-white/15 transition-colors"
+          >
+            <i class="fa-solid fa-paper-plane text-brand-300" aria-hidden="true"></i>
+            Página de contacto
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="relative z-10 border-t border-white/10 bg-black/15">
+      <div class="max-w-7xl mx-auto px-6 lg:px-12 py-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs text-brand-300/70">
+        <p class="m-0">© {{ currentYear }} ChefControl. Todos os direitos reservados.</p>
+        <p class="m-0 text-brand-400/60">Gestão para confeitaria · Valores em MZN</p>
+      </div>
+    </div>
+  </footer>
+</div>

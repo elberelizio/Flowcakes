@@ -23,6 +23,9 @@ public class OrderEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Column(name = "order_no")
+    private Integer orderNo; // Número sequencial da encomenda (por utilizador)
+
     @Column(name = "client_name", nullable = false, length = 200)
     private String clientName;
 
@@ -78,6 +81,15 @@ public class OrderEntity {
 
     @Column(name = "delivery_date")
     private LocalDate deliveryDate;
+
+    @Column(name = "client_address", length = 500)
+    private String clientAddress;
+
+    @Column(name = "pickup_address", length = 500)
+    private String pickupAddress;
+
+    @Column(name = "delivery_address", length = 500)
+    private String deliveryAddress;
 
     @Column(name = "has_delivery", nullable = false)
     private boolean hasDelivery = false;
@@ -147,6 +159,12 @@ public class OrderEntity {
     public void setCakeSize(String cakeSize) { this.cakeSize = cakeSize; }
     public LocalDate getDeliveryDate() { return deliveryDate; }
     public void setDeliveryDate(LocalDate deliveryDate) { this.deliveryDate = deliveryDate; }
+    public String getClientAddress() { return clientAddress; }
+    public void setClientAddress(String clientAddress) { this.clientAddress = clientAddress; }
+    public String getPickupAddress() { return pickupAddress; }
+    public void setPickupAddress(String pickupAddress) { this.pickupAddress = pickupAddress; }
+    public String getDeliveryAddress() { return deliveryAddress; }
+    public void setDeliveryAddress(String deliveryAddress) { this.deliveryAddress = deliveryAddress; }
     public boolean isHasDelivery() { return hasDelivery; }
     public void setHasDelivery(boolean hasDelivery) { this.hasDelivery = hasDelivery; }
     public BigDecimal getDeliveryCost() { return deliveryCost; }
@@ -159,6 +177,8 @@ public class OrderEntity {
     public void setVariableExpenses(List<VariableExpense> variableExpenses) { 
         this.variableExpenses = variableExpenses != null ? variableExpenses : new ArrayList<>(); 
     }
+    public Integer getOrderNo() { return orderNo; }
+    public void setOrderNo(Integer orderNo) { this.orderNo = orderNo; }
     public UserEntity getUser() { return user; }
     public void setUser(UserEntity user) { this.user = user; }
 }

@@ -1,150 +1,171 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './guards/auth.guard';
-import { licenseGuard } from './guards/license.guard';
-import { adminGuard } from './guards/admin.guard';
-import { redirectAdminGuard } from './guards/redirect-admin.guard';
-import { noFinalizarForAdminGuard } from './guards/no-finalizar-for-admin.guard';
-import { LojaRastreioComponent } from './public/loja/loja-rastreio.component';
+import { authGuard } from './core/guards/auth.guard';
+import { licenseGuard } from './core/guards/license.guard';
+import { adminGuard } from './core/guards/admin.guard';
+import { redirectAdminGuard } from './core/guards/redirect-admin.guard';
+import { WebStoreTrackOrderComponent } from './public/web-store/web-store-track-order.component';
+import { webPageRoutes } from './public/web-page/web-page.routes';
 
 export const routes: Routes = [
-  { path: 'login', loadComponent: () => import('./auth/login/login.component').then(m => m.LoginComponent) },
+  {
+    path: '',
+    loadComponent: () => import('./public/web-page/web-page-layout.component').then((m) => m.WebPageLayoutComponent),
+    children: webPageRoutes,
+  },
+  { path: 'login', loadComponent: () => import('./login/login.component').then((m) => m.LoginComponent) },
   {
     path: 'recuperar-senha',
-    loadComponent: () => import('./auth/recuperar-senha/recuperar-senha.component').then(m => m.RecuperarSenhaComponent),
+    loadComponent: () => import('./login/recuperar-senha/recuperar-senha.component').then((m) => m.RecuperarSenhaComponent),
   },
+  { path: 'register', loadComponent: () => import('./public/web-store/register/register.component').then((m) => m.RegisterComponent) },
+  { path: 'registro', redirectTo: 'register', pathMatch: 'full' },
   {
     path: 'ativar-licenca',
-    loadComponent: () => import('./auth/ativar-licenca/ativar-licenca.component').then(m => m.AtivarLicencaComponent),
+    loadComponent: () =>
+      import('./dashboard-admin/ativar-licenca/ativar-licenca.component').then((m) => m.AtivarLicencaComponent),
   },
   {
-    path: 'finalizar-conta',
-    loadComponent: () => import('./auth/finalizar-conta/finalizar-conta.component').then(m => m.FinalizarContaComponent),
-    canActivate: [authGuard, noFinalizarForAdminGuard],
+    path: 'pagamento-licenca',
+    loadComponent: () =>
+      import('./pagamento-licenca/pagamento-licenca.component').then((m) => m.PagamentoLicencaComponent),
   },
+  { path: 'finalizar-conta', redirectTo: '/login', pathMatch: 'full' },
   {
     path: 'dashboard',
-    loadComponent: () => import('./user/dashboard/dashboard.component').then(m => m.DashboardComponent),
+    loadComponent: () => import('./dashboard-user/dashboard/dashboard.component').then((m) => m.DashboardComponent),
     canActivate: [authGuard, licenseGuard],
   },
   {
     path: 'admin-dashboard',
-    loadComponent: () => import('./admin/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
+    loadComponent: () => import('./dashboard-admin/dashboard/admin-dashboard.component').then((m) => m.AdminDashboardComponent),
     canActivate: [authGuard, adminGuard],
   },
   {
     path: 'gestao-licencas',
-    loadComponent: () => import('./admin/gestao-licencas/admin.component').then(m => m.AdminComponent),
+    loadComponent: () => import('./dashboard-admin/gestao-licencas/admin.component').then((m) => m.AdminComponent),
     canActivate: [authGuard, adminGuard],
   },
   {
     path: 'admin-logs',
-    loadComponent: () => import('./admin/logs/admin-logs.component').then(m => m.AdminLogsComponent),
+    loadComponent: () => import('./dashboard-admin/logs/admin-logs.component').then((m) => m.AdminLogsComponent),
     canActivate: [authGuard, adminGuard],
   },
   {
     path: 'admin-encomendas',
-    loadComponent: () => import('./admin/encomendas/admin-orders.component').then(m => m.AdminOrdersComponent),
+    loadComponent: () => import('./dashboard-admin/encomendas/admin-orders.component').then((m) => m.AdminOrdersComponent),
     canActivate: [authGuard, adminGuard],
   },
   {
     path: 'satisfacao',
-    loadComponent: () => import('./admin/satisfacao/satisfacao.component').then(m => m.SatisfacaoComponent),
+    loadComponent: () => import('./dashboard-admin/satisfacao/satisfacao.component').then((m) => m.SatisfacaoComponent),
     canActivate: [authGuard, adminGuard],
   },
   {
     path: 'gestao-notificacoes',
-    loadComponent: () => import('./admin/notificacoes/gestao-notificacoes.component').then(m => m.GestaoNotificacoesComponent),
+    loadComponent: () => import('./dashboard-admin/notificacoes/gestao-notificacoes.component').then((m) => m.GestaoNotificacoesComponent),
     canActivate: [authGuard, adminGuard],
   },
   {
     path: 'admin-novos-utilizadores',
-    loadComponent: () => import('./admin/novos-utilizadores/novos-utilizadores.component').then(m => m.NovosUtilizadoresComponent),
+    loadComponent: () => import('./dashboard-admin/novos-utilizadores/novos-utilizadores.component').then((m) => m.NovosUtilizadoresComponent),
     canActivate: [authGuard, adminGuard],
   },
   {
     path: 'admin-perfis',
-    loadComponent: () => import('./admin/perfis/gestao-perfis.component').then(m => m.GestaoPerfisComponent),
+    loadComponent: () => import('./dashboard-admin/perfis/gestao-perfis.component').then((m) => m.GestaoPerfisComponent),
     canActivate: [authGuard, adminGuard],
   },
   {
     path: 'admin-configuracoes',
-    loadComponent: () => import('./admin/configuracoes/configuracoes.component').then(m => m.ConfiguracoesComponent),
+    loadComponent: () => import('./dashboard-admin/configuracoes/configuracoes.component').then((m) => m.ConfiguracoesComponent),
     canActivate: [authGuard, adminGuard],
   },
   {
     path: 'admin-ranking',
-    loadComponent: () => import('./admin/ranking/ranking.component').then(m => m.RankingComponent),
+    loadComponent: () => import('./dashboard-admin/ranking/ranking.component').then((m) => m.RankingComponent),
     canActivate: [authGuard, adminGuard],
   },
   {
     path: 'nova-encomenda',
-    loadComponent: () => import('./user/nova-encomenda/new-order.component').then(m => m.NewOrderComponent),
+    loadComponent: () => import('./dashboard-user/nova-encomenda/new-order.component').then((m) => m.NewOrderComponent),
     canActivate: [authGuard, redirectAdminGuard, licenseGuard],
   },
   {
     path: 'clientes',
-    loadComponent: () => import('./user/clientes/clientes.component').then(m => m.ClientesComponent),
+    loadComponent: () => import('./dashboard-user/clientes/clientes.component').then((m) => m.ClientesComponent),
     canActivate: [authGuard, redirectAdminGuard, licenseGuard],
   },
   {
     path: 'minha-licenca',
-    loadComponent: () => import('./user/minha-licenca/minha-licenca.component').then(m => m.MinhaLicencaComponent),
+    loadComponent: () => import('./dashboard-user/minha-licenca/minha-licenca.component').then((m) => m.MinhaLicencaComponent),
     canActivate: [authGuard, licenseGuard],
   },
   {
     path: 'despesas-variaveis',
-    loadComponent: () => import('./user/despesas-variaveis/despesas-variaveis.component').then(m => m.DespesasVariaveisComponent),
+    loadComponent: () => import('./dashboard-user/despesas-variaveis/despesas-variaveis.component').then((m) => m.DespesasVariaveisComponent),
     canActivate: [authGuard, redirectAdminGuard, licenseGuard],
   },
   {
     path: 'gestao-dividas',
-    loadComponent: () => import('./user/dividas/dividas.component').then(m => m.DividasComponent),
+    loadComponent: () => import('./dashboard-user/dividas/dividas.component').then((m) => m.DividasComponent),
     canActivate: [authGuard, redirectAdminGuard, licenseGuard],
   },
   {
     path: 'encomendas',
-    loadComponent: () => import('./user/encomendas/orders.component').then(m => m.OrdersComponent),
+    loadComponent: () => import('./dashboard-user/encomendas/orders.component').then((m) => m.OrdersComponent),
     canActivate: [authGuard, redirectAdminGuard, licenseGuard],
   },
   {
     path: 'encomendas/detalhes',
-    loadComponent: () => import('./user/encomendas-detalhes/orders-detail-list.component').then(m => m.OrdersDetailListComponent),
+    loadComponent: () => import('./dashboard-user/encomendas-detalhes/orders-detail-list.component').then((m) => m.OrdersDetailListComponent),
     canActivate: [authGuard, redirectAdminGuard, licenseGuard],
   },
   {
     path: 'encomendas/:id',
-    loadComponent: () => import('./user/encomenda/order-details.component').then(m => m.OrderDetailsComponent),
-    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
-  },
-  {
-    path: 'calendario',
-    loadComponent: () => import('./user/calendario/calendario.component').then(m => m.CalendarioComponent),
+    loadComponent: () => import('./dashboard-user/encomenda/order-details.component').then((m) => m.OrderDetailsComponent),
     canActivate: [authGuard, redirectAdminGuard, licenseGuard],
   },
   {
     path: 'lembretes',
-    loadComponent: () => import('./user/lembretes/lembretes.component').then(m => m.LembretesComponent),
+    loadComponent: () => import('./dashboard-user/lembretes/lembretes.component').then((m) => m.LembretesComponent),
     canActivate: [authGuard, redirectAdminGuard, licenseGuard],
   },
   {
     path: 'relatorios',
-    loadComponent: () => import('./user/relatorios/reports.component').then(m => m.ReportsComponent),
+    loadComponent: () => import('./dashboard-user/relatorios/reports.component').then((m) => m.ReportsComponent),
     canActivate: [authGuard, licenseGuard],
   },
   {
     path: 'retiradas',
-    loadComponent: () => import('./user/retiradas/retiradas.component').then(m => m.RetiradasComponent),
+    loadComponent: () => import('./dashboard-user/retiradas/retiradas.component').then((m) => m.RetiradasComponent),
+    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
+  },
+  {
+    path: 'pagamentos',
+    redirectTo: 'minha-licenca',
+    pathMatch: 'full',
+  },
+  {
+    path: 'configuracoes',
+    loadComponent: () => import('./dashboard-user/configuracoes/configuracoes.component').then((m) => m.ConfiguracoesComponent),
     canActivate: [authGuard, redirectAdminGuard, licenseGuard],
   },
   {
     path: 'loja',
-    loadComponent: () => import('./public/loja/loja-layout.component').then(m => m.LojaLayoutComponent),
+    loadComponent: () => import('./public/web-store/web-store-layout.component').then((m) => m.WebStoreLayoutComponent),
     children: [
-      { path: '', loadComponent: () => import('./public/loja/loja-home.component').then(m => m.LojaHomeComponent) },
-      { path: 'contato', loadComponent: () => import('./public/loja/loja-contato.component').then(m => m.LojaContatoComponent) },
-      { path: 'rastreio', component: LojaRastreioComponent },
+      { path: '', loadComponent: () => import('./public/web-store/web-store-home.component').then((m) => m.WebStoreHomeComponent) },
+      { path: 'contato', loadComponent: () => import('./public/web-store/web-store-contact.component').then((m) => m.WebStoreContactComponent) },
+      { path: 'rastreio', component: WebStoreTrackOrderComponent },
+      {
+        path: ':slug',
+        children: [
+          { path: '', loadComponent: () => import('./public/web-store/web-store-home.component').then((m) => m.WebStoreHomeComponent) },
+          { path: 'contato', loadComponent: () => import('./public/web-store/web-store-contact.component').then((m) => m.WebStoreContactComponent) },
+          { path: 'rastreio', component: WebStoreTrackOrderComponent },
+        ],
+      },
     ],
   },
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: '**', redirectTo: 'dashboard' },
+  { path: '**', redirectTo: '' },
 ];

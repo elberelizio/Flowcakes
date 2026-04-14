@@ -22,6 +22,7 @@
 
     .brand-text,
     .brand-tagline,
+    .brand-profile,
     .nav-label {
       opacity: 0;
       width: 0;
@@ -103,6 +104,16 @@
   font-weight: 400;
   color: v.$sidebar-muted;
   letter-spacing: 0.01em;
+  transition: opacity 0.2s, width 0.2s;
+}
+
+.brand-profile {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.15rem;
   transition: opacity 0.2s, width 0.2s;
 }
 
@@ -218,6 +229,11 @@
       background: rgba(94, 234, 212, 0.15);
     }
 
+    &.trial {
+      color: #a5b4fc;
+      background: rgba(165, 180, 252, 0.2);
+    }
+
     &.pending {
       color: #fbbf24;
       background: rgba(251, 191, 36, 0.15);
@@ -262,6 +278,27 @@
     }
   }
 
+  .license-days-remaining {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+    color: v.$sidebar-text;
+
+    &.warn {
+      color: #f59e0b;
+    }
+  }
+
+  &.license-warning {
+    border-color: rgba(245, 158, 11, 0.4);
+    background: rgba(245, 158, 11, 0.08);
+  }
+
+  .license-badge.expiring {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.15);
+  }
+
   .license-link {
     display: block;
     margin-top: 0.75rem;
@@ -292,6 +329,7 @@
 .sidebar.collapsed .sidebar-license {
   .license-label,
   .license-expiry,
+  .license-days-remaining,
   .license-payment,
   .license-link {
     display: none;

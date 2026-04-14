@@ -1,31 +1,45 @@
 import { Injectable, signal, computed } from '@angular/core';
 
-export type Theme = 'light' | 'dark';
+/** Dark mode desativado: mantém-se apenas `'light'`. */
+export type Theme = 'light'; // | 'dark';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  private theme = signal<Theme>(this.loadTheme());
+  private theme = signal<Theme>('light');
+  // private theme = signal<Theme>(this.loadTheme());
 
-  isDark = computed(() => this.theme() === 'dark');
-  isLight = computed(() => this.theme() === 'light');
+  /** Sempre falso — alternância escura desligada. */
+  isDark = computed(() => false);
+  // isDark = computed(() => this.theme() === 'dark');
 
-  /** Tema em memória apenas; preferência do sistema se não definido. Nada é guardado no browser. */
+  isLight = computed(() => true);
+  // isLight = computed(() => this.theme() === 'light');
+
+  /*
   private loadTheme(): Theme {
     if (typeof window === 'undefined') return 'light';
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
+  */
 
-  setTheme(theme: Theme): void {
+  setTheme(_theme: Theme): void {
+    this.theme.set('light');
+    document.documentElement.setAttribute('data-theme', 'light');
+    /*
     this.theme.set(theme);
     document.documentElement.setAttribute('data-theme', theme);
+    */
   }
 
   toggle(): void {
+    /* Dark mode desativado — não alterna.
     const next = this.theme() === 'light' ? 'dark' : 'light';
     this.setTheme(next);
+    */
   }
 
   init(): void {
-    document.documentElement.setAttribute('data-theme', this.theme());
+    document.documentElement.setAttribute('data-theme', 'light');
+    // document.documentElement.setAttribute('data-theme', this.theme());
   }
 }
