@@ -24,16 +24,6 @@ export interface AccessLogUsersPage {
   totalPages: number;
 }
 
-export interface AccessLog {
-  id: string;
-  userId: string;
-  userPhone?: string;
-  userFullName?: string;
-  admin: boolean;
-  ipAddress?: string;
-  createdAt: string;
-}
-
 @Component({
   selector: 'app-admin-logs',
   standalone: true,
@@ -53,12 +43,6 @@ export class AdminLogsComponent implements OnInit {
   searchTerm = signal('');
   pageSize = signal(15);
   currentPage = signal(0);
-
-  detailOpen = signal(false);
-  detailLoading = signal(false);
-  detailError = signal('');
-  detailUser = signal<AccessLogUserSummary | null>(null);
-  detailLogs = signal<AccessLog[]>([]);
 
   ngOnInit(): void {
     this.load();
@@ -153,36 +137,6 @@ export class AdminLogsComponent implements OnInit {
 
     return pages;
   });
-
-  openDetails(user: AccessLogUserSummary): void {
-    this.detailUser.set(user);
-    this.detailOpen.set(true);
-    this.detailLoading.set(true);
-    this.detailError.set('');
-    this.detailLogs.set([]);
-
-    this.http
-      .get<AccessLog[]>(`${API_URL}/admin/users/${user.userId}/access-logs`, {
-        params: new HttpParams().set('limit', '100'),
-      })
-      .subscribe({
-        next: (logs) => {
-          this.detailLogs.set(logs ?? []);
-          this.detailLoading.set(false);
-        },
-        error: () => {
-          this.detailError.set('Erro ao carregar histórico do utilizador.');
-          this.detailLoading.set(false);
-        },
-      });
-  }
-
-  closeDetails(): void {
-    this.detailOpen.set(false);
-    this.detailUser.set(null);
-    this.detailLogs.set([]);
-    this.detailError.set('');
-  }
 
   formatDate(iso?: string): string {
     if (!iso) return '—';

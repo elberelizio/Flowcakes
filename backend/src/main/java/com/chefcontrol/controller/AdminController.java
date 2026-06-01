@@ -40,6 +40,10 @@ import com.chefcontrol.dto.TreasurySuggestionApproveRequest;
 import com.chefcontrol.dto.TreasurySuggestionDto;
 import com.chefcontrol.dto.TreasurySummaryDto;
 import com.chefcontrol.dto.LandingSuggestionDto;
+import com.chefcontrol.dto.UserActivityHistoryPageDto;
+import com.chefcontrol.dto.UserSessionDetailDto;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -111,6 +115,26 @@ public class AdminController {
             @PathVariable UUID targetUserId,
             @RequestParam(defaultValue = "30") int limit) {
         return ResponseEntity.ok(adminService.getUserAccessLogs(userId, targetUserId, limit));
+    }
+
+    @GetMapping("/users/{targetUserId}/sessions")
+    public ResponseEntity<List<UserSessionDetailDto>> userSessions(
+            @CurrentUserId UUID userId,
+            @PathVariable UUID targetUserId,
+            @RequestParam(defaultValue = "20") int limit) {
+        return ResponseEntity.ok(adminService.getUserSessions(userId, targetUserId, limit));
+    }
+
+    @GetMapping("/users/{targetUserId}/activity-history")
+    public ResponseEntity<UserActivityHistoryPageDto> userActivityHistory(
+            @CurrentUserId UUID userId,
+            @PathVariable UUID targetUserId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String type,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+        return ResponseEntity.ok(adminService.getUserActivityHistory(userId, targetUserId, from, to, type, page, size));
     }
 
     @GetMapping("/orders")

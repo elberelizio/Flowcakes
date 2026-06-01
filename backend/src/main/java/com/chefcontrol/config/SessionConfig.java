@@ -26,8 +26,12 @@ public class SessionConfig implements Filter {
     private static final ConcurrentHashMap<UUID, SessionInfo> sessions = new ConcurrentHashMap<>();
 
     public static UUID createSession(UUID userId) {
+        return createSession(userId, null);
+    }
+
+    public static UUID createSession(UUID userId, UUID loginLogId) {
         UUID sessionId = UUID.randomUUID();
-        sessions.put(sessionId, new SessionInfo(userId));
+        sessions.put(sessionId, new SessionInfo(userId, loginLogId));
         return sessionId;
     }
 

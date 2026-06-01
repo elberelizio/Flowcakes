@@ -3,7 +3,7 @@
     <div class="al-header__main">
       <a routerLink="/admin-configuracoes" class="al-back">← Configurações</a>
       <h1>Logs de acesso</h1>
-      <p class="al-header__desc">Utilizadores agrupados — abre os detalhes para ver o histórico de logins</p>
+      <p class="al-header__desc">Utilizadores agrupados — abre o histórico para filtrar por período, páginas e operações</p>
     </div>
     @if (!loading() && !error()) {
       <div class="al-header__stat">
@@ -88,9 +88,13 @@
                   <td class="al-table__date">{{ formatDate(u.lastLoginAt) }}</td>
                   <td class="al-table__ip"><code>{{ formatIp(u.lastIpAddress) }}</code></td>
                   <td class="al-table__actions">
-                    <button type="button" class="al-btn al-btn--detail" (click)="openDetails(u)">
-                      Detalhes
-                    </button>
+                    <a
+                      class="al-btn al-btn--detail"
+                      [routerLink]="['/admin-configuracoes/logs', u.userId]"
+                      [state]="{ user: u }"
+                    >
+                      Histórico
+                    </a>
                   </td>
                 </tr>
               }
@@ -138,74 +142,3 @@
     }
   }
 </div>
-
-@if (detailOpen()) {
-  <div class="al-modal-overlay" (click)="closeDetails()" role="presentation">
-    <div
-      class="al-modal"
-      role="dialog"
-      aria-labelledby="al-modal-title"
-      (click)="$event.stopPropagation()"
-    >
-      <button type="button" class="al-modal__close" (click)="closeDetails()" aria-label="Fechar">×</button>
-
-      @if (detailUser(); as user) {
-        <header class="al-modal__header">
-          <span class="al-avatar al-avatar--lg" aria-hidden="true">{{ initials(userDisplayName(user)) }}</span>
-          <div>
-            <h2 id="al-modal-title">{{ userDisplayName(user) }}</h2>
-            <p class="al-modal__meta">
-              {{ user.userPhone || '—' }}
-              · <span class="al-badge" [class.al-badge--admin]="user.admin">{{ user.admin ? 'Admin' : 'Cliente' }}</span>
-              · {{ user.totalLogins }} logins no total
-            </p>
-          </div>
-        </header>
-
-        <dl class="al-modal__summary">
-          <div>
-            <dt>Primeiro acesso</dt>
-            <dd>{{ formatDate(user.firstLoginAt) }}</dd>
-          </div>
-          <div>
-            <dt>Último acesso</dt>
-            <dd>{{ formatDate(user.lastLoginAt) }}</dd>
-          </div>
-        </dl>
-
-        @if (detailLoading()) {
-          <div class="al-state al-state--loading al-state--compact">
-            <span class="al-spinner" aria-hidden="true"></span>
-            <p>A carregar histórico…</p>
-          </div>
-        } @else if (detailError()) {
-          <p class="al-modal__error" role="alert">{{ detailError() }}</p>
-        } @else if (detailLogs().length === 0) {
-          <p class="al-modal__empty">Sem registos de login.</p>
-        } @else {
-          <div class="al-modal__table-wrap">
-            <table class="al-table al-table--detail">
-              <thead>
-                <tr>
-                  <th>Data/Hora</th>
-                  <th>IP</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (log of detailLogs(); track log.id) {
-                  <tr>
-                    <td>{{ formatDate(log.createdAt) }}</td>
-                    <td><code>{{ formatIp(log.ipAddress) }}</code></td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-          @if (detailLogs().length >= 100) {
-            <p class="al-modal__hint">A mostrar os últimos 100 acessos.</p>
-          }
-        }
-      }
-    </div>
-  </div>
-}

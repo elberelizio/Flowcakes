@@ -36,6 +36,10 @@ public class AccessLogService {
     }
 
     public void logLogin(java.util.UUID userId, String phone, String fullName, boolean isAdmin, String ipAddress, String userAgent) {
+        logLoginAndReturnId(userId, phone, fullName, isAdmin, ipAddress, userAgent);
+    }
+
+    public UUID logLoginAndReturnId(java.util.UUID userId, String phone, String fullName, boolean isAdmin, String ipAddress, String userAgent) {
         AccessLogEntity log = new AccessLogEntity();
         log.setUserId(userId);
         log.setUserPhone(phone);
@@ -43,7 +47,7 @@ public class AccessLogService {
         log.setAdmin(isAdmin);
         log.setIpAddress(ipAddress != null && ipAddress.length() > 45 ? ipAddress.substring(0, 45) : ipAddress);
         log.setUserAgent(userAgent);
-        repository.save(log);
+        return repository.save(log).getId();
     }
 
     public List<AccessLogDto> getRecentLogs(int limit) {

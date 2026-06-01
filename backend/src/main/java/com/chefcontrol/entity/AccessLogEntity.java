@@ -33,6 +33,9 @@ public class AccessLogEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Column(name = "ended_at")
+    private Instant endedAt;
+
     @PrePersist
     protected void onCreate() {
         createdAt = Instant.now();
@@ -54,4 +57,6 @@ public class AccessLogEntity {
     public void setUserAgent(String userAgent) { this.userAgent = userAgent; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public Instant getEndedAt() { return endedAt; }
+    public void setEndedAt(Instant endedAt) { this.endedAt = endedAt; }
 }

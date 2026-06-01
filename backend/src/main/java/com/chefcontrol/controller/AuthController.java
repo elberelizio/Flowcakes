@@ -2,11 +2,12 @@ package com.chefcontrol.controller;
 
 import com.chefcontrol.config.CurrentUserId;
 import com.chefcontrol.config.SessionConfig;
+import com.chefcontrol.config.SessionInfo;
 import com.chefcontrol.dto.*;
 import com.chefcontrol.service.AuthService;
-import com.chefcontrol.service.AccessLogService;
 import com.chefcontrol.service.LicenseService;
 import com.chefcontrol.service.StoreSettingsService;
+import com.chefcontrol.service.UserActivityService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,29 +27,44 @@ public class AuthController {
 
     private final AuthService authService;
     private final LicenseService licenseService;
-    private final AccessLogService accessLogService;
+    private final UserActivityService userActivityService;
     private final StoreSettingsService storeSettingsService;
 
-    public AuthController(AuthService authService, LicenseService licenseService, AccessLogService accessLogService, StoreSettingsService storeSettingsService) {
+    public AuthController(
+        AuthService authService,
+        LicenseService licenseService,
+        UserActivityService userActivityService,
+        StoreSettingsService storeSettingsService
+    ) {
         this.authService = authService;
         this.licenseService = licenseService;
-        this.accessLogService = accessLogService;
+        this.userActivityService = userActivityService;
         this.storeSettingsService = storeSettingsService;
     }
 
     @PostMapping(value = {"/login", "/login/"}, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest, HttpServletResponse response) {
         UserResponse user = authService.login(request, getClientIp(httpRequest), httpRequest.getHeader("User-Agent"));
-        accessLogService.logLogin(user.getId(), user.getPhone(), user.getFullName(), Boolean.TRUE.equals(user.getAdmin()), getClientIp(httpRequest), httpRequest.getHeader("User-Agent"));
-        UUID sessionId = SessionConfig.createSession(user.getId());
+        UUID loginLogId = userActivityService.logLoginSession(
+            user.getId(), user.getPhone(), user.getFullName(), Boolean.TRUE.equals(user.getAdmin()),
+            getClientIp(httpRequest), httpRequest.getHeader("User-Agent"));
+        UUID sessionId = SessionConfig.createSession(user.getId(), loginLogId);
         addSessionCookie(response, sessionId);
         return ResponseEntity.ok(user);
     }
 
     @PostMapping(value = {"/register", "/register/"}, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request, HttpServletResponse response) {
+    public ResponseEntity<RegisterResponse> register(
+        @Valid @RequestBody RegisterRequest request,
+        HttpServletRequest httpRequest,
+        HttpServletResponse response
+    ) {
         RegisterResponse reg = authService.register(request);
-        UUID sessionId = SessionConfig.createSession(reg.getUser().getId());
+        UUID loginLogId = userActivityService.logLoginSession(
+            reg.getUser().getId(), reg.getUser().getPhone(), reg.getUser().getFullName(),
+            Boolean.TRUE.equals(reg.getUser().getAdmin()),
+            getClientIp(httpRequest), httpRequest.getHeader("User-Agent"));
+        UUID sessionId = SessionConfig.createSession(reg.getUser().getId(), loginLogId);
         addSessionCookie(response, sessionId);
         return ResponseEntity.ok(reg);
     }
@@ -65,6 +81,11 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+        UUID userId = (UUID) request.getAttribute(SessionConfig.ATTR_USER_ID);
+        SessionInfo sessionInfo = (SessionInfo) request.getAttribute(SessionConfig.ATTR_SESSION_INFO);
+        if (userId != null) {
+            userActivityService.endSession(userId, sessionInfo);
+        }
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie c : cookies) {
@@ -77,6 +98,20 @@ public class AuthController {
             }
         }
         clearSessionCookie(response);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/activity")
+    public ResponseEntity<Void> trackActivity(
+        HttpServletRequest request,
+        @Valid @RequestBody TrackActivityRequest body
+    ) {
+        UUID userId = (UUID) request.getAttribute(SessionConfig.ATTR_USER_ID);
+        if (userId == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+        SessionInfo sessionInfo = (SessionInfo) request.getAttribute(SessionConfig.ATTR_SESSION_INFO);
+        userActivityService.track(userId, sessionInfo, body);
         return ResponseEntity.noContent().build();
     }
 

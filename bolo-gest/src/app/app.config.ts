@@ -5,7 +5,9 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 
 import { routes } from './app.routes';
 import { credentialsInterceptor } from './core/http/credentials.interceptor';
+import { activityInterceptor } from './core/http/activity.interceptor';
 import { AuthService } from './services/auth.service';
+import { UserActivityService } from './core/activity/user-activity.service';
 // import { ThemeService } from './services/theme.service';
 import { providePrimeNG } from 'primeng/config';
 
@@ -22,14 +24,17 @@ export const appConfig: ApplicationConfig = {
     ),
     // Sem withFetch(): o backend Fetch pode não completar o fluxo em 403/401 e o login ficava
     // eternamente a carregar sem mensagem (ex.: licença expirada).
-    provideHttpClient(withInterceptors([credentialsInterceptor])),
+    provideHttpClient(withInterceptors([credentialsInterceptor, activityInterceptor])),
     provideAnimationsAsync(),
     providePrimeNG(),
-{
+    {
       provide: APP_INITIALIZER,
-      useFactory: (auth: AuthService) => () => auth.initSession(),
-      deps: [AuthService],
-      multi: true
+      useFactory: (auth: AuthService, activity: UserActivityService) => () =>
+        auth.initSession().then(() => {
+          activity.init();
+        }),
+      deps: [AuthService, UserActivityService],
+      multi: true,
     },
     /* Dark mode / tema: inicialização desativada (tema fixo em theme.service + styles).
     {

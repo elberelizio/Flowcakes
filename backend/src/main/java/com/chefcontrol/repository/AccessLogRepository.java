@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface AccessLogRepository extends JpaRepository<AccessLogEntity, UUID> {
@@ -39,4 +40,9 @@ public interface AccessLogRepository extends JpaRepository<AccessLogEntity, UUID
 
     @Query("SELECT COUNT(a) FROM AccessLogEntity a WHERE a.userId = :userId AND a.createdAt >= :since")
     long countByUserIdSince(@Param("userId") UUID userId, @Param("since") Instant since);
+
+    Optional<AccessLogEntity> findFirstByUserIdAndEndedAtIsNullOrderByCreatedAtDesc(UUID userId);
+
+    List<AccessLogEntity> findByUserIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanOrderByCreatedAtDesc(
+        UUID userId, Instant from, Instant to);
 }

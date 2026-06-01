@@ -13,6 +13,8 @@ import com.chefcontrol.dto.BlockedAccountRowDto;
 import com.chefcontrol.dto.RevenueByMonthDto;
 import com.chefcontrol.dto.SecurityEventDto;
 import com.chefcontrol.dto.SimulatedPaymentPendingDto;
+import com.chefcontrol.dto.UserActivityHistoryPageDto;
+import com.chefcontrol.dto.UserSessionDetailDto;
 import com.chefcontrol.entity.MpesaPaymentEntity;
 import com.chefcontrol.entity.OrderEntity;
 import com.chefcontrol.entity.UserEntity;
@@ -43,13 +45,15 @@ public class AdminService {
     private final LicenseService licenseService;
     private final OrderRepository orderRepository;
     private final AccessLogService accessLogService;
+    private final UserActivityService userActivityService;
     private final MpesaPaymentRepository mpesaPaymentRepository;
     private final SecurityEventService securityEventService;
     private final AccountSecurityService accountSecurityService;
 
     public AdminService(UserRepository userRepository, UserLicenseRepository licenseRepository,
                         LicenseService licenseService, OrderRepository orderRepository,
-                        AccessLogService accessLogService, MpesaPaymentRepository mpesaPaymentRepository,
+                        AccessLogService accessLogService, UserActivityService userActivityService,
+                        MpesaPaymentRepository mpesaPaymentRepository,
                         SecurityEventService securityEventService,
                         AccountSecurityService accountSecurityService) {
         this.userRepository = userRepository;
@@ -57,6 +61,7 @@ public class AdminService {
         this.licenseService = licenseService;
         this.orderRepository = orderRepository;
         this.accessLogService = accessLogService;
+        this.userActivityService = userActivityService;
         this.mpesaPaymentRepository = mpesaPaymentRepository;
         this.securityEventService = securityEventService;
         this.accountSecurityService = accountSecurityService;
@@ -377,6 +382,28 @@ public class AdminService {
     public List<AccessLogDto> getUserAccessLogs(UUID adminUserId, UUID targetUserId, int limit) {
         requireAdmin(adminUserId);
         return accessLogService.getLogsByUserId(targetUserId, limit > 0 ? Math.min(limit, 100) : 30);
+    }
+
+    public List<UserSessionDetailDto> getUserSessions(UUID adminUserId, UUID targetUserId, int limit) {
+        requireAdmin(adminUserId);
+        userRepository.findById(targetUserId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizador não encontrado"));
+        return userActivityService.getSessionsForUser(targetUserId, limit);
+    }
+
+    public UserActivityHistoryPageDto getUserActivityHistory(
+        UUID adminUserId,
+        UUID targetUserId,
+        LocalDate from,
+        LocalDate to,
+        String activityType,
+        int page,
+        int size
+    ) {
+        requireAdmin(adminUserId);
+        userRepository.findById(targetUserId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizador não encontrado"));
+        return userActivityService.getActivityHistory(targetUserId, from, to, activityType, page, size);
     }
 
     public AdminUserRow blockUser(UUID adminUserId, UUID targetUserId) {

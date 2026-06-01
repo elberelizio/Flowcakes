@@ -96,6 +96,13 @@ export const routes: Routes = [
           import('./dashboard-admin/configuracoes/logs/admin-logs.component').then((m) => m.AdminLogsComponent),
       },
       {
+        path: 'logs/:userId',
+        loadComponent: () =>
+          import('./dashboard-admin/configuracoes/logs/admin-logs-user-history.component').then(
+            (m) => m.AdminLogsUserHistoryComponent,
+          ),
+      },
+      {
         path: 'acessos',
         loadComponent: () =>
           import('./dashboard-admin/gestao-acessos/gestao-acessos.component').then((m) => m.GestaoAcessosComponent),
