@@ -1,0 +1,68 @@
+<div class="cfg-hub">
+  <header class="cfg-hub__header">
+    <a routerLink="/admin-dashboard" class="cfg-hub__back">← Painel</a>
+    <p class="cfg-hub__eyebrow">Sistema</p>
+    <h1>Configurações</h1>
+    <p class="cfg-hub__sub">
+      Auditoria, segurança e preferências da plataforma. Funções menos usadas no dia-a-dia, para manter o menu lateral simples.
+    </p>
+  </header>
+
+  <section class="cfg-panel" aria-labelledby="cfg-sec-seguranca">
+    <h2 id="cfg-sec-seguranca" class="cfg-panel__title">Segurança e auditoria</h2>
+    <ul class="cfg-list">
+      @for (item of securityItems; track item.path) {
+        <li>
+          <a [routerLink]="item.path" class="cfg-link" [attr.data-accent]="item.accent">
+            <span class="cfg-link__icon" aria-hidden="true">
+              <app-icon [name]="item.icon" />
+            </span>
+            <span class="cfg-link__text">
+              <strong>{{ item.label }}</strong>
+              <span>{{ item.description }}</span>
+            </span>
+            <app-icon name="chevron-right" class="cfg-link__chevron" />
+          </a>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="cfg-panel" aria-labelledby="cfg-sec-comunicacao">
+    <h2 id="cfg-sec-comunicacao" class="cfg-panel__title">Comunicação</h2>
+    <ul class="cfg-list">
+      @for (item of communicationItems; track item.path) {
+        <li>
+          <a [routerLink]="item.path" class="cfg-link" [attr.data-accent]="item.accent">
+            <span class="cfg-link__icon" aria-hidden="true">
+              <app-icon [name]="item.icon" />
+            </span>
+            <span class="cfg-link__text">
+              <strong>{{ item.label }}</strong>
+              <span>{{ item.description }}</span>
+            </span>
+            <app-icon name="chevron-right" class="cfg-link__chevron" />
+          </a>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="cfg-panel cfg-panel--muted" aria-labelledby="cfg-sec-plataforma">
+    <h2 id="cfg-sec-plataforma" class="cfg-panel__title">Plataforma</h2>
+    <ul class="cfg-list">
+      <li>
+        <div class="cfg-link cfg-link--disabled" data-accent="slate">
+          <span class="cfg-link__icon" aria-hidden="true">
+            <app-icon name="settings" />
+          </span>
+          <span class="cfg-link__text">
+            <strong>Definições gerais</strong>
+            <span>Parâmetros globais, limites e integrações.</span>
+          </span>
+          <span class="cfg-link__badge">Em breve</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+</div>

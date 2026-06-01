@@ -72,7 +72,7 @@ export class RegisterComponent implements OnInit {
   ngOnInit(): void {
     if (this.registrationFlow.isActive()) {
       const phone = this.registrationFlow.getPhone();
-      void this.router.navigate(['/escolher-plano'], {
+      void this.router.navigate(['/choose-plan'], {
         queryParams: phone ? { phone, registered: '1' } : { registered: '1' },
         replaceUrl: true,
       });
@@ -158,7 +158,7 @@ export class RegisterComponent implements OnInit {
     if (phone) {
       this.registrationFlow.startAfterRegister(phone);
     }
-    void this.router.navigate(['/escolher-plano'], {
+    void this.router.navigate(['/choose-plan'], {
       queryParams: phone ? { phone, registered: '1' } : { registered: '1' },
       replaceUrl: true,
     });

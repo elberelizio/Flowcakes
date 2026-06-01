@@ -1,0 +1,20 @@
+<div class="cfg-layout">
+  @if (isChildRoute()) {
+    <nav class="cfg-subnav" aria-label="Navegação de configurações">
+      <a routerLink="/admin-settings" class="cfg-subnav__back">← Configurações</a>
+      <div class="cfg-subnav__tabs">
+        @for (item of subnav; track item.path) {
+          <a
+            [routerLink]="item.path"
+            routerLinkActive="cfg-subnav__tab--active"
+            class="cfg-subnav__tab">
+            {{ item.label }}
+          </a>
+        }
+      </div>
+    </nav>
+  }
+  <div class="cfg-layout__content">
+    <router-outlet />
+  </div>
+</div>

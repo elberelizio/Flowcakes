@@ -24,6 +24,8 @@ public class AdminStatsResponse {
     private java.math.BigDecimal topProfitAmount;
     /** Média de logins por utilizador nos últimos 30 dias (indicador de uso). */
     private double avgLoginsPerUser30d;
+    /** Total de encomendas não canceladas na plataforma. */
+    private long totalOrders;
 
     public long getTotalUsers() { return totalUsers; }
     public void setTotalUsers(long totalUsers) { this.totalUsers = totalUsers; }
@@ -53,4 +55,6 @@ public class AdminStatsResponse {
     public void setTopProfitAmount(java.math.BigDecimal topProfitAmount) { this.topProfitAmount = topProfitAmount; }
     public double getAvgLoginsPerUser30d() { return avgLoginsPerUser30d; }
     public void setAvgLoginsPerUser30d(double avgLoginsPerUser30d) { this.avgLoginsPerUser30d = avgLoginsPerUser30d; }
+    public long getTotalOrders() { return totalOrders; }
+    public void setTotalOrders(long totalOrders) { this.totalOrders = totalOrders; }
 }

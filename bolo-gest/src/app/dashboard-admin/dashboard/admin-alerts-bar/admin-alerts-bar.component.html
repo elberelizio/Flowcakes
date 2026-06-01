@@ -1,36 +1,54 @@
 @if (alerts(); as a) {
-  <section class="alerts-strip" aria-label="Alertas da plataforma">
-    <div class="alerts-strip__score" [attr.data-level]="healthClass(a.healthScore)">
-      <span class="alerts-strip__score-num">{{ a.healthScore }}</span>
-      <span class="alerts-strip__score-label">Saúde</span>
-    </div>
+  <section class="bi-status" aria-label="Estado da plataforma">
+    <div class="bi-status__toolbar">
+      <div class="bi-status__health" [attr.data-level]="healthClass(a.healthScore)">
+        <span class="bi-status__health-ring" aria-hidden="true"></span>
+        <div class="bi-status__health-text">
+          <span class="bi-status__health-value">{{ a.healthScore }}</span>
+          <span class="bi-status__health-label">Saúde</span>
+        </div>
+      </div>
 
-    <div class="alerts-strip__chips">
-      <span class="alerts-strip__chip"><strong>{{ a.usersOnline }}</strong> online</span>
-      @if (a.pendingApprovals > 0) {
-        <a routerLink="/admin-novos-utilizadores" class="alerts-strip__chip alerts-strip__chip--warn">
-          <strong>{{ a.pendingApprovals }}</strong> pendentes
+      <div class="bi-status__chips" role="list">
+        <span class="bi-status__chip" role="listitem">
+          <span class="bi-status__chip-dot bi-status__chip-dot--live" aria-hidden="true"></span>
+          <strong>{{ a.usersOnline }}</strong> online
+        </span>
+        @if (a.pendingApprovals > 0) {
+          <a routerLink="/admin-new-users" class="bi-status__chip bi-status__chip--warn" role="listitem">
+            <strong>{{ a.pendingApprovals }}</strong> pendentes
+          </a>
+        }
+        @if (a.feedbackThresholdReached) {
+          <a routerLink="/admin-settings/suggestions" class="bi-status__chip bi-status__chip--info" role="listitem">
+            <strong>{{ a.feedbackCount }}</strong> sugestões
+          </a>
+        }
+        @if (a.maintenanceDue) {
+          <a routerLink="/admin-settings" class="bi-status__chip bi-status__chip--danger" role="listitem">
+            Manutenção
+          </a>
+        }
+        <a routerLink="/treasury" class="bi-status__chip bi-status__chip--action" role="listitem">
+          Tesouraria
         </a>
-      }
-      @if (a.feedbackThresholdReached) {
-        <a routerLink="/admin-configuracoes/sugestoes" class="alerts-strip__chip alerts-strip__chip--info">
-          <strong>{{ a.feedbackCount }}</strong> sugestões
-        </a>
-      }
-      @if (a.maintenanceDue) {
-        <a routerLink="/admin-configuracoes" class="alerts-strip__chip alerts-strip__chip--maint">Manutenção</a>
-      }
-      <a routerLink="/tesouraria" class="alerts-strip__chip alerts-strip__chip--link">Tesouraria</a>
+      </div>
     </div>
 
     @if (a.items.length > 0) {
-      <ul class="alerts-strip__msgs">
+      <ul class="bi-status__alerts">
         @for (item of a.items; track item.id) {
-          <li [attr.data-type]="item.type">
+          <li class="bi-status__alert" [attr.data-type]="item.type">
             @if (item.route) {
-              <a [routerLink]="item.route">{{ item.title }} — {{ item.message }}</a>
+              <a [routerLink]="item.route" class="bi-status__alert-link">
+                <span class="bi-status__alert-title">{{ item.title }}</span>
+                <span class="bi-status__alert-msg">{{ item.message }}</span>
+              </a>
             } @else {
-              <span>{{ item.title }} — {{ item.message }}</span>
+              <div class="bi-status__alert-link">
+                <span class="bi-status__alert-title">{{ item.title }}</span>
+                <span class="bi-status__alert-msg">{{ item.message }}</span>
+              </div>
             }
           </li>
         }

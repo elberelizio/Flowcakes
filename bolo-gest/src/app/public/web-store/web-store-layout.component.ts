@@ -44,7 +44,7 @@ export class WebStoreLayoutComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** Base path: /loja or /loja/:slug */
+  /** Base path: /store or /store/:slug */
   publicStoreBasePath(): string[] {
     const slug = this.storeContext.storeSlug();
     const root = `/${WEB_STORE_URL_SEGMENT}`;

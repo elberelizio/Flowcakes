@@ -1,0 +1,262 @@
+<div class="orders-page">
+  <header class="page-hero">
+    <div class="page-hero__top">
+      <a routerLink="/dashboard" class="btn-back">← Voltar</a>
+    </div>
+    <div class="page-hero__main">
+      <p class="page-hero__eyebrow">Encomendas</p>
+      <h1 class="page-hero__title">As suas encomendas</h1>
+      <p class="page-hero__sub">
+        As activas aparecem por defeito. As canceladas (antes da entrega) ficam no separador
+        <strong>Canceladas</strong>. Após confirmar entrega, use <strong>Gestão de dívidas</strong> se faltar pagamento.
+      </p>
+      <div class="page-hero__actions">
+        <a routerLink="/new-order" class="btn btn-primary">Criar encomenda</a>
+        <a routerLink="/encomendas/detalhes" class="btn btn-secondary">Detalhes dos pedidos</a>
+        <a routerLink="/variable-expenses" class="btn btn-secondary">Despesas extras</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="orders-scope card" aria-label="Separadores da lista">
+    <button
+      type="button"
+      class="orders-scope__tab"
+      [class.orders-scope__tab--active]="listScope() === 'active'"
+      (click)="setListScope('active')">
+      <span class="orders-scope__label">Activas</span>
+      <span class="orders-scope__count">{{ activeCount() }}</span>
+    </button>
+    <button
+      type="button"
+      class="orders-scope__tab orders-scope__tab--closed"
+      [class.orders-scope__tab--active]="listScope() === 'closed'"
+      (click)="setListScope('closed')">
+      <span class="orders-scope__label">Canceladas</span>
+      <span class="orders-scope__count">{{ closedCount() }}</span>
+    </button>
+    @if (closedCount() > 0 && closedLossTotal() > 0) {
+      <p class="orders-scope__meta">
+        Prejuízo total (canceladas): <strong>{{ closedLossTotal() | number:'1.0-0' }} MZN</strong>
+      </p>
+    }
+  </section>
+
+  <section class="filters-section card">
+    <h3 class="filters-title">Filtros</h3>
+    <div class="filters-row">
+      <div class="filter-group">
+        <label>Cliente</label>
+        <input
+          type="text"
+          [value]="filterClient()"
+          (input)="filterClient.set($any($event.target).value)"
+          placeholder="Filtrar por nome..."
+          class="filter-input" />
+      </div>
+      <div class="filter-group">
+        <label>Categoria</label>
+        <select [value]="filterCategory()" (change)="filterCategory.set($any($event.target).value)" class="filter-select">
+          <option value="">Todas</option>
+          <option value="doces">Doces</option>
+          <option value="salgados">Salgados</option>
+        </select>
+      </div>
+      @if (listScope() === 'active') {
+        <div class="filter-group">
+          <label>Estado</label>
+          <select [value]="filterStatus()" (change)="filterStatus.set($any($event.target).value)" class="filter-select">
+            <option value="">Todos</option>
+            <option value="ordered">Encomenda feita</option>
+            <option value="in_progress">Em processo</option>
+            <option value="completed">Finalizada</option>
+          </select>
+        </div>
+      }
+      <div class="filter-group">
+        <label>Pagamento</label>
+        <select [value]="filterPayment()" (change)="filterPayment.set($any($event.target).value)" class="filter-select">
+          <option value="">Todos</option>
+          <option value="pendente">Pendente</option>
+          <option value="parcial">Parcial</option>
+          <option value="pago">Pago</option>
+        </select>
+      </div>
+      <button type="button" class="btn btn-ghost" (click)="clearFilters()">Limpar filtros</button>
+    </div>
+  </section>
+
+  @if (filteredOrders().length === 0) {
+    <div class="empty-state card">
+      <p class="empty">
+        @if (isShowingClosed) {
+          Nenhuma encomenda cancelada.
+        } @else {
+          Nenhuma encomenda activa. <a routerLink="/new-order">Criar primeira encomenda</a>.
+        }
+      </p>
+    </div>
+  } @else {
+    <div class="table-card">
+      <div class="table-wrap">
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Categoria</th>
+              <th>Produto</th>
+              <th>Tamanho / Qtd</th>
+              <th>Valor</th>
+              <th>Tipo pagamento</th>
+              <th>Valor adiantado</th>
+              <th>Valor em falta</th>
+              @if (isShowingClosed) {
+                <th>Data cancelamento</th>
+                <th>Motivo</th>
+              } @else {
+                <th>Data entrega</th>
+                <th>Local entrega</th>
+                <th>Estado</th>
+              }
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (o of filteredOrders(); track o.id) {
+              <tr [class.cancelled]="o.isCancelled">
+                <td data-label="Cliente">{{ o.clientName }}</td>
+                <td data-label="Categoria">
+                  <span class="badge badge-cat" [class.doces]="o.category === 'doces'" [class.salgados]="o.category === 'salgados'">
+                    {{ getCategoryLabel(o.category) }}
+                  </span>
+                </td>
+                <td data-label="Produto">{{ displayName(o) }}</td>
+                <td data-label="Tamanho / Qtd">{{ displaySize(o) }}</td>
+                <td data-label="Valor">{{ o.valueCharged | number:'1.0-0' }} MZN</td>
+                <td data-label="Tipo pagamento">
+                  <span class="badge"
+                    [class.pendente]="o.paymentStatus === 'pendente'"
+                    [class.parcial]="o.paymentStatus === 'parcial'"
+                    [class.pago]="o.paymentStatus === 'pago'">
+                    {{ getPaymentLabel(o.paymentStatus) }}
+                  </span>
+                </td>
+                <td data-label="Valor adiantado">{{ o.valuePaid | number:'1.0-0' }} MZN</td>
+                <td data-label="Valor em falta">
+                  <span [class.has-debt]="getSaldo(o) > 0">{{ getSaldo(o) | number:'1.0-0' }} MZN</span>
+                </td>
+                @if (isShowingClosed) {
+                  <td data-label="Data cancelamento">{{ formatClosedDate(o) }}</td>
+                  <td data-label="Motivo"><span class="closure-reason-pill">{{ getClosureReasonShort(o) }}</span></td>
+                } @else {
+                  <td data-label="Data entrega">{{ o.deliveryDate ? formatDate(o.deliveryDate) : '—' }}</td>
+                  <td data-label="Local entrega"><span class="local-text">{{ getDeliveryLocation(o) }}</span></td>
+                  <td data-label="Estado">
+                    <span class="badge"
+                      [class.status-ordered]="o.orderStatus === 'ordered'"
+                      [class.status-in-progress]="o.orderStatus === 'in_progress'"
+                      [class.status-completed]="o.orderStatus === 'completed'">
+                      {{ getOrderStatusLabel(o.orderStatus) }}
+                    </span>
+                  </td>
+                }
+                <td data-label="Ações">
+                  <div class="action-buttons">
+                    <a [routerLink]="['/orders', o.id]" class="btn-sm btn-details">Detalhes</a>
+                    @if (!o.isCancelled) {
+                      @if (!o.delivered) {
+                        <button type="button" class="btn-sm btn-success" (click)="markDelivered(o)">Confirmar entrega</button>
+                        <button type="button" class="btn-sm btn-danger" (click)="openCloseDialog(o)">Cancelar</button>
+                      }
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  @if (orderToConfirmDelivery(); as dOrder) {
+    <div class="confirm-overlay confirm-overlay--delivery" role="dialog" aria-modal="true" aria-labelledby="delivery-modal-title">
+      <div class="confirm-delivery-modal">
+        <button type="button" class="confirm-cancel-close" (click)="closeConfirmDeliveryModal()" aria-label="Fechar">×</button>
+        <div class="delivery-modal__hero">
+          <span class="delivery-modal__icon" aria-hidden="true">📦</span>
+          <h3 id="delivery-modal-title">Confirmar entrega do cliente: {{ dOrder.clientName }}</h3>
+        </div>
+        <div class="delivery-modal__saldo">
+          <span class="delivery-modal__saldo-label">Valor por pagar nesta encomenda (saldo)</span>
+          <span class="delivery-modal__saldo-amount">{{ getSaldo(dOrder) | number:'1.0-0' }} MZN</span>
+          <div class="delivery-modal__saldo-meta">
+            <span>Total da encomenda: <strong>{{ dOrder.valueCharged | number:'1.0-0' }} MZN</strong></span>
+            <span>Valor recebido: <strong>{{ dOrder.valuePaid | number:'1.0-0' }} MZN</strong></span>
+          </div>
+        </div>
+        <h4 class="delivery-modal__section-title">O que aconteceu com o pagamento na entrega?</h4>
+        <div class="delivery-modal__options">
+          <div class="delivery-option delivery-option--full">
+            <div class="delivery-option__text">
+              <span class="delivery-option__title">Recebi todo o valor em falta</span>
+            </div>
+            <button type="button" class="delivery-option__btn delivery-option__btn--primary" (click)="confirmDeliveryAndReceivePayment()">
+              Registar pagamento total e confirmar entrega
+            </button>
+          </div>
+          <div class="delivery-option delivery-option--partial">
+            <div class="delivery-option__text">
+              <span class="delivery-option__title">Recebi só uma parte</span>
+            </div>
+            <div class="delivery-option__field">
+              <label class="delivery-option__label" for="partial-amount">Montante que o cliente pagou agora</label>
+              <div class="delivery-option__input-row">
+                <input
+                  id="partial-amount"
+                  type="number"
+                  min="0"
+                  step="1"
+                  class="delivery-option__input"
+                  placeholder="Ex.: 200"
+                  [value]="partialPaymentInput()"
+                  (input)="onPartialPaymentInput($any($event.target).value)"
+                />
+                <span class="delivery-option__suffix">MZN</span>
+              </div>
+              @if (partialPaymentInput() > 0) {
+                <p class="delivery-option__preview">{{ getPartialPaymentPreviewText(dOrder) }}</p>
+              }
+            </div>
+            <button
+              type="button"
+              class="delivery-option__btn delivery-option__btn--secondary"
+              (click)="confirmDeliveryWithPartialPayment()"
+              [disabled]="partialPaymentInput() <= 0"
+            >
+              Registar este montante e confirmar entrega
+            </button>
+          </div>
+          <div class="delivery-option delivery-option--none">
+            <div class="delivery-option__text">
+              <span class="delivery-option__title">Não recebi dinheiro nesta entrega</span>
+            </div>
+            <button type="button" class="delivery-option__btn delivery-option__btn--ghost" (click)="confirmDeliveryAsDebt()">
+              Confirmar entrega sem pagamento
+            </button>
+          </div>
+        </div>
+        <div class="delivery-modal__footer">
+          <button type="button" class="delivery-modal__cancel" (click)="closeConfirmDeliveryModal()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (orderToClose(); as closeOrder) {
+    <app-order-close-dialog
+      [order]="closeOrder"
+      (closed)="onOrderClosed()"
+      (dismissed)="dismissCloseDialog()" />
+  }
+</div>

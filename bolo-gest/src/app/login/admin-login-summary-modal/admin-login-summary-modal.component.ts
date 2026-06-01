@@ -2,11 +2,12 @@ import { Component, Output, EventEmitter, OnInit, inject, signal } from '@angula
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AdminTreasuryService, type AdminLoginSummary } from '../../dashboard-admin/services/admin-treasury.service';
+import { IconComponent } from '../../ui/icon/icon.component';
 
 @Component({
   selector: 'app-admin-login-summary-modal',
   standalone: true,
-  imports: [CommonModule, RouterLink, DecimalPipe],
+  imports: [CommonModule, RouterLink, DecimalPipe, IconComponent],
   templateUrl: './admin-login-summary-modal.component.html',
   styleUrl: './admin-login-summary-modal.component.scss',
 })

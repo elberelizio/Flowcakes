@@ -1,0 +1,165 @@
+<div class="al-page al-page--history">
+  <header class="al-header">
+    <div class="al-header__main">
+      <a routerLink="/admin-settings/logs" class="al-back">← Logs de acesso</a>
+      <h1>Histórico — {{ userDisplayName() }}</h1>
+      @if (user(); as u) {
+        <p class="al-header__desc">
+          {{ u.userPhone || '—' }}
+          · {{ u.totalLogins }} logins no total
+          · Primeiro acesso {{ formatDateOnly(u.firstLoginAt) }}
+        </p>
+      }
+    </div>
+    @if (!loading()) {
+      <div class="al-header__stat">
+        <span class="al-header__stat-value">{{ totalElements() }}</span>
+        <span class="al-header__stat-label">Registos no período</span>
+      </div>
+    }
+  </header>
+
+  <section class="al-filters" aria-label="Filtros do histórico">
+    <div class="al-filters__row">
+      <label class="al-filters__field">
+        <span>De</span>
+        <input type="date" [value]="dateFrom()" (change)="dateFrom.set(($any($event.target)).value)" />
+      </label>
+      <label class="al-filters__field">
+        <span>Até</span>
+        <input type="date" [value]="dateTo()" (change)="dateTo.set(($any($event.target)).value)" />
+      </label>
+      <label class="al-filters__field al-filters__field--type">
+        <span>Tipo</span>
+        <select [value]="activityType()" (change)="activityType.set(($any($event.target)).value)">
+          <option value="">Todos</option>
+          <option value="LOGIN">Entrada</option>
+          <option value="LOGOUT">Saída</option>
+          <option value="PAGE_VIEW">Página</option>
+          <option value="OPERATION">Operação</option>
+        </select>
+      </label>
+      <button type="button" class="al-btn al-btn--primary" (click)="applyFilters()">Filtrar</button>
+    </div>
+    <div class="al-filters__presets">
+      <span class="al-filters__presets-label">Atalhos:</span>
+      <button type="button" class="al-preset" (click)="setPreset('today')">Hoje</button>
+      <button type="button" class="al-preset" (click)="setPreset(7)">Últimos 7 dias</button>
+      <button type="button" class="al-preset" (click)="setPreset(30)">Últimos 30 dias</button>
+      <button type="button" class="al-preset" (click)="setPreset('month')">Este mês</button>
+    </div>
+  </section>
+
+  @if (loading()) {
+    <div class="al-state al-state--loading">
+      <span class="al-spinner" aria-hidden="true"></span>
+      <p>A carregar histórico…</p>
+    </div>
+  } @else if (error()) {
+    <div class="al-state al-state--error" role="alert">
+      <p>{{ error() }}</p>
+      <button type="button" class="al-btn" (click)="loadHistory()">Tentar novamente</button>
+    </div>
+  } @else if (rows().length === 0) {
+    <div class="al-state al-state--empty">
+      <p>Nenhum registo neste período. Ajusta as datas ou o tipo de atividade.</p>
+    </div>
+  } @else {
+    <div class="al-table-panel al-table-panel--full">
+      <div class="al-table-wrap al-table-wrap--history">
+        <table class="al-table al-table--history">
+          <thead>
+            <tr>
+              <th>Data/Hora</th>
+              <th>Tipo</th>
+              <th>Descrição</th>
+              <th class="col-hide-sm">Caminho / detalhe</th>
+              <th>IP</th>
+              <th class="col-hide-md">Sessão iniciada</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <td class="al-table__date">{{ formatDate(row.createdAt) }}</td>
+                <td>
+                  <span [class]="typeBadgeClass(row.activityType)">
+                    {{ activityTypeLabel(row.activityType) }}
+                  </span>
+                </td>
+                <td class="al-table__desc">{{ row.label || '—' }}</td>
+                <td class="col-hide-sm al-table__muted">
+                  @if (row.pagePath) {
+                    <code>{{ row.pagePath }}</code>
+                  } @else if (row.detail) {
+                    {{ row.detail }}
+                  } @else {
+                    —
+                  }
+                </td>
+                <td><code>{{ formatIp(row.ipAddress) }}</code></td>
+                <td class="col-hide-md al-table__date">{{ formatDate(row.sessionStartedAt) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <footer class="al-table-footer" aria-label="Paginação da tabela">
+        <div class="al-table-footer__info">
+          <span>
+            A mostrar <strong>{{ showingRange().from }}</strong>–<strong>{{ showingRange().to }}</strong>
+            de <strong>{{ showingRange().total }}</strong> registos
+          </span>
+          <span class="al-table-footer__page">
+            Página <strong>{{ currentPage() + 1 }}</strong> de <strong>{{ totalPages() || 1 }}</strong>
+          </span>
+        </div>
+
+        <label class="al-pagesize al-pagesize--footer">
+          <span>Linhas por página</span>
+          <select [value]="pageSize()" (change)="handlePageSizeChange($event)" aria-label="Linhas por página">
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size">{{ size }}</option>
+            }
+          </select>
+        </label>
+
+        <nav class="al-pagination al-pagination--footer" aria-label="Navegação entre páginas">
+          <button
+            type="button"
+            class="al-pagination__nav"
+            (click)="goToPage(currentPage() - 1)"
+            [disabled]="currentPage() === 0"
+          >
+            Anterior
+          </button>
+          <div class="al-pagination__pages">
+            @for (p of pageNumbers(); track $index) {
+              @if (p === -1) {
+                <span class="al-pagination__ellipsis">…</span>
+              } @else {
+                <button
+                  type="button"
+                  class="al-pagination__page"
+                  [class.al-pagination__page--active]="p === currentPage()"
+                  (click)="goToPage(p)"
+                >
+                  {{ p + 1 }}
+                </button>
+              }
+            }
+          </div>
+          <button
+            type="button"
+            class="al-pagination__nav"
+            (click)="goToPage(currentPage() + 1)"
+            [disabled]="currentPage() >= totalPages() - 1"
+          >
+            Seguinte
+          </button>
+        </nav>
+      </footer>
+    </div>
+  }
+</div>

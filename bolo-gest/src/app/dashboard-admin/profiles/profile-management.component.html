@@ -1,0 +1,185 @@
+<div class="profiles-page">
+  <header class="page-header">
+    <div class="header-main">
+      <h1>Gestão de perfis</h1>
+      <p class="subtitle">Lista geral de todos os utilizadores e administradores registados no sistema.</p>
+    </div>
+    <a routerLink="/admin-dashboard" class="btn btn-back">Voltar ao painel</a>
+  </header>
+
+  <div class="filters-section">
+    <div class="search-bar">
+      <input
+        type="search"
+        placeholder="Pesquisar por nome, contacto ou email..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        class="search-input"
+      />
+    </div>
+    <div class="filters-row">
+      <div class="filter-group">
+        <label>Tipo</label>
+        <select [ngModel]="filterRole()" (ngModelChange)="filterRole.set($event)">
+          <option value="all">Todos</option>
+          <option value="users">Utilizadores</option>
+          <option value="admins">Administradores</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Estado</label>
+        <select [ngModel]="filterAccountState()" (ngModelChange)="filterAccountState.set($event)">
+          <option value="all">Todos</option>
+          <option value="active">Activo</option>
+          <option value="blocked">Bloqueado</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Licença</label>
+        <select [ngModel]="filterLicense()" (ngModelChange)="filterLicense.set($event)">
+          <option value="all">Todas</option>
+          <option value="active">Activa</option>
+          <option value="pending">Pendente</option>
+          <option value="expired">Expirada</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Registo desde</label>
+        <input type="date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)" />
+      </div>
+      <div class="filter-group">
+        <label>Registo até</label>
+        <input type="date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)" />
+      </div>
+      <button type="button" class="btn btn-outline btn-clear" (click)="clearFilters()">Limpar filtros</button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-error">{{ error() }}</div>
+  } @else if (loading()) {
+    <div class="loading-state">
+      <span class="loading-spinner"></span>
+      <p>A carregar...</p>
+    </div>
+  } @else {
+    <p class="results-info">{{ filteredList().length }} {{ filteredList().length === 1 ? 'utilizador' : 'utilizadores' }} encontrado(s)</p>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Utilizador</th>
+            <th>Contacto</th>
+            <th>Tipo</th>
+            <th>Licença</th>
+            <th>Válida até</th>
+            <th>Estado</th>
+            <th class="th-actions">Acções</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (filteredList().length === 0) {
+            <tr class="empty-row">
+              <td colspan="7">Nenhum utilizador encontrado.</td>
+            </tr>
+          } @else {
+            @for (p of filteredList(); track p.id) {
+              <tr [class.row-blocked]="p.blocked">
+                <td>
+                  <span class="user-name">{{ p.name }}</span>
+                  @if (p.email) {
+                    <span class="email">{{ p.email }}</span>
+                  }
+                </td>
+                <td>{{ p.phone }}</td>
+                <td>
+                  <span class="badge" [class.badge-admin]="p.admin" [class.badge-user]="!p.admin">
+                    {{ p.admin ? 'Administrador' : 'Utilizador' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge"
+                    [class.badge-active]="p.licenseStatus === 'active'"
+                    [class.badge-pending]="p.licenseStatus === 'pending'"
+                    [class.badge-expired]="p.licenseStatus === 'expired'"
+                    [class.badge-none]="p.licenseStatus === 'none'">
+                    {{ getLicenseLabel(p.licenseStatus) }}
+                  </span>
+                </td>
+                <td>{{ formatDate(p.validUntil) }}</td>
+                <td>
+                  <span class="badge" [class.badge-active-account]="!p.blocked" [class.badge-blocked]="p.blocked">
+                    {{ p.blocked ? 'Bloqueado' : 'Activo' }}
+                  </span>
+                </td>
+                <td class="actions-cell">
+                  <button type="button" class="btn btn-sm btn-outline" (click)="showProfile(p)">Ver perfil</button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (openProfile(); as profile) {
+    <div class="overlay" (click)="closeProfile()">
+      <div class="profile-panel" (click)="$event.stopPropagation()">
+        <button type="button" class="close-btn" (click)="closeProfile()" aria-label="Fechar">×</button>
+        <h2 class="panel-title">{{ profile.name }}</h2>
+        <p class="panel-meta">{{ profile.phone }} · {{ profile.email || '—' }}</p>
+
+        <section class="panel-section">
+          <h3>Dados e acesso</h3>
+          <dl class="detail-grid">
+            <dt>Tipo</dt>
+            <dd>
+              <span class="badge" [class.badge-admin]="profile.admin">{{ profile.admin ? 'Administrador' : 'Utilizador' }}</span>
+            </dd>
+            <dt>Licença</dt>
+            <dd>
+              <span class="badge"
+                [class.badge-active]="profile.licenseStatus === 'active'"
+                [class.badge-pending]="profile.licenseStatus === 'pending'"
+                [class.badge-expired]="profile.licenseStatus === 'expired'">
+                {{ getLicenseLabel(profile.licenseStatus) }}
+              </span>
+            </dd>
+            <dt>Válida até</dt>
+            <dd>{{ formatDate(profile.validUntil) }}</dd>
+            <dt>Estado</dt>
+            <dd>
+              <span class="badge" [class.badge-active-account]="!profile.blocked" [class.badge-blocked]="profile.blocked">
+                {{ profile.blocked ? 'Bloqueado' : 'Activo' }}
+              </span>
+            </dd>
+          </dl>
+          @if (!profile.admin) {
+            <div class="panel-actions">
+              @if (profile.blocked) {
+                <button
+                  type="button"
+                  class="btn btn-success"
+                  [disabled]="actionLoadingId() === profile.id"
+                  (click)="unblockUser(profile)"
+                >
+                  {{ actionLoadingId() === profile.id ? 'A processar...' : 'Desbloquear' }}
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  class="btn btn-warn"
+                  [disabled]="actionLoadingId() === profile.id"
+                  (click)="blockUser(profile)"
+                >
+                  {{ actionLoadingId() === profile.id ? 'A processar...' : 'Bloquear' }}
+                </button>
+              }
+            </div>
+          }
+        </section>
+      </div>
+    </div>
+  }
+</div>

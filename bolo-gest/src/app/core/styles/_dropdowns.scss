@@ -9,8 +9,10 @@
   background: v.$card-bg;
   border: 1px solid v.$border;
   border-radius: v.$radius-lg;
-  box-shadow: v.$shadow-lg;
-  z-index: 50;
+  box-shadow:
+    v.$shadow-lg,
+    0 12px 40px rgba(15, 23, 42, 0.12);
+  z-index: 5100;
   overflow: hidden;
 }
 

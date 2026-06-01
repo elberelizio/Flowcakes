@@ -17,12 +17,23 @@ import { LicenseExpiryPopupService } from './services/license-expiry-popup.servi
 import { SystemNotificationsService, SystemNotification } from './services/system-notifications.service';
 import { LoginPopupOrchestratorService } from './services/login-popup-orchestrator.service';
 import { WelcomeOnboardingPopupService } from './services/welcome-onboarding-popup.service';
+import { SatisfactionPromptService } from './services/satisfaction-prompt.service';
+import { SatisfactionSurveyModalComponent } from './core/satisfaction/satisfaction-survey-modal.component';
 import { orderDisplayName } from './models/order.model';
 import { isPaidOrTrialStatus } from './core/license/license-status';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent, SnackbarComponent, DecimalPipe, DatePipe],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    IconComponent,
+    SnackbarComponent,
+    SatisfactionSurveyModalComponent,
+    DecimalPipe,
+    DatePipe,
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
@@ -41,7 +52,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   sidebarOpen = signal(false);
   notificationsOpen = signal(false);
   userMenuOpen = signal(false);
-  encomendasExpanded = signal(true);
+  ordersExpanded = signal(true);
   /** Contagens para a sidebar (lembretes, encomendas, dívidas) */
   reminderCount = signal(0);
   orderCount = signal(0);
@@ -58,11 +69,12 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   licenseExpiryPopup = inject(LicenseExpiryPopupService);
   systemNotifications = inject(SystemNotificationsService);
   welcomeOnboardingPopup = inject(WelcomeOnboardingPopupService);
+  satisfactionPrompt = inject(SatisfactionPromptService);
   loginPopupOrchestrator = inject(LoginPopupOrchestratorService);
   displayName = orderDisplayName;
 
   /** Nome do ícone para o item Retiradas (evita erro de tipo no template). */
-  readonly retiradasIcon: IconName = 'wallet';
+  readonly withdrawalsIcon: IconName = 'wallet';
 
   /** Iniciais para avatar no navbar (ex.: «João Silva» → JS). */
   userInitials(): string {
@@ -170,8 +182,8 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     this.sidebarCollapsed.update(v => !v);
   }
 
-  toggleEncomendas(): void {
-    this.encomendasExpanded.update(v => !v);
+  toggleOrders(): void {
+    this.ordersExpanded.update(v => !v);
   }
 
 
@@ -231,6 +243,12 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     this.licenseExpiryPopup.close();
   }
 
+  async onLogout(): Promise<void> {
+    this.closeNavDropdowns();
+    await this.satisfactionPrompt.runBeforeLogout();
+    this.auth.logout();
+  }
+
   @HostListener('document:click') onDocumentClick(): void {
     this.closeNavDropdowns();
   }
@@ -239,11 +257,11 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   isPublicPage(): boolean {
     const url = this.router.url.split('?')[0];
     if (url === '/' || url === '') return true;
-    if (url === '/login' || url === '/register' || url === '/escolher-plano') return true;
+    if (url === '/login' || url === '/register' || url === '/choose-plan') return true;
     if (url === '/termos' || url === '/privacidade') return true;
-    if (url.startsWith('/ativar-licenca')) return true;
-    if (url.startsWith('/loja')) return true;
-    if (url.startsWith('/recuperar-senha')) return true;
+    if (url.startsWith('/activate-license')) return true;
+    if (url.startsWith('/store') || url.startsWith('/loja')) return true;
+    if (url.startsWith('/recover-password')) return true;
     if (url === '/license-payment') {
       return !this.auth.isLoggedIn();
     }
@@ -252,38 +270,39 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
 
   getPageTitle(): string {
     const url = this.router.url;
-    if (url.includes('/admin-configuracoes/sugestoes')) return 'Sugestões';
+    if (url.includes('/admin-settings/suggestions')) return 'Sugestões';
     if (url.includes('landing-suggestions')) return 'Sugestões';
     if (url.includes('/admin-dashboard')) return 'Painel de administração';
-    if (url.includes('/tesouraria')) return 'Tesouraria';
-    if (url.includes('/gestao-licencas')) return 'Gestão de licenças';
-    if (url.includes('/admin-configuracoes/logs')) return 'Logs de acesso';
-    if (url.includes('/admin-configuracoes/acessos')) return 'Gestão de acessos';
-    if (url.includes('/admin-encomendas')) return 'Encomendas';
-    if (url.includes('/recuperar-senha')) return 'Recuperar senha';
-    if (url.includes('/lembretes')) return 'Lembretes';
-    if (url.includes('/notificacoes')) return 'Notificações';
-    if (url.includes('/despesas-variaveis')) return 'Despesas extras';
-    if (url.includes('/gestao-dividas')) return 'Gestão de dívidas';
-    if (url.includes('/clientes')) return 'Clientes';
-    if (url.includes('/perfil')) return 'Meu perfil';
-    if (url.includes('/minha-licenca')) return 'Minha Licença';
-    if (url.includes('/encomendas/detalhes')) return 'Detalhes dos pedidos';
-    if (url.match(/\/encomendas\/[^/]+/)) return 'Detalhes da encomenda';
-    if (url.includes('/encomendas')) return 'Encomendas';
-    if (url.includes('/gestao-notificacoes')) return 'Notificações';
-    if (url.includes('/admin-novos-utilizadores')) return 'Novos utilizadores';
-    if (url.includes('/admin-perfis')) return 'Utilizadores e perfis';
-    if (url.includes('/admin-configuracoes')) return 'Configurações';
-    if (url.includes('/configuracoes')) return 'Configurações do Meu site';
+    if (url.includes('/treasury')) return 'Tesouraria';
+    if (url.includes('/license-management')) return 'Gestão de licenças';
+    if (url.includes('/admin-settings/logs')) return 'Logs de acesso';
+    if (url.includes('/admin-settings/access')) return 'Gestão de acessos';
+    if (url.includes('/admin-orders')) return 'Encomendas';
+    if (url.includes('/recover-password')) return 'Recuperar senha';
+    if (url.includes('/reminders')) return 'Lembretes';
+    if (url.includes('/notifications')) return 'Notificações';
+    if (url.includes('/variable-expenses')) return 'Despesas extras';
+    if (url.includes('/debts')) return 'Gestão de dívidas';
+    if (url.includes('/clients')) return 'Clientes';
+    if (url.includes('/profile')) return 'Meu perfil';
+    if (url.includes('/my-license')) return 'Minha Licença';
+    if (url.includes('/orders/details')) return 'Detalhes dos pedidos';
+    if (url.match(/\/orders\/[^/]+/) && !url.includes('/orders/details')) return 'Detalhes da encomenda';
+    if (url.includes('/orders')) return 'Encomendas';
+    if (url.includes('/notification-management')) return 'Notificações';
+    if (url.includes('/admin-new-users')) return 'Novos utilizadores';
+    if (url.includes('/admin-profiles')) return 'Utilizadores e perfis';
+    if (url.includes('/admin-settings')) return 'Configurações';
+    if (url.includes('/settings')) return 'Configurações do Meu site';
     if (url.includes('/admin-ranking')) return 'Ranking';
+    if (url.includes('/satisfaction')) return 'Satisfação';
     if (url.includes('/pagamentos')) return 'Pagamentos';
-    if (url.includes('/nova-encomenda')) return 'Criar encomenda';
-    if (url.includes('/relatorios')) return 'Relatórios';
+    if (url.includes('/new-order')) return 'Criar encomenda';
+    if (url.includes('/reports')) return 'Relatórios';
     if (url.includes('/dashboard')) return 'Dashboard';
     if (url === '/' || url === '') return 'Início';
     if (url.includes('/register')) return 'Criar conta';
-    if (url.includes('/escolher-plano')) return 'Escolher plano';
+    if (url.includes('/choose-plan')) return 'Escolher plano';
     if (url.includes('/license-payment')) return 'Pagamento da licença';
     return 'Chef Control';
   }

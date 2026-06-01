@@ -7,33 +7,34 @@ import { AuthService } from '../../services/auth.service';
 
 const PAGE_LABELS: Record<string, string> = {
   '/dashboard': 'Dashboard',
-  '/encomendas': 'Encomendas',
-  '/encomendas/detalhes': 'Detalhes de encomendas',
-  '/nova-encomenda': 'Nova encomenda',
-  '/clientes': 'Clientes',
-  '/despesas-variaveis': 'Despesas variáveis',
-  '/gestao-dividas': 'Gestão de dívidas',
-  '/lembretes': 'Lembretes',
-  '/notificacoes': 'Notificações',
-  '/relatorios': 'Relatórios',
-  '/retiradas': 'Retiradas',
-  '/minha-licenca': 'Minha licença',
-  '/perfil': 'Perfil',
-  '/configuracoes': 'Configurações',
+  '/orders': 'Encomendas',
+  '/orders/details': 'Detalhes de encomendas',
+  '/new-order': 'Nova encomenda',
+  '/clients': 'Clientes',
+  '/variable-expenses': 'Despesas variáveis',
+  '/debts': 'Gestão de dívidas',
+  '/reminders': 'Lembretes',
+  '/notifications': 'Notificações',
+  '/reports': 'Relatórios',
+  '/withdrawals': 'Retiradas',
+  '/my-license': 'Minha licença',
+  '/profile': 'Perfil',
+  '/settings': 'Configurações',
   '/admin-dashboard': 'Painel admin',
-  '/tesouraria': 'Tesouraria',
-  '/gestao-licencas': 'Gestão de licenças',
-  '/admin-encomendas': 'Encomendas (admin)',
-  '/gestao-notificacoes': 'Gestão de notificações',
-  '/admin-novos-utilizadores': 'Novos utilizadores',
-  '/admin-perfis': 'Gestão de perfis',
-  '/admin-configuracoes': 'Configurações admin',
-  '/admin-configuracoes/logs': 'Logs de acesso',
-  '/admin-configuracoes/acessos': 'Gestão de acessos',
-  '/admin-configuracoes/sugestoes': 'Sugestões',
+  '/treasury': 'Tesouraria',
+  '/license-management': 'Gestão de licenças',
+  '/admin-orders': 'Encomendas (admin)',
+  '/notification-management': 'Gestão de notificações',
+  '/admin-new-users': 'Novos utilizadores',
+  '/admin-profiles': 'Gestão de perfis',
+  '/admin-settings': 'Configurações admin',
+  '/admin-settings/logs': 'Logs de acesso',
+  '/admin-settings/access': 'Gestão de acessos',
+  '/admin-settings/suggestions': 'Sugestões',
   '/admin-ranking': 'Ranking',
+  '/satisfaction': 'Satisfação',
   '/license-payment': 'Pagamento de licença',
-  '/ativar-licenca': 'Ativar licença',
+  '/activate-license': 'Ativar licença',
 };
 
 @Injectable({ providedIn: 'root' })
@@ -101,7 +102,9 @@ export class UserActivityService {
 
 export function pageLabel(path: string): string {
   if (PAGE_LABELS[path]) return PAGE_LABELS[path];
-  if (path.startsWith('/encomendas/')) return `Encomenda ${path.slice('/encomendas/'.length)}`;
+  if (path.startsWith('/orders/') && path !== '/orders/details') {
+    return `Encomenda ${path.slice('/orders/'.length)}`;
+  }
   return path;
 }
 

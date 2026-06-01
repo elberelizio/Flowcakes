@@ -9,6 +9,6 @@ import { AuthService } from '../../services/auth.service';
 export const redirectAdminGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
-  if (auth.isLoggedIn() && auth.isAdmin()) return router.createUrlTree(['/gestao-licencas']);
+  if (auth.isLoggedIn() && auth.isAdmin()) return router.createUrlTree(['/license-management']);
   return true;
 };

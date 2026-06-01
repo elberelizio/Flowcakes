@@ -42,4 +42,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
         LIMIT :limit
         """, nativeQuery = true)
     List<Object[]> findTopUsersByProfit(@org.springframework.data.repository.query.Param("limit") int limit);
+
+    @Query("SELECT COUNT(o) FROM OrderEntity o WHERE o.isCancelled = false")
+    long countNonCancelled();
 }

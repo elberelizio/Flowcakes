@@ -303,33 +303,41 @@ public class UserActivityService {
         }
         return switch (path) {
             case "/dashboard" -> "Dashboard";
-            case "/encomendas" -> "Encomendas";
-            case "/encomendas/detalhes" -> "Detalhes de encomendas";
-            case "/nova-encomenda" -> "Nova encomenda";
-            case "/clientes" -> "Clientes";
-            case "/despesas-variaveis" -> "Despesas variáveis";
-            case "/gestao-dividas" -> "Gestão de dívidas";
-            case "/lembretes" -> "Lembretes";
-            case "/notificacoes" -> "Notificações";
-            case "/relatorios" -> "Relatórios";
-            case "/retiradas" -> "Retiradas";
-            case "/minha-licenca" -> "Minha licença";
-            case "/perfil" -> "Perfil";
-            case "/configuracoes" -> "Configurações";
+            case "/orders", "/encomendas" -> "Encomendas";
+            case "/orders/details", "/encomendas/detalhes" -> "Detalhes de encomendas";
+            case "/new-order", "/nova-encomenda" -> "Nova encomenda";
+            case "/clients", "/clientes" -> "Clientes";
+            case "/variable-expenses", "/despesas-variaveis" -> "Despesas variáveis";
+            case "/debts", "/gestao-dividas" -> "Gestão de dívidas";
+            case "/reminders", "/lembretes" -> "Lembretes";
+            case "/notifications", "/notificacoes" -> "Notificações";
+            case "/reports", "/relatorios" -> "Relatórios";
+            case "/withdrawals", "/retiradas" -> "Retiradas";
+            case "/my-license", "/minha-licenca" -> "Minha licença";
+            case "/profile", "/perfil" -> "Perfil";
+            case "/settings", "/configuracoes" -> "Configurações";
             case "/admin-dashboard" -> "Painel admin";
-            case "/tesouraria" -> "Tesouraria";
-            case "/gestao-licencas" -> "Gestão de licenças";
-            case "/admin-encomendas" -> "Encomendas (admin)";
-            case "/gestao-notificacoes" -> "Gestão de notificações";
-            case "/admin-novos-utilizadores" -> "Novos utilizadores";
-            case "/admin-perfis" -> "Gestão de perfis";
-            case "/admin-configuracoes" -> "Configurações admin";
-            case "/admin-configuracoes/logs" -> "Logs de acesso";
-            case "/admin-configuracoes/acessos" -> "Gestão de acessos";
-            case "/admin-configuracoes/sugestoes" -> "Sugestões";
+            case "/treasury", "/tesouraria" -> "Tesouraria";
+            case "/license-management", "/gestao-licencas" -> "Gestão de licenças";
+            case "/admin-orders", "/admin-encomendas" -> "Encomendas (admin)";
+            case "/notification-management", "/gestao-notificacoes" -> "Gestão de notificações";
+            case "/admin-new-users", "/admin-novos-utilizadores" -> "Novos utilizadores";
+            case "/admin-profiles", "/admin-perfis" -> "Gestão de perfis";
+            case "/admin-settings", "/admin-configuracoes" -> "Configurações admin";
+            case "/admin-settings/logs", "/admin-configuracoes/logs" -> "Logs de acesso";
+            case "/admin-settings/access", "/admin-configuracoes/acessos" -> "Gestão de acessos";
+            case "/admin-settings/suggestions", "/admin-configuracoes/sugestoes" -> "Sugestões";
             case "/admin-ranking" -> "Ranking";
-            default -> path.startsWith("/encomendas/") ? "Encomenda " + path.substring("/encomendas/".length())
-                : path;
+            case "/satisfaction", "/satisfacao" -> "Satisfação";
+            default -> {
+                if (path.startsWith("/orders/") && !path.equals("/orders/details")) {
+                    yield "Encomenda " + path.substring("/orders/".length());
+                }
+                if (path.startsWith("/encomendas/")) {
+                    yield "Encomenda " + path.substring("/encomendas/".length());
+                }
+                yield path;
+            }
         };
     }
 

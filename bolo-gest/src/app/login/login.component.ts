@@ -81,7 +81,7 @@ export class LoginComponent implements OnInit {
     if (this.registrationFlow.mustCompleteOnboarding()) {
       if (this.registrationFlow.isChoosePlanPhase()) {
         const phone = this.registrationFlow.getPhone();
-        void this.router.navigate(['/escolher-plano'], {
+        void this.router.navigate(['/choose-plan'], {
           queryParams: phone ? { phone, registered: '1' } : { registered: '1' },
           replaceUrl: true,
         });
@@ -236,7 +236,7 @@ export class LoginComponent implements OnInit {
     this.error = '';
     this.showNoAccountInfo = false;
     this.licenseBlock = null;
-    this.router.navigate(['/recuperar-senha']);
+    this.router.navigate(['/recover-password']);
   }
 }
 

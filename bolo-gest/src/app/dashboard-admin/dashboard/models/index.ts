@@ -17,6 +17,7 @@ export interface AdminStats {
   topProfitUserName?: string | null;
   topProfitAmount?: number;
   avgLoginsPerUser30d?: number;
+  totalOrders?: number;
 }
 
 export interface RevenueByMonthDto {

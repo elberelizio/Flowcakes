@@ -1,0 +1,70 @@
+<div class="satisfaction-page">
+  <header class="page-header">
+    <div>
+      <a routerLink="/admin-dashboard" class="back-link">← Painel</a>
+      <h1>Satisfação dos utilizadores</h1>
+      <p class="subtitle">
+        Avaliações enviadas após o primeiro login ou ao sair da conta (estrelas, recomendação e comentário).
+      </p>
+    </div>
+    <button type="button" class="btn btn-outline" [disabled]="loading()" (click)="load()">Actualizar</button>
+  </header>
+
+  @if (loading()) {
+    <p class="state-msg">A carregar…</p>
+  } @else if (error()) {
+    <p class="state-msg state-msg--error">{{ error() }}</p>
+  } @else {
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <span class="kpi-label">Média geral</span>
+        <strong class="kpi-value">{{ averageRating() || '—' }}</strong>
+        <span class="kpi-hint">de 5 estrelas</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Recomendariam</span>
+        <strong class="kpi-value">{{ recommendYesCount() }}</strong>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Não recomendariam</span>
+        <strong class="kpi-value">{{ recommendNoCount() }}</strong>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Total de respostas</span>
+        <strong class="kpi-value">{{ items().length }}</strong>
+      </div>
+    </div>
+
+    @if (items().length === 0) {
+      <p class="state-msg">Ainda não há avaliações registadas.</p>
+    } @else {
+      <div class="table-wrap">
+        <table class="feedback-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Utilizador</th>
+              <th>Estrelas</th>
+              <th>Recomenda?</th>
+              <th>Comentário</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of items(); track row.id) {
+              <tr>
+                <td>{{ formatDate(row.createdAt) }}</td>
+                <td>
+                  <strong>{{ row.userFullName || '—' }}</strong>
+                  <span class="muted">{{ row.userPhone }}</span>
+                </td>
+                <td><span class="stars" [attr.aria-label]="row.rating + ' estrelas'">{{ stars(row.rating) }}</span></td>
+                <td>{{ recommendLabel(row.wouldRecommend) }}</td>
+                <td>{{ row.comment || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

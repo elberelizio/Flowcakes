@@ -16,7 +16,7 @@ export const licenseGuard: CanActivateFn = () => {
     const registrationFlow = inject(RegistrationFlowService);
     const phone = registrationFlow.getPhone() || auth.getPhone() || undefined;
     if (registrationFlow.isChoosePlanPhase()) {
-      return router.createUrlTree(['/escolher-plano'], {
+      return router.createUrlTree(['/choose-plan'], {
         queryParams: phone ? { phone, registered: '1' } : { registered: '1' },
       });
     }

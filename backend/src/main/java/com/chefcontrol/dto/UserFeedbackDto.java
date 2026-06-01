@@ -7,6 +7,7 @@ public class UserFeedbackDto {
     private String userFullName;
     private int rating;
     private String comment;
+    private Boolean wouldRecommend;
     private String createdAt;
 
     public String getId() { return id; }
@@ -21,6 +22,8 @@ public class UserFeedbackDto {
     public void setRating(int rating) { this.rating = rating; }
     public String getComment() { return comment; }
     public void setComment(String comment) { this.comment = comment; }
+    public Boolean getWouldRecommend() { return wouldRecommend; }
+    public void setWouldRecommend(Boolean wouldRecommend) { this.wouldRecommend = wouldRecommend; }
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 }

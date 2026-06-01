@@ -124,6 +124,8 @@ public class AdminService {
             ? BigDecimal.valueOf(logins30).divide(BigDecimal.valueOf(activeUsers30), 1, RoundingMode.HALF_UP).doubleValue()
             : 0);
 
+        r.setTotalOrders(orderRepository.countNonCancelled());
+
         return r;
     }
 

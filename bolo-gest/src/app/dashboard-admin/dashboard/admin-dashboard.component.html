@@ -6,13 +6,20 @@
   <header class="bi-header">
     <div class="bi-header__main">
       <h1>Painel de administração</h1>
-      <p class="bi-header__subtitle">Utilizadores, licenças, receitas e ranking</p>
+      <p class="bi-header__subtitle">Clientes, encomendas e receitas da plataforma</p>
     </div>
-    @if (lastUpdated()) {
-      <time class="bi-header__time" [attr.datetime]="lastUpdated()!.toISOString()">
-        Actualizado {{ formatDateTime(lastUpdated()!) }}
-      </time>
-    }
+    <div class="bi-header__aside">
+      @if (lastUpdated()) {
+        <time class="bi-header__time" [attr.datetime]="lastUpdated()!.toISOString()">
+          Actualizado {{ formatDateTime(lastUpdated()!) }}
+        </time>
+      }
+      <nav class="bi-header__nav" aria-label="Atalhos rápidos">
+        @for (link of navLinks; track link.route) {
+          <a [routerLink]="link.route" class="bi-header__nav-link">{{ link.label }}</a>
+        }
+      </nav>
+    </div>
   </header>
 
   @if (loading()) {
@@ -21,16 +28,15 @@
       <p>A carregar…</p>
     </div>
   } @else {
-    <app-admin-alerts-bar [alerts]="alerts()" />
-
-    <app-admin-kpi-section [adminStats]="adminStats()" />
+    <section class="bi-summary" aria-label="Resumo operacional">
+      <app-admin-alerts-bar [alerts]="alerts()" />
+      <app-admin-kpi-section [adminStats]="adminStats()" />
+    </section>
 
     <app-admin-charts-section
       [ordersRevenueByMonth]="ordersRevenueByMonth()"
       [licenseRevenueByMonth]="licenseRevenueByMonth()"
       [adminStats]="adminStats()"
     />
-
-    <app-admin-ranking-section [ranking]="ranking()" />
   }
 </div>

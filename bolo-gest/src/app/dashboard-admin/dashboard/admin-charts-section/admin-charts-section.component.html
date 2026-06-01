@@ -1,23 +1,47 @@
-<section class="bi-charts" aria-label="Gráficos">
-  <article class="bi-visual bi-visual--main">
-    <header class="bi-visual__header">
-      <h2 class="bi-visual__title">Receitas — licenças vs lucro encomendas</h2>
-    </header>
-    <div class="bi-visual__body">
-      <div class="chart-container chart-main">
-        <canvas #chartRevenueCompare></canvas>
-      </div>
+<section class="bi-charts" aria-label="Receitas por mês">
+  <header class="bi-charts__head">
+    <div class="bi-charts__intro">
+      <h2 class="bi-charts__title">Receitas por mês</h2>
+      <p class="bi-charts__subtitle">Ondas dos últimos 12 meses — verde = licenças, laranja = lucro em encomendas</p>
     </div>
-  </article>
+  </header>
 
-  <article class="bi-visual bi-visual--side">
-    <header class="bi-visual__header">
-      <h2 class="bi-visual__title">Licenças</h2>
-    </header>
-    <div class="bi-visual__body">
-      <div class="chart-container chart-side">
-        <canvas #chartLicenses></canvas>
+  <div class="bi-charts__totals">
+    <div class="bi-charts__total bi-charts__total--licenses">
+      <span class="bi-charts__total-swatch" aria-hidden="true"></span>
+      <div class="bi-charts__total-text">
+        <span class="bi-charts__total-label">Licenças (12 meses)</span>
+        <span class="bi-charts__total-value">{{ formatMzn(periodLicenseTotal()) }}</span>
+        <span class="bi-charts__total-hint">Este mês {{ formatMzn(adminStats()?.licenseRevenueThisMonth) }}</span>
       </div>
     </div>
-  </article>
+    <div class="bi-charts__total bi-charts__total--orders">
+      <span class="bi-charts__total-swatch" aria-hidden="true"></span>
+      <div class="bi-charts__total-text">
+        <span class="bi-charts__total-label">Lucro em encomendas (12 meses)</span>
+        <span class="bi-charts__total-value">{{ formatMzn(periodOrdersTotal()) }}</span>
+        <span class="bi-charts__total-hint">Soma do lucro dos clientes</span>
+      </div>
+    </div>
+    @if (licenseBreakdown(); as lic) {
+      <div class="bi-charts__total bi-charts__total--status">
+        <span class="bi-charts__total-label">Licenças activas</span>
+        <div class="bi-charts__status-row">
+          <span class="bi-charts__pill bi-charts__pill--paid"><strong>{{ lic.paid }}</strong> pagas</span>
+          <span class="bi-charts__pill bi-charts__pill--trial"><strong>{{ lic.trial }}</strong> teste</span>
+          <span class="bi-charts__pill bi-charts__pill--pending"><strong>{{ lic.pending }}</strong> pendentes</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="bi-charts__body">
+    <div class="bi-charts__legend" aria-hidden="true">
+      <span class="bi-charts__legend-item bi-charts__legend-item--licenses">Licenças</span>
+      <span class="bi-charts__legend-item bi-charts__legend-item--orders">Lucro encomendas</span>
+    </div>
+    <div class="bi-charts__canvas">
+      <canvas #chartRevenueCompare aria-label="Gráfico de ondas: licenças e lucro por mês"></canvas>
+    </div>
+  </div>
 </section>

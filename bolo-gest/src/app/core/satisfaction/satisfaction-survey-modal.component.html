@@ -1,0 +1,70 @@
+@if (prompt.visible()) {
+  <div class="login-popup-overlay" role="dialog" aria-modal="true" aria-label="Avaliação de satisfação">
+    <div class="satisfaction-popup">
+      <div class="satisfaction-popup__header">
+        <app-icon name="help-circle" />
+        <h3>{{ title() }}</h3>
+        <p class="satisfaction-popup__sub">{{ subtitle() }}</p>
+      </div>
+
+      <div class="satisfaction-popup__stars" role="group" aria-label="Classificação de 1 a 5 estrelas">
+        @for (star of stars; track star) {
+          <button
+            type="button"
+            class="satisfaction-star"
+            [class.satisfaction-star--on]="rating() >= star"
+            [attr.aria-pressed]="rating() >= star"
+            (click)="setRating(star)">
+            ★
+          </button>
+        }
+      </div>
+
+      <div class="satisfaction-popup__recommend">
+        <p class="satisfaction-popup__label">Recomendaria o Chef Control a outro confeiteiro?</p>
+        <div class="satisfaction-popup__recommend-actions">
+          <button
+            type="button"
+            class="btn btn-outline"
+            [class.btn-primary]="wouldRecommend() === true"
+            (click)="setRecommend(true)">
+            Sim
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline"
+            [class.btn-primary]="wouldRecommend() === false"
+            (click)="setRecommend(false)">
+            Não
+          </button>
+        </div>
+      </div>
+
+      <label class="satisfaction-popup__comment-label">
+        Comentário (opcional)
+        <textarea
+          rows="3"
+          [ngModel]="comment()"
+          (ngModelChange)="comment.set($event)"
+          placeholder="O que podemos melhorar?"></textarea>
+      </label>
+
+      @if (prompt.error()) {
+        <p class="satisfaction-popup__error" role="alert">{{ prompt.error() }}</p>
+      }
+
+      <div class="satisfaction-popup__actions">
+        <button type="button" class="btn btn-ghost" [disabled]="prompt.submitting()" (click)="skip()">
+          {{ prompt.mode() === 'logout' ? 'Sair sem avaliar' : 'Mais tarde' }}
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="rating() < 1 || prompt.submitting()"
+          (click)="submit()">
+          {{ prompt.submitting() ? 'A enviar…' : 'Enviar avaliação' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

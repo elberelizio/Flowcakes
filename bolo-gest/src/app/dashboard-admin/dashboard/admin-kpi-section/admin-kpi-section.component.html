@@ -1,51 +1,29 @@
-<section class="bi-overview" aria-label="Resumo da plataforma">
-  <div class="bi-overview__hero">
-    @for (m of heroMetrics(); track m.label) {
+<section class="bi-metrics" aria-label="Métricas principais">
+  <div class="bi-metrics__grid">
+    @for (m of metrics(); track m.label) {
       @if (m.route) {
-        <a [routerLink]="m.route" class="bi-overview__hero-item" [attr.data-accent]="m.accent">
-          <span class="bi-overview__value">{{ m.value }}</span>
-          <span class="bi-overview__label">{{ m.label }}</span>
-          @if (m.hint) {
-            <span class="bi-overview__hint">{{ m.hint }}</span>
-          }
+        <a [routerLink]="m.route" class="bi-metrics__card" [attr.data-accent]="m.accent">
+          <span class="bi-metrics__icon" [attr.data-icon]="m.icon" aria-hidden="true"></span>
+          <div class="bi-metrics__body">
+            <span class="bi-metrics__label">{{ m.label }}</span>
+            <span class="bi-metrics__value">{{ m.value }}</span>
+            @if (m.hint) {
+              <span class="bi-metrics__hint">{{ m.hint }}</span>
+            }
+          </div>
         </a>
       } @else {
-        <div class="bi-overview__hero-item" [attr.data-accent]="m.accent">
-          <span class="bi-overview__value">{{ m.value }}</span>
-          <span class="bi-overview__label">{{ m.label }}</span>
-          @if (m.hint) {
-            <span class="bi-overview__hint">{{ m.hint }}</span>
-          }
+        <div class="bi-metrics__card" [attr.data-accent]="m.accent">
+          <span class="bi-metrics__icon" [attr.data-icon]="m.icon" aria-hidden="true"></span>
+          <div class="bi-metrics__body">
+            <span class="bi-metrics__label">{{ m.label }}</span>
+            <span class="bi-metrics__value">{{ m.value }}</span>
+            @if (m.hint) {
+              <span class="bi-metrics__hint">{{ m.hint }}</span>
+            }
+          </div>
         </div>
       }
     }
   </div>
-
-  <div class="bi-overview__details">
-    @for (m of detailMetrics(); track m.label) {
-      @if (m.route) {
-        <a [routerLink]="m.route" class="bi-overview__detail" [attr.data-accent]="m.accent">
-          <span class="bi-overview__detail-label">{{ m.label }}</span>
-          <span class="bi-overview__detail-value">{{ m.value }}</span>
-          @if (m.hint) {
-            <span class="bi-overview__detail-hint">{{ m.hint }}</span>
-          }
-        </a>
-      } @else {
-        <div class="bi-overview__detail" [attr.data-accent]="m.accent">
-          <span class="bi-overview__detail-label">{{ m.label }}</span>
-          <span class="bi-overview__detail-value">{{ m.value }}</span>
-          @if (m.hint) {
-            <span class="bi-overview__detail-hint">{{ m.hint }}</span>
-          }
-        </div>
-      }
-    }
-  </div>
-
-  <nav class="bi-overview__nav" aria-label="Atalhos">
-    @for (link of quickLinks; track link.route) {
-      <a [routerLink]="link.route" class="bi-overview__nav-link">{{ link.label }}</a>
-    }
-  </nav>
 </section>

@@ -1,0 +1,203 @@
+<div class="reminders-page">
+  <header class="page-hero">
+    <a routerLink="/dashboard" class="btn-back">← Voltar ao dashboard</a>
+    <div class="page-hero__main">
+      <p class="page-hero__eyebrow">Planeamento</p>
+      <h1>Lembretes</h1>
+      <p class="page-hero__sub">
+        Crie lembretes para datas importantes. Defina com quantos dias de antecedência quer ver avisos (após login, no resumo e no dashboard).
+      </p>
+    </div>
+  </header>
+
+  <section class="kpi-strip" aria-label="Resumo de lembretes">
+    <article class="kpi-card">
+      <span class="kpi-card__icon" aria-hidden="true"><i class="fa-solid fa-bell"></i></span>
+      <div>
+        <span class="kpi-card__label">Total</span>
+        <p class="kpi-card__value">{{ reminderCount() }}</p>
+      </div>
+    </article>
+    <article class="kpi-card kpi-card--soon">
+      <span class="kpi-card__icon" aria-hidden="true"><i class="fa-solid fa-calendar-day"></i></span>
+      <div>
+        <span class="kpi-card__label">Por vir</span>
+        <p class="kpi-card__value">{{ upcomingCount() }}</p>
+      </div>
+    </article>
+    <article class="kpi-card kpi-card--today">
+      <span class="kpi-card__icon" aria-hidden="true"><i class="fa-solid fa-star"></i></span>
+      <div>
+        <span class="kpi-card__label">Hoje</span>
+        <p class="kpi-card__value">{{ todayCount() }}</p>
+      </div>
+    </article>
+  </section>
+
+  <div class="lembretes-grid">
+    <div class="lembretes-grid__main">
+      <section class="panel panel--form card" id="lembrete-form-anchor">
+        <div class="panel-head">
+          <span class="panel-icon" aria-hidden="true"><i class="fa-solid fa-plus"></i></span>
+          <div class="panel-head__text">
+            <h2>{{ editingId() ? 'Editar lembrete' : 'Novo lembrete' }}</h2>
+            <p class="panel-desc">{{ editingId() ? 'Altere os dados e guarde' : 'Preencha os campos para criar um aviso' }}</p>
+          </div>
+          @if (editingId()) {
+            <button type="button" class="btn-text" (click)="resetFormForNew()">
+              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+              Cancelar
+            </button>
+          }
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="submit()" class="form-modern">
+          <label class="field field--full">
+            <span class="field__label">Título ou nome</span>
+            <input
+              type="text"
+              formControlName="clientName"
+              placeholder="Ex.: Bolo aniversário João, Comprar embalagens…"
+              autocomplete="off"
+            />
+            @if (form.get('clientName')?.invalid && form.get('clientName')?.touched) {
+              <span class="field__error">Indique um título.</span>
+            }
+          </label>
+
+          <div class="form-row">
+            <label class="field">
+              <span class="field__label">Data</span>
+              <input type="date" formControlName="deliveryDate" />
+              @if (form.get('deliveryDate')?.invalid && form.get('deliveryDate')?.touched) {
+                <span class="field__error">Escolha a data.</span>
+              }
+            </label>
+            <label class="field">
+              <span class="field__label">Avisos faltando (dias)</span>
+              <input
+                type="number"
+                formControlName="notifyDaysBefore"
+                min="0"
+                max="90"
+                title="0 = só no dia do evento"
+              />
+              @if (form.get('notifyDaysBefore')?.invalid && form.get('notifyDaysBefore')?.touched) {
+                <span class="field__error">Use 0 a 90.</span>
+              }
+            </label>
+          </div>
+          <p class="form-hint">
+            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+            0 = só no dia. O sistema mostra o lembrete quando faltar este número de dias ou menos até à data.
+          </p>
+
+          <label class="field">
+            <span class="field__label">Morada ou local (opcional)</span>
+            <input type="text" formControlName="address" placeholder="Opcional" />
+          </label>
+          <label class="field">
+            <span class="field__label">Notas (opcional)</span>
+            <textarea formControlName="description" rows="3" placeholder="Detalhes, lista de material…"></textarea>
+          </label>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" [disabled]="form.invalid">
+              <i class="fa-solid fa-check" aria-hidden="true"></i>
+              {{ editingId() ? 'Guardar alterações' : 'Adicionar lembrete' }}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel panel--list card">
+        <div class="panel-head">
+          <span class="panel-icon panel-icon--list" aria-hidden="true"><i class="fa-solid fa-list-check"></i></span>
+          <div class="panel-head__text">
+            <h2>Os seus lembretes</h2>
+            <p class="panel-desc">Agrupados por data, do mais próximo ao mais distante</p>
+          </div>
+          <span class="panel-count">{{ reminderCount() }}</span>
+        </div>
+
+        @if (reminderService.reminders().length === 0) {
+          <div class="empty-state">
+            <span class="empty-state__icon" aria-hidden="true"><i class="fa-regular fa-calendar"></i></span>
+            <p class="empty-state__title">Ainda não tem lembretes</p>
+            <p class="empty-state__text">Utilize o formulário acima para criar o primeiro aviso importante.</p>
+          </div>
+        } @else {
+          @for (group of remindersGrouped(); track group.date) {
+            <article class="date-block">
+              <header class="date-block__head">
+                <div class="date-block__date-wrap">
+                  <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
+                  <time [attr.datetime]="group.date">{{ formatDate(group.date) }}</time>
+                </div>
+                <span class="pill" [class]="'pill--' + statusLabel(group.date).tone">{{ statusLabel(group.date).label }}</span>
+              </header>
+              <ul class="card-list">
+                @for (r of group.reminders; track r.id) {
+                  <li class="rem-card">
+                    <div class="rem-card__body">
+                      <h3 class="rem-card__title">{{ r.clientName }}</h3>
+                      <p class="rem-card__meta">
+                        <span class="chip">
+                          <i class="fa-solid fa-bell" aria-hidden="true"></i>
+                          {{ r.notifyDaysBefore ?? 5 }} dia(s) antes
+                        </span>
+                        @if (r.address) {
+                          <span class="rem-card__addr">
+                            <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+                            {{ r.address }}
+                          </span>
+                        }
+                      </p>
+                      @if (r.description) {
+                        <p class="rem-card__desc">{{ r.description }}</p>
+                      }
+                    </div>
+                    <div class="rem-card__actions">
+                      <button type="button" class="btn-ghost" (click)="startEdit(r)">
+                        <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                        Editar
+                      </button>
+                      <button type="button" class="btn-danger" (click)="remove(r.id)" title="Apagar">
+                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                        Apagar
+                      </button>
+                    </div>
+                  </li>
+                }
+              </ul>
+            </article>
+          }
+        }
+      </section>
+    </div>
+
+    <aside class="lembretes-grid__aside">
+      <section class="panel panel--holidays card">
+        <div class="panel-head panel-head--compact">
+          <span class="panel-icon panel-icon--flag" aria-hidden="true"><i class="fa-solid fa-flag"></i></span>
+          <div class="panel-head__text">
+            <h2>Feriados nacionais</h2>
+            <span class="panel-tag">Moçambique</span>
+          </div>
+        </div>
+        <p class="aside-intro">Datas fixas no calendário civil (próximos 12 meses a partir de hoje).</p>
+        <ul class="holiday-list">
+          @for (item of nationalHolidays(); track item.date.getTime()) {
+            <li class="holiday-row">
+              <span class="holiday-row__date">{{ item.date | date:'dd/MM/yyyy' }}</span>
+              <span class="holiday-row__name">
+                <strong>{{ formatHolidayDate(item.holiday) }}</strong>
+                — {{ item.holiday.name }}
+              </span>
+            </li>
+          }
+        </ul>
+      </section>
+    </aside>
+  </div>
+</div>

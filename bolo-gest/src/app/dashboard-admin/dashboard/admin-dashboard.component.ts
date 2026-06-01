@@ -1,10 +1,11 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { ADMIN_DASHBOARD_NAV } from './constants/dashboard-nav';
 import { AdminDashboardService } from './admin-dashboard.service';
-import type { AdminRankingRow, AdminStats, RevenueByMonthDto } from './models';
+import type { AdminStats, RevenueByMonthDto } from './models';
 import { AdminKpiSectionComponent } from './admin-kpi-section/admin-kpi-section.component';
 import { AdminChartsSectionComponent } from './admin-charts-section/admin-charts-section.component';
-import { AdminRankingSectionComponent } from './admin-ranking-section/admin-ranking-section.component';
 import { AdminAlertsBarComponent } from './admin-alerts-bar/admin-alerts-bar.component';
 import { AdminTreasuryService, type AdminAlerts } from '../services/admin-treasury.service';
 import { AdminLoginSummaryPopupService } from '../services/admin-login-summary-popup.service';
@@ -15,9 +16,9 @@ import { AdminLoginSummaryModalComponent } from '../../login/admin-login-summary
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     AdminKpiSectionComponent,
     AdminChartsSectionComponent,
-    AdminRankingSectionComponent,
     AdminAlertsBarComponent,
     AdminLoginSummaryModalComponent,
   ],
@@ -25,6 +26,8 @@ import { AdminLoginSummaryModalComponent } from '../../login/admin-login-summary
   styleUrl: './admin-dashboard.component.scss',
 })
 export class AdminDashboardComponent implements OnInit {
+  readonly navLinks = ADMIN_DASHBOARD_NAV;
+
   private readonly service = inject(AdminDashboardService);
   private readonly treasuryService = inject(AdminTreasuryService);
   readonly adminLoginSummaryPopup = inject(AdminLoginSummaryPopupService);
@@ -32,7 +35,6 @@ export class AdminDashboardComponent implements OnInit {
   adminStats = signal<AdminStats | null>(null);
   ordersRevenueByMonth = signal<RevenueByMonthDto[]>([]);
   licenseRevenueByMonth = signal<RevenueByMonthDto[]>([]);
-  ranking = signal<AdminRankingRow[]>([]);
   alerts = signal<AdminAlerts | null>(null);
   loading = signal(true);
   lastUpdated = signal<Date | null>(null);
@@ -59,11 +61,6 @@ export class AdminDashboardComponent implements OnInit {
       next: (list) =>
         this.licenseRevenueByMonth.set((list ?? []).map((x) => ({ month: x.month, revenue: Number(x.revenue) }))),
       error: () => {},
-    });
-
-    this.service.getRanking(8).subscribe({
-      next: (list) => this.ranking.set(list ?? []),
-      error: () => this.ranking.set([]),
     });
 
     this.treasuryService.getAlerts().subscribe({

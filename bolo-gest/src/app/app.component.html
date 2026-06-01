@@ -34,11 +34,11 @@
 
           <div class="sidebar-nav-group">
             <p class="sidebar-nav-section" role="presentation">Financeiro</p>
-            <a routerLink="/tesouraria" routerLinkActive="active" class="nav-item">
+            <a routerLink="/treasury" routerLinkActive="active" class="nav-item">
               <app-icon name="wallet" />
               <span class="nav-label">Tesouraria</span>
             </a>
-            <a routerLink="/gestao-licencas" routerLinkActive="active" class="nav-item">
+            <a routerLink="/license-management" routerLinkActive="active" class="nav-item">
               <app-icon name="user" />
               <span class="nav-label">Licenças</span>
               @if (adminStats.expiringLicensesCount() > 0) {
@@ -49,11 +49,11 @@
 
           <div class="sidebar-nav-group">
             <p class="sidebar-nav-section" role="presentation">Utilizadores</p>
-            <a routerLink="/admin-perfis" routerLinkActive="active" class="nav-item">
+            <a routerLink="/admin-profiles" routerLinkActive="active" class="nav-item">
               <app-icon name="user" />
               <span class="nav-label">Utilizadores e perfis</span>
             </a>
-            <a routerLink="/admin-novos-utilizadores" routerLinkActive="active" class="nav-item">
+            <a routerLink="/admin-new-users" routerLinkActive="active" class="nav-item">
               <app-icon name="add" />
               <span class="nav-label">Pendentes de aprovação</span>
               @if (adminStats.pendingCount() > 0) {
@@ -64,7 +64,7 @@
 
           <div class="sidebar-nav-group">
             <p class="sidebar-nav-section" role="presentation">Operações</p>
-            <a routerLink="/admin-encomendas" routerLinkActive="active" class="nav-item">
+            <a routerLink="/admin-orders" routerLinkActive="active" class="nav-item">
               <app-icon name="list" />
               <span class="nav-label">Todas as encomendas</span>
             </a>
@@ -72,11 +72,15 @@
               <app-icon name="chart" />
               <span class="nav-label">Ranking</span>
             </a>
+            <a routerLink="/satisfaction" routerLinkActive="active" class="nav-item">
+              <app-icon name="help-circle" />
+              <span class="nav-label">Satisfação</span>
+            </a>
           </div>
 
           <div class="sidebar-nav-group">
             <p class="sidebar-nav-section" role="presentation">Comunicação</p>
-            <a routerLink="/gestao-notificacoes" routerLinkActive="active" class="nav-item">
+            <a routerLink="/notification-management" routerLinkActive="active" class="nav-item">
               <app-icon name="bell" />
               <span class="nav-label">Notificações do sistema</span>
             </a>
@@ -85,7 +89,7 @@
           <div class="sidebar-nav-group">
             <p class="sidebar-nav-section" role="presentation">Sistema</p>
             <a
-              routerLink="/admin-configuracoes"
+              routerLink="/admin-settings"
               routerLinkActive="active"
               [routerLinkActiveOptions]="configNavActiveOptions"
               class="nav-item">
@@ -98,14 +102,14 @@
             <app-icon name="dashboard" />
             <span class="nav-label">Dashboard</span>
           </a>
-          <a routerLink="/lembretes" routerLinkActive="active" class="nav-item">
+          <a routerLink="/reminders" routerLinkActive="active" class="nav-item">
             <app-icon name="bell" />
             <span class="nav-label">Lembretes</span>
             @if (reminderCount() > 0) {
               <span class="nav-badge">{{ reminderCount() }}</span>
             }
           </a>
-          <a routerLink="/notificacoes" routerLinkActive="active" class="nav-item">
+          <a routerLink="/notifications" routerLinkActive="active" class="nav-item">
             <app-icon name="alert-circle" />
             <span class="nav-label">Notificações</span>
             @if (systemNotifications.unreadCount() > 0) {
@@ -113,42 +117,42 @@
             }
           </a>
           <div class="nav-group">
-            <button type="button" class="nav-item nav-group-toggle" (click)="toggleEncomendas()">
+            <button type="button" class="nav-item nav-group-toggle" (click)="toggleOrders()">
               <app-icon name="list" />
               <span class="nav-label">Encomendas</span>
               @if (orderCount() > 0) {
                 <span class="nav-badge">{{ orderCount() }}</span>
               }
-              <app-icon name="chevron-down" class="nav-chevron" [class.rotated]="!encomendasExpanded()" />
+              <app-icon name="chevron-down" class="nav-chevron" [class.rotated]="!ordersExpanded()" />
             </button>
-            @if (encomendasExpanded()) {
+            @if (ordersExpanded()) {
               <div class="nav-sub">
-                <a routerLink="/nova-encomenda" routerLinkActive="active" class="nav-item nav-sub-item">Criar</a>
-                <a routerLink="/encomendas" routerLinkActive="active" class="nav-item nav-sub-item">Visualizar <span class="nav-badge-inline">@if (orderCount() > 0) { {{ orderCount() }} }</span></a>
-                <a routerLink="/despesas-variaveis" routerLinkActive="active" class="nav-item nav-sub-item">Despesas extras</a>
+                <a routerLink="/new-order" routerLinkActive="active" class="nav-item nav-sub-item">Criar</a>
+                <a routerLink="/orders" routerLinkActive="active" class="nav-item nav-sub-item">Visualizar <span class="nav-badge-inline">@if (orderCount() > 0) { {{ orderCount() }} }</span></a>
+                <a routerLink="/variable-expenses" routerLinkActive="active" class="nav-item nav-sub-item">Despesas extras</a>
               </div>
             }
           </div>
-          <a routerLink="/gestao-dividas" routerLinkActive="active" class="nav-item">
+          <a routerLink="/debts" routerLinkActive="active" class="nav-item">
             <app-icon name="wallet" />
             <span class="nav-label">Dívidas</span>
             @if (debtCount() > 0) {
               <span class="nav-badge">{{ debtCount() }}</span>
             }
           </a>
-          <a routerLink="/relatorios" routerLinkActive="active" class="nav-item">
+          <a routerLink="/reports" routerLinkActive="active" class="nav-item">
             <app-icon name="chart" />
             <span class="nav-label">Relatório</span>
           </a>
-          <a routerLink="/retiradas" routerLinkActive="active" class="nav-item">
-            <app-icon [name]="retiradasIcon" />
+          <a routerLink="/withdrawals" routerLinkActive="active" class="nav-item">
+            <app-icon [name]="withdrawalsIcon" />
             <span class="nav-label">Retiradas</span>
           </a>
-          <a routerLink="/clientes" routerLinkActive="active" class="nav-item">
+          <a routerLink="/clients" routerLinkActive="active" class="nav-item">
             <app-icon name="user" />
             <span class="nav-label">Clientes</span>
           </a>
-          <a routerLink="/minha-licenca" routerLinkActive="active" class="nav-item">
+          <a routerLink="/my-license" routerLinkActive="active" class="nav-item">
             <app-icon name="receipt" />
             <span class="nav-label">Licença e Pagamentos</span>
           </a>
@@ -182,13 +186,13 @@
                   <span class="license-payment-hint">via e-Mola {{ licenseStatus()?.eMolaPhone || '' }}</span>
                 </div>
               }
-              <a routerLink="/minha-licenca" class="license-link">Ver licença e pagamentos</a>
+              <a routerLink="/my-license" class="license-link">Ver licença e pagamentos</a>
             </div>
           }
         }
       </nav>
       <div class="sidebar-footer">
-        <button type="button" class="nav-item logout" (click)="auth.logout()">
+        <button type="button" class="nav-item logout" (click)="onLogout()">
           <app-icon name="logout" />
           <span class="nav-label">Sair</span>
         </button>
@@ -267,7 +271,7 @@
                   </ul>
                 }
                 @if (!auth.isAdmin()) {
-                  <a routerLink="/notificacoes" class="sys-notif-dropdown-link" (click)="closeNavDropdowns()">
+                  <a routerLink="/notifications" class="sys-notif-dropdown-link" (click)="closeNavDropdowns()">
                     Ver todas as notificações
                   </a>
                 }
@@ -298,17 +302,17 @@
                     <p class="user-dropdown-role">{{ auth.isAdmin() ? 'Administrador' : 'Utilizador' }}</p>
                   </div>
                 </div>
-                <a routerLink="/perfil" class="dropdown-item" (click)="closeNavDropdowns()">
+                <a routerLink="/profile" class="dropdown-item" (click)="closeNavDropdowns()">
                   <app-icon name="user" />
                   Meu perfil
                 </a>
                 @if (!auth.isAdmin()) {
-                  <a routerLink="/minha-licenca" class="dropdown-item" (click)="closeNavDropdowns()">
+                  <a routerLink="/my-license" class="dropdown-item" (click)="closeNavDropdowns()">
                     <app-icon name="receipt" />
                     Minha licença
                   </a>
                 }
-                <button type="button" class="dropdown-item logout" (click)="auth.logout(); closeNavDropdowns()">
+                <button type="button" class="dropdown-item logout" (click)="onLogout()">
                   <app-icon name="logout" />
                   Sair
                 </button>
@@ -403,6 +407,8 @@
     </div>
   }
 }
+
+<app-satisfaction-survey-modal />
 
 <!-- Snackbar global para toasts em todas as páginas -->
 <app-snackbar />

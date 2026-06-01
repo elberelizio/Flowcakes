@@ -90,11 +90,11 @@ export class OrderAlertsPopupService {
 
   goToOrders(): void {
     this.close();
-    this.router.navigate(['/encomendas']);
+    this.router.navigate(['/orders']);
   }
 
   goToReminders(): void {
     this.close();
-    this.router.navigate(['/lembretes']);
+    this.router.navigate(['/reminders']);
   }
 }

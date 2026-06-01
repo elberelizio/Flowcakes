@@ -27,7 +27,7 @@ export const registrationPaymentGuard: CanActivateFn = () => {
   }
 
   const phone = flow.getPhone();
-  return router.createUrlTree(['/escolher-plano'], {
+  return router.createUrlTree(['/choose-plan'], {
     queryParams: phone ? { phone, registered: '1' } : { registered: '1' },
   });
 };

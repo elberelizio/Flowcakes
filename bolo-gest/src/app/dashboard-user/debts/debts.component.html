@@ -1,0 +1,183 @@
+<div class="dividas-page">
+  <header class="page-hero">
+    <a routerLink="/orders" class="btn-back">← Voltar às encomendas</a>
+    <div class="page-hero__main">
+      <p class="page-hero__eyebrow">Pagamentos</p>
+      <h1 class="page-hero__title">Gestão de dívidas</h1>
+      <p class="page-hero__sub">
+        Encomendas com valor em falta. O pedido só encerra quando o valor cobrado estiver pago na totalidade.
+      </p>
+    </div>
+  </header>
+
+  @if (ordersWithDebt().length === 0) {
+    <div class="empty-state card">
+      <span class="empty-state__icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
+      <p class="empty-state__title">Nenhuma dívida pendente</p>
+      <p class="empty-state__text">Todas as encomendas estão pagas na totalidade. Excelente gestão de caixa.</p>
+      <a routerLink="/orders" class="btn-primary">
+        <i class="fa-solid fa-list" aria-hidden="true"></i>
+        Ver encomendas
+      </a>
+    </div>
+  } @else {
+    <section class="kpi-strip" aria-label="Resumo de dívidas">
+      <article class="kpi-card kpi-card--debt">
+        <span class="kpi-card__icon" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
+        <div>
+          <span class="kpi-card__label">Total em dívida</span>
+          <p class="kpi-card__value">{{ totalDebt() | number:'1.0-0' }} <small>MZN</small></p>
+        </div>
+      </article>
+      <article class="kpi-card">
+        <span class="kpi-card__icon" aria-hidden="true"><i class="fa-solid fa-receipt"></i></span>
+        <div>
+          <span class="kpi-card__label">Encomendas pendentes</span>
+          <p class="kpi-card__value">{{ debtOrderCount() }}</p>
+        </div>
+      </article>
+      <article class="kpi-card kpi-card--paid">
+        <span class="kpi-card__icon" aria-hidden="true"><i class="fa-solid fa-hand-holding-dollar"></i></span>
+        <div>
+          <span class="kpi-card__label">Já recebido</span>
+          <p class="kpi-card__value">{{ totalPaidOnDebtOrders() | number:'1.0-0' }} <small>MZN</small></p>
+          <span class="kpi-card__meta">de {{ totalChargedOnDebtOrders() | number:'1.0-0' }} MZN cobrados</span>
+        </div>
+      </article>
+    </section>
+
+    <section class="debts-panel card">
+      <div class="panel-head">
+        <span class="panel-icon" aria-hidden="true"><i class="fa-solid fa-file-invoice-dollar"></i></span>
+        <div>
+          <h2 class="panel-title">Encomendas com saldo em falta</h2>
+          <p class="panel-desc">{{ debtOrderCount() }} {{ debtOrderCount() === 1 ? 'pedido' : 'pedidos' }} aguardam pagamento</p>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="dividas-table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Categoria</th>
+              <th>Produto</th>
+              <th>Tamanho</th>
+              <th>Cobrado</th>
+              <th>Pago</th>
+              <th>Em falta</th>
+              <th>Estado</th>
+              <th>Entregue</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (o of ordersWithDebt(); track o.id) {
+              <tr>
+                <td data-label="Cliente">
+                  <span class="client-cell">
+                    <span class="client-avatar" aria-hidden="true">{{ (o.clientName || '?').charAt(0).toUpperCase() }}</span>
+                    {{ o.clientName }}
+                  </span>
+                </td>
+                <td data-label="Categoria">
+                  <span class="category-pill" [class.category-pill--doces]="o.category === 'doces'" [class.category-pill--salgados]="o.category === 'salgados'">
+                    {{ getCategoryLabel(o.category) }}
+                  </span>
+                </td>
+                <td data-label="Produto">{{ displayName(o) }}</td>
+                <td data-label="Tamanho">{{ displaySize(o) }}</td>
+                <td data-label="Cobrado">{{ o.valueCharged | number:'1.0-0' }} MZN</td>
+                <td data-label="Pago">{{ o.valuePaid | number:'1.0-0' }} MZN</td>
+                <td data-label="Em falta">
+                  <span class="debt-pill">{{ getSaldo(o) | number:'1.0-0' }} MZN</span>
+                </td>
+                <td data-label="Estado">
+                  <span class="status-pill">{{ getOrderStatusLabel(o.orderStatus) }}</span>
+                </td>
+                <td data-label="Entregue">
+                  <span class="delivery-pill" [class.delivery-pill--yes]="o.delivered">
+                    {{ o.delivered ? 'Sim' : 'Não' }}
+                  </span>
+                </td>
+                <td data-label="Ações">
+                  <div class="action-buttons">
+                    <a [routerLink]="['/orders', o.id]" class="btn-action btn-action--details">
+                      <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                      Detalhes
+                    </a>
+                    <button type="button" class="btn-action btn-action--pay" (click)="openConfirmPaid(o)">
+                      <i class="fa-solid fa-money-bill-wave" aria-hidden="true"></i>
+                      Registar pagamento
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
+  @if (orderToConfirmPaid()) {
+    @let order = orderToConfirmPaid()!;
+    <div class="confirm-overlay" (click)="closeConfirmPaid()" role="presentation">
+      <div
+        class="confirm-card"
+        (click)="$event.stopPropagation()"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="payment-dialog-title"
+      >
+        <div class="confirm-card__head">
+          <span class="confirm-card__icon" aria-hidden="true"><i class="fa-solid fa-money-bill-wave"></i></span>
+          <div>
+            <p class="confirm-card__eyebrow">Registar pagamento</p>
+            <h3 id="payment-dialog-title">{{ order.clientName }}</h3>
+          </div>
+          <button type="button" class="close-btn" (click)="closeConfirmPaid()" aria-label="Fechar">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div class="confirm-summary">
+          <div class="confirm-summary__row">
+            <span>Saldo em falta</span>
+            <strong class="confirm-summary__debt">{{ getSaldo(order) | number:'1.0-0' }} MZN</strong>
+          </div>
+          <div class="confirm-summary__row">
+            <span>Já pago</span>
+            <strong>{{ order.valuePaid | number:'1.0-0' }} MZN</strong>
+          </div>
+        </div>
+
+        <div class="confirm-field">
+          <label for="payment-amount">Valor recebido agora (MZN)</label>
+          <div class="confirm-field__wrap">
+            <span class="confirm-field__prefix" aria-hidden="true">MZN</span>
+            <input
+              id="payment-amount"
+              type="number"
+              min="1"
+              step="1"
+              [max]="getSaldo(order)"
+              [value]="paymentAmountInput()"
+              (input)="onPaymentAmountInput($any($event.target).value)"
+              placeholder="Ex.: 500"
+            />
+          </div>
+          <span class="confirm-field__hint">Máximo: {{ getSaldo(order) | number:'1.0-0' }} MZN</span>
+        </div>
+
+        <div class="confirm-actions">
+          <button type="button" class="btn btn-ghost" (click)="closeConfirmPaid()">Cancelar</button>
+          <button type="button" class="btn btn-success" (click)="confirmMarkPaid()" [disabled]="!isPaymentAmountValid()">
+            <i class="fa-solid fa-check" aria-hidden="true"></i>
+            Registar pagamento
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -15,22 +15,25 @@ export const routes: Routes = [
   },
   { path: 'login', loadComponent: () => import('./login/login.component').then((m) => m.LoginComponent) },
   {
-    path: 'recuperar-senha',
-    loadComponent: () => import('./login/recuperar-senha/recuperar-senha.component').then((m) => m.RecuperarSenhaComponent),
+    path: 'recover-password',
+    loadComponent: () => import('./login/recover-password/recover-password.component').then((m) => m.RecoverPasswordComponent),
   },
+  { path: 'recuperar-senha', redirectTo: 'recover-password', pathMatch: 'full' },
   { path: 'register', loadComponent: () => import('./public/web-store/register/register.component').then((m) => m.RegisterComponent) },
   {
-    path: 'escolher-plano',
+    path: 'choose-plan',
     canActivate: [registrationChoosePlanGuard],
     loadComponent: () =>
       import('./public/web-store/post-register-plan/post-register-plan.component').then((m) => m.PostRegisterPlanComponent),
   },
+  { path: 'escolher-plano', redirectTo: 'choose-plan', pathMatch: 'full' },
   { path: 'registro', redirectTo: 'register', pathMatch: 'full' },
   {
-    path: 'ativar-licenca',
+    path: 'activate-license',
     loadComponent: () =>
-      import('./dashboard-admin/ativar-licenca/ativar-licenca.component').then((m) => m.AtivarLicencaComponent),
+      import('./dashboard-admin/activate-license/activate-license.component').then((m) => m.ActivateLicenseComponent),
   },
+  { path: 'ativar-licenca', redirectTo: 'activate-license', pathMatch: 'full' },
   { path: 'pagamento-licenca', redirectTo: '/license-payment', pathMatch: 'full' },
   {
     path: 'license-payment',
@@ -50,169 +53,208 @@ export const routes: Routes = [
     canActivate: [authGuard, adminGuard],
   },
   {
-    path: 'tesouraria',
-    loadComponent: () => import('./dashboard-admin/tesouraria/tesouraria.component').then((m) => m.TesourariaComponent),
+    path: 'treasury',
+    loadComponent: () => import('./dashboard-admin/treasury/treasury.component').then((m) => m.TreasuryComponent),
     canActivate: [authGuard, adminGuard],
   },
+  { path: 'tesouraria', redirectTo: 'treasury', pathMatch: 'full' },
   {
-    path: 'gestao-licencas',
-    loadComponent: () => import('./dashboard-admin/gestao-licencas/admin.component').then((m) => m.AdminComponent),
+    path: 'license-management',
+    loadComponent: () => import('./dashboard-admin/license-management/admin.component').then((m) => m.AdminComponent),
     canActivate: [authGuard, adminGuard],
   },
+  { path: 'gestao-licencas', redirectTo: 'license-management', pathMatch: 'full' },
   {
-    path: 'admin-encomendas',
-    loadComponent: () => import('./dashboard-admin/encomendas/admin-orders.component').then((m) => m.AdminOrdersComponent),
+    path: 'admin-orders',
+    loadComponent: () => import('./dashboard-admin/orders/admin-orders.component').then((m) => m.AdminOrdersComponent),
     canActivate: [authGuard, adminGuard],
   },
+  { path: 'admin-encomendas', redirectTo: 'admin-orders', pathMatch: 'full' },
   {
-    path: 'gestao-notificacoes',
-    loadComponent: () => import('./dashboard-admin/notificacoes/gestao-notificacoes.component').then((m) => m.GestaoNotificacoesComponent),
-    canActivate: [authGuard, adminGuard],
-  },
-  {
-    path: 'admin-novos-utilizadores',
-    loadComponent: () => import('./dashboard-admin/novos-utilizadores/novos-utilizadores.component').then((m) => m.NovosUtilizadoresComponent),
-    canActivate: [authGuard, adminGuard],
-  },
-  {
-    path: 'admin-perfis',
-    loadComponent: () => import('./dashboard-admin/perfis/gestao-perfis.component').then((m) => m.GestaoPerfisComponent),
-    canActivate: [authGuard, adminGuard],
-  },
-  {
-    path: 'admin-configuracoes',
+    path: 'notification-management',
     loadComponent: () =>
-      import('./dashboard-admin/configuracoes/configuracoes-layout.component').then((m) => m.ConfiguracoesLayoutComponent),
+      import('./dashboard-admin/notifications/notification-management.component').then((m) => m.NotificationManagementComponent),
+    canActivate: [authGuard, adminGuard],
+  },
+  { path: 'gestao-notificacoes', redirectTo: 'notification-management', pathMatch: 'full' },
+  {
+    path: 'admin-new-users',
+    loadComponent: () => import('./dashboard-admin/new-users/new-users.component').then((m) => m.NewUsersComponent),
+    canActivate: [authGuard, adminGuard],
+  },
+  { path: 'admin-novos-utilizadores', redirectTo: 'admin-new-users', pathMatch: 'full' },
+  {
+    path: 'admin-profiles',
+    loadComponent: () => import('./dashboard-admin/profiles/profile-management.component').then((m) => m.ProfileManagementComponent),
+    canActivate: [authGuard, adminGuard],
+  },
+  { path: 'admin-perfis', redirectTo: 'admin-profiles', pathMatch: 'full' },
+  {
+    path: 'admin-settings',
+    loadComponent: () =>
+      import('./dashboard-admin/settings/settings-layout.component').then((m) => m.SettingsLayoutComponent),
     canActivate: [authGuard, adminGuard],
     children: [
       {
         path: '',
         loadComponent: () =>
-          import('./dashboard-admin/configuracoes/configuracoes.component').then((m) => m.ConfiguracoesHubComponent),
+          import('./dashboard-admin/settings/settings-hub.component').then((m) => m.SettingsHubComponent),
       },
       {
         path: 'logs',
         loadComponent: () =>
-          import('./dashboard-admin/configuracoes/logs/admin-logs.component').then((m) => m.AdminLogsComponent),
+          import('./dashboard-admin/settings/logs/admin-logs.component').then((m) => m.AdminLogsComponent),
       },
       {
         path: 'logs/:userId',
         loadComponent: () =>
-          import('./dashboard-admin/configuracoes/logs/admin-logs-user-history.component').then(
+          import('./dashboard-admin/settings/logs/admin-logs-user-history.component').then(
             (m) => m.AdminLogsUserHistoryComponent,
           ),
       },
       {
-        path: 'acessos',
+        path: 'access',
         loadComponent: () =>
-          import('./dashboard-admin/gestao-acessos/gestao-acessos.component').then((m) => m.GestaoAcessosComponent),
+          import('./dashboard-admin/access-management/access-management.component').then((m) => m.AccessManagementComponent),
       },
       {
-        path: 'sugestoes',
+        path: 'suggestions',
         loadComponent: () =>
-          import('./dashboard-admin/sugestoes/sugestoes.component').then((m) => m.SugestoesComponent),
+          import('./dashboard-admin/suggestions/suggestions.component').then((m) => m.SuggestionsComponent),
       },
     ],
   },
-  { path: 'admin-logs', redirectTo: 'admin-configuracoes/logs', pathMatch: 'full' },
-  { path: 'gestao-acessos', redirectTo: 'admin-configuracoes/acessos', pathMatch: 'full' },
-  { path: 'sugestoes', redirectTo: 'admin-configuracoes/sugestoes', pathMatch: 'full' },
+  { path: 'admin-configuracoes', redirectTo: 'admin-settings', pathMatch: 'full' },
+  { path: 'admin-configuracoes/logs', redirectTo: 'admin-settings/logs', pathMatch: 'full' },
+  { path: 'admin-configuracoes/logs/:userId', redirectTo: 'admin-settings/logs/:userId', pathMatch: 'full' },
+  { path: 'admin-configuracoes/acessos', redirectTo: 'admin-settings/access', pathMatch: 'full' },
+  { path: 'admin-configuracoes/sugestoes', redirectTo: 'admin-settings/suggestions', pathMatch: 'full' },
+  { path: 'admin-logs', redirectTo: 'admin-settings/logs', pathMatch: 'full' },
+  { path: 'gestao-acessos', redirectTo: 'admin-settings/access', pathMatch: 'full' },
+  { path: 'sugestoes', redirectTo: 'admin-settings/suggestions', pathMatch: 'full' },
   {
     path: 'admin-ranking',
     loadComponent: () => import('./dashboard-admin/ranking/ranking.component').then((m) => m.RankingComponent),
     canActivate: [authGuard, adminGuard],
   },
   {
-    path: 'nova-encomenda',
-    loadComponent: () => import('./dashboard-user/nova-encomenda/new-order.component').then((m) => m.NewOrderComponent),
-    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
-  },
-  {
-    path: 'clientes',
-    loadComponent: () => import('./dashboard-user/clientes/clientes.component').then((m) => m.ClientesComponent),
-    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
-  },
-  {
-    path: 'minha-licenca',
-    loadComponent: () => import('./dashboard-user/minha-licenca/minha-licenca.component').then((m) => m.MinhaLicencaComponent),
-    canActivate: [authGuard, licenseGuard],
-  },
-  {
-    path: 'perfil',
-    loadComponent: () => import('./dashboard-user/perfil/profile.component').then((m) => m.ProfileComponent),
-    canActivate: [authGuard],
-  },
-  {
-    path: 'despesas-variaveis',
-    loadComponent: () => import('./dashboard-user/despesas-variaveis/despesas-variaveis.component').then((m) => m.DespesasVariaveisComponent),
-    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
-  },
-  {
-    path: 'gestao-dividas',
-    loadComponent: () => import('./dashboard-user/dividas/dividas.component').then((m) => m.DividasComponent),
-    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
-  },
-  {
-    path: 'encomendas',
-    loadComponent: () => import('./dashboard-user/encomendas/orders.component').then((m) => m.OrdersComponent),
-    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
-  },
-  {
-    path: 'encomendas/detalhes',
-    loadComponent: () => import('./dashboard-user/encomendas-detalhes/orders-detail-list.component').then((m) => m.OrdersDetailListComponent),
-    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
-  },
-  {
-    path: 'encomendas/:id',
-    loadComponent: () => import('./dashboard-user/encomenda/order-details.component').then((m) => m.OrderDetailsComponent),
-    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
-  },
-  {
-    path: 'lembretes',
-    loadComponent: () => import('./dashboard-user/lembretes/lembretes.component').then((m) => m.LembretesComponent),
-    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
-  },
-  {
-    path: 'notificacoes',
-    loadComponent: () => import('./dashboard-user/notificacoes/notificacoes.component').then((m) => m.NotificacoesComponent),
-    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
-  },
-  {
-    path: 'relatorios',
-    loadComponent: () => import('./dashboard-user/relatorios/reports.component').then((m) => m.ReportsComponent),
-    canActivate: [authGuard, licenseGuard],
-  },
-  {
-    path: 'retiradas',
-    loadComponent: () => import('./dashboard-user/retiradas/retiradas.component').then((m) => m.RetiradasComponent),
-    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
-  },
-  {
-    path: 'pagamentos',
-    redirectTo: 'minha-licenca',
-    pathMatch: 'full',
-  },
-  {
-    path: 'configuracoes',
-    loadComponent: () => import('./dashboard-user/configuracoes/configuracoes.component').then((m) => m.ConfiguracoesComponent),
+    path: 'satisfaction',
+    loadComponent: () =>
+      import('./dashboard-admin/satisfaction/satisfaction.component').then((m) => m.SatisfactionComponent),
     canActivate: [authGuard, adminGuard],
   },
+  { path: 'satisfacao', redirectTo: 'satisfaction', pathMatch: 'full' },
   {
-    path: 'loja',
+    path: 'new-order',
+    loadComponent: () => import('./dashboard-user/new-order/new-order.component').then((m) => m.NewOrderComponent),
+    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
+  },
+  { path: 'nova-encomenda', redirectTo: 'new-order', pathMatch: 'full' },
+  {
+    path: 'clients',
+    loadComponent: () => import('./dashboard-user/clients/clients.component').then((m) => m.ClientsComponent),
+    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
+  },
+  { path: 'clientes', redirectTo: 'clients', pathMatch: 'full' },
+  {
+    path: 'my-license',
+    loadComponent: () => import('./dashboard-user/my-license/my-license.component').then((m) => m.MyLicenseComponent),
+    canActivate: [authGuard, licenseGuard],
+  },
+  { path: 'minha-licenca', redirectTo: 'my-license', pathMatch: 'full' },
+  {
+    path: 'profile',
+    loadComponent: () => import('./dashboard-user/profile/profile.component').then((m) => m.ProfileComponent),
+    canActivate: [authGuard],
+  },
+  { path: 'perfil', redirectTo: 'profile', pathMatch: 'full' },
+  {
+    path: 'variable-expenses',
+    loadComponent: () =>
+      import('./dashboard-user/variable-expenses/variable-expenses.component').then((m) => m.VariableExpensesComponent),
+    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
+  },
+  { path: 'despesas-variaveis', redirectTo: 'variable-expenses', pathMatch: 'full' },
+  {
+    path: 'debts',
+    loadComponent: () => import('./dashboard-user/debts/debts.component').then((m) => m.DebtsComponent),
+    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
+  },
+  { path: 'gestao-dividas', redirectTo: 'debts', pathMatch: 'full' },
+  {
+    path: 'orders',
+    loadComponent: () => import('./dashboard-user/orders/orders.component').then((m) => m.OrdersComponent),
+    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
+  },
+  {
+    path: 'orders/details',
+    loadComponent: () =>
+      import('./dashboard-user/order-details-list/orders-detail-list.component').then((m) => m.OrdersDetailListComponent),
+    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
+  },
+  {
+    path: 'orders/:id',
+    loadComponent: () => import('./dashboard-user/order/order-details.component').then((m) => m.OrderDetailsComponent),
+    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
+  },
+  { path: 'encomendas', redirectTo: 'orders', pathMatch: 'full' },
+  { path: 'encomendas/detalhes', redirectTo: 'orders/details', pathMatch: 'full' },
+  { path: 'encomendas/:id', redirectTo: 'orders/:id', pathMatch: 'full' },
+  {
+    path: 'reminders',
+    loadComponent: () => import('./dashboard-user/reminders/reminders.component').then((m) => m.RemindersComponent),
+    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
+  },
+  { path: 'lembretes', redirectTo: 'reminders', pathMatch: 'full' },
+  {
+    path: 'notifications',
+    loadComponent: () => import('./dashboard-user/notifications/notifications.component').then((m) => m.NotificationsComponent),
+    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
+  },
+  { path: 'notificacoes', redirectTo: 'notifications', pathMatch: 'full' },
+  {
+    path: 'reports',
+    loadComponent: () => import('./dashboard-user/reports/reports.component').then((m) => m.ReportsComponent),
+    canActivate: [authGuard, licenseGuard],
+  },
+  { path: 'relatorios', redirectTo: 'reports', pathMatch: 'full' },
+  {
+    path: 'withdrawals',
+    loadComponent: () => import('./dashboard-user/withdrawals/withdrawals.component').then((m) => m.WithdrawalsComponent),
+    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
+  },
+  { path: 'retiradas', redirectTo: 'withdrawals', pathMatch: 'full' },
+  {
+    path: 'payments',
+    redirectTo: 'my-license',
+    pathMatch: 'full',
+  },
+  { path: 'pagamentos', redirectTo: 'my-license', pathMatch: 'full' },
+  {
+    path: 'settings',
+    loadComponent: () => import('./dashboard-user/settings/settings.component').then((m) => m.SettingsComponent),
+    canActivate: [authGuard, adminGuard],
+  },
+  { path: 'configuracoes', redirectTo: 'settings', pathMatch: 'full' },
+  {
+    path: 'store',
     loadComponent: () => import('./public/web-store/web-store-layout.component').then((m) => m.WebStoreLayoutComponent),
     children: [
       { path: '', loadComponent: () => import('./public/web-store/web-store-home.component').then((m) => m.WebStoreHomeComponent) },
-      { path: 'contato', loadComponent: () => import('./public/web-store/web-store-contact.component').then((m) => m.WebStoreContactComponent) },
-      { path: 'rastreio', component: WebStoreTrackOrderComponent },
+      { path: 'contact', loadComponent: () => import('./public/web-store/web-store-contact.component').then((m) => m.WebStoreContactComponent) },
+      { path: 'tracking', component: WebStoreTrackOrderComponent },
       {
         path: ':slug',
         children: [
           { path: '', loadComponent: () => import('./public/web-store/web-store-home.component').then((m) => m.WebStoreHomeComponent) },
-          { path: 'contato', loadComponent: () => import('./public/web-store/web-store-contact.component').then((m) => m.WebStoreContactComponent) },
-          { path: 'rastreio', component: WebStoreTrackOrderComponent },
+          { path: 'contact', loadComponent: () => import('./public/web-store/web-store-contact.component').then((m) => m.WebStoreContactComponent) },
+          { path: 'tracking', component: WebStoreTrackOrderComponent },
         ],
       },
     ],
   },
+  { path: 'loja', redirectTo: 'store', pathMatch: 'full' },
+  { path: 'loja/contato', redirectTo: 'store/contact', pathMatch: 'full' },
+  { path: 'loja/rastreio', redirectTo: 'store/tracking', pathMatch: 'full' },
   { path: '**', redirectTo: '' },
 ];

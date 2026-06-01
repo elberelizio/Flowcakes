@@ -1,0 +1,182 @@
+<div class="sg-page">
+  <header class="sg-header">
+    <div class="sg-header__main">
+      <a routerLink="/admin-settings" class="sg-back">← Configurações</a>
+      <h1>Sugestões da landing page</h1>
+      <p class="sg-header__desc">Pedidos de funcionalidades enviados pelos visitantes do site público</p>
+    </div>
+    @if (!loading() && !error()) {
+      <div class="sg-header__stat">
+        <span class="sg-header__stat-value">{{ allSuggestions().length }}</span>
+        <span class="sg-header__stat-label">Total recebidas</span>
+      </div>
+    }
+  </header>
+
+  @if (loading()) {
+    <div class="sg-state sg-state--loading">
+      <span class="sg-spinner" aria-hidden="true"></span>
+      <p>A carregar sugestões…</p>
+    </div>
+  } @else if (error()) {
+    <div class="sg-state sg-state--error" role="alert">
+      <p>{{ error() }}</p>
+      <button type="button" class="sg-btn" (click)="load()">Tentar novamente</button>
+    </div>
+  } @else {
+    <section class="sg-toolbar">
+      <div class="sg-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input
+          type="search"
+          placeholder="Pesquisar por nome, mensagem ou página…"
+          [value]="searchTerm()"
+          (input)="handleSearchInput($event)"
+          aria-label="Pesquisar sugestões"
+        />
+        @if (searchTerm()) {
+          <button type="button" class="sg-search__clear" (click)="onSearch('')" aria-label="Limpar pesquisa">×</button>
+        }
+      </div>
+
+      <div class="sg-toolbar__actions">
+        <div class="sg-sort" role="group" aria-label="Ordenar">
+          <button
+            type="button"
+            class="sg-sort__btn"
+            [class.sg-sort__btn--active]="sortBy() === 'date'"
+            (click)="toggleSort('date')"
+          >
+            Data
+            @if (sortBy() === 'date') {
+              <span class="sg-sort__arrow">{{ sortOrder() === 'asc' ? '↑' : '↓' }}</span>
+            }
+          </button>
+          <button
+            type="button"
+            class="sg-sort__btn"
+            [class.sg-sort__btn--active]="sortBy() === 'name'"
+            (click)="toggleSort('name')"
+          >
+            Nome
+            @if (sortBy() === 'name') {
+              <span class="sg-sort__arrow">{{ sortOrder() === 'asc' ? '↑' : '↓' }}</span>
+            }
+          </button>
+        </div>
+
+        <label class="sg-pagesize">
+          <span class="sg-pagesize__label">Por página</span>
+          <select [value]="pageSize()" (change)="handlePageSizeChange($event)">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <p class="sg-results-hint">
+      <strong>{{ totalResults() }}</strong>
+      {{ totalResults() === 1 ? 'resultado' : 'resultados' }}
+      @if (searchTerm()) {
+        <span> para «{{ searchTerm() }}»</span>
+      }
+    </p>
+
+    @if (totalResults() === 0) {
+      <div class="sg-state sg-state--empty">
+        <p>Nenhuma sugestão encontrada.</p>
+        @if (searchTerm()) {
+          <button type="button" class="sg-btn sg-btn--ghost" (click)="onSearch('')">Limpar pesquisa</button>
+        }
+      </div>
+    } @else {
+      <div class="sg-table-panel">
+        <div class="sg-table-wrap">
+          <table class="sg-table">
+            <thead>
+              <tr>
+                <th class="sg-table__col-date">Data</th>
+                <th class="sg-table__col-name">Nome</th>
+                <th class="sg-table__col-message">Mensagem</th>
+                <th class="sg-table__col-url">Página</th>
+                <th class="sg-table__col-ip">IP</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of paginatedSuggestions(); track s.id) {
+                <tr>
+                  <td class="sg-table__date">
+                    <time [attr.datetime]="s.createdAt">{{ formatDate(s.createdAt) }}</time>
+                  </td>
+                  <td class="sg-table__name">{{ s.personName }}</td>
+                  <td class="sg-table__message">{{ s.message }}</td>
+                  <td class="sg-table__url">
+                    @if (s.pageUrl) {
+                      <a
+                        [href]="s.pageUrl"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        [title]="s.pageUrl"
+                      >{{ s.pageUrl }}</a>
+                    } @else {
+                      <span class="sg-table__muted">—</span>
+                    }
+                  </td>
+                  <td class="sg-table__ip">
+                    @if (s.ipAddress) {
+                      <code>{{ s.ipAddress }}</code>
+                    } @else {
+                      <span class="sg-table__muted">—</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      @if (totalPages() > 1) {
+        <nav class="sg-pagination" aria-label="Paginação">
+          <button
+            type="button"
+            class="sg-pagination__nav"
+            (click)="goToPage(currentPage() - 1)"
+            [disabled]="currentPage() === 1"
+          >
+            Anterior
+          </button>
+          <div class="sg-pagination__pages">
+            @for (page of getPageNumbers(); track $index) {
+              @if (page === -1) {
+                <span class="sg-pagination__ellipsis">…</span>
+              } @else {
+                <button
+                  type="button"
+                  class="sg-pagination__page"
+                  [class.sg-pagination__page--active]="page === currentPage()"
+                  (click)="goToPage(page)"
+                >
+                  {{ page }}
+                </button>
+              }
+            }
+          </div>
+          <button
+            type="button"
+            class="sg-pagination__nav"
+            (click)="goToPage(currentPage() + 1)"
+            [disabled]="currentPage() === totalPages()"
+          >
+            Seguinte
+          </button>
+        </nav>
+      }
+    }
+  }
+</div>

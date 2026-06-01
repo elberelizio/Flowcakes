@@ -51,7 +51,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
         return;
       }
       if (this.auth.isAdmin()) {
-        void this.router.navigate(['/gestao-licencas']);
+        void this.router.navigate(['/license-management']);
         return;
       }
       void this.router.navigate(['/dashboard']);
@@ -131,7 +131,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private redirectIncompleteRegistration(): void {
     const phone = this.registrationFlow.getPhone();
     if (this.registrationFlow.isChoosePlanPhase()) {
-      void this.router.navigate(['/escolher-plano'], {
+      void this.router.navigate(['/choose-plan'], {
         queryParams: phone ? { phone, registered: '1' } : { registered: '1' },
       });
       return;

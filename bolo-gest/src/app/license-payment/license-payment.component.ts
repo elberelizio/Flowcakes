@@ -74,13 +74,13 @@ export class LicensePaymentComponent implements OnInit {
     if (this.inRegistrationFlow) {
       this.registrationFlow.reopenPlanChoice();
       const phone = this.registrationFlow.getPhone() || this.walletPhone;
-      void this.router.navigate(['/escolher-plano'], {
+      void this.router.navigate(['/choose-plan'], {
         queryParams: phone ? { phone, registered: '1' } : { registered: '1' },
       });
       return;
     }
     if (this.sessionActive()) {
-      void this.router.navigate(['/minha-licenca']);
+      void this.router.navigate(['/my-license']);
       return;
     }
     void this.router.navigate(['/']);

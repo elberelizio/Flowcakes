@@ -1,0 +1,127 @@
+<div class="withdrawals-page">
+  <header class="page-hero">
+    <a routerLink="/dashboard" class="btn-back">← Voltar ao dashboard</a>
+    <div class="page-hero__main">
+      <p class="page-hero__eyebrow">Caixa e lucros</p>
+      <h1>Retiradas de caixa</h1>
+      <p class="page-hero__sub">
+        Registe o valor que tira do negócio (uso pessoal, compras, etc.) e acompanhe quanto saiu da empresa ao longo do tempo.
+      </p>
+    </div>
+  </header>
+
+  <div class="retiradas-layout">
+    <section class="form-panel card">
+      <div class="panel-head">
+        <span class="panel-icon" aria-hidden="true"><i class="fa-solid fa-wallet"></i></span>
+        <div>
+          <h2 class="panel-title">Nova retirada</h2>
+          <p class="panel-desc">Preencha valor, data e motivo (opcional).</p>
+        </div>
+      </div>
+
+      <form class="retiradas-form" (ngSubmit)="submit()">
+        <div class="form-grid">
+          <label class="field field--amount">
+            <span class="field-label">Valor (MZN)</span>
+            <div class="field-input-wrap">
+              <span class="field-prefix" aria-hidden="true">MZN</span>
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                [(ngModel)]="amount"
+                name="amount"
+                placeholder="Ex.: 5000"
+                class="form-input"
+              />
+            </div>
+          </label>
+
+          <label class="field">
+            <span class="field-label">Data da retirada</span>
+            <input
+              type="date"
+              [(ngModel)]="withdrawalDate"
+              name="withdrawalDate"
+              class="form-input"
+            />
+          </label>
+
+          <label class="field field--full">
+            <span class="field-label">Motivo (opcional)</span>
+            <input
+              type="text"
+              [(ngModel)]="description"
+              name="description"
+              placeholder="Ex.: Compra de material, uso pessoal"
+              class="form-input"
+              maxlength="200"
+            />
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+            <i class="fa-solid fa-circle-plus" aria-hidden="true"></i>
+            {{ saving() ? 'A registar…' : 'Registar retirada' }}
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <div class="retiradas-side">
+      <div class="kpi-strip">
+        <article class="kpi-card kpi-card--primary">
+          <span class="kpi-card__label">Total retirado</span>
+          <p class="kpi-card__value">{{ withdrawalService.totalWithdrawn() | number:'1.0-0' }} <small>MZN</small></p>
+        </article>
+        <article class="kpi-card">
+          <span class="kpi-card__label">Registos</span>
+          <p class="kpi-card__value kpi-card__value--count">{{ withdrawalCount() }}</p>
+        </article>
+      </div>
+
+      <section class="history-panel card">
+        <div class="panel-head panel-head--compact">
+          <span class="panel-icon panel-icon--muted" aria-hidden="true"><i class="fa-solid fa-clock-rotate-left"></i></span>
+          <div>
+            <h2 class="panel-title">Histórico</h2>
+            <p class="panel-desc">Últimas retiradas registadas</p>
+          </div>
+        </div>
+
+        @if (withdrawalService.withdrawals().length === 0) {
+          <div class="empty-state">
+            <span class="empty-state__icon" aria-hidden="true"><i class="fa-solid fa-money-bill-transfer"></i></span>
+            <p class="empty-state__title">Nenhuma retirada registada</p>
+            <p class="empty-state__text">Use o formulário ao lado para registar valores que tirar da caixa do negócio.</p>
+          </div>
+        } @else {
+          <ul class="withdrawal-list">
+            @for (w of withdrawalService.withdrawals(); track w.id) {
+              <li class="withdrawal-item">
+                <div class="withdrawal-item__main">
+                  <span class="withdrawal-item__amount">{{ w.amount | number:'1.0-0' }} MZN</span>
+                  <time class="withdrawal-item__date">{{ formatDate(w.withdrawalDate) }}</time>
+                </div>
+                @if (w.description) {
+                  <p class="withdrawal-item__desc">{{ w.description }}</p>
+                }
+                <button
+                  type="button"
+                  class="btn-remove"
+                  (click)="remove(w)"
+                  title="Apagar retirada"
+                  aria-label="Apagar retirada"
+                >
+                  <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    </div>
+  </div>
+</div>
