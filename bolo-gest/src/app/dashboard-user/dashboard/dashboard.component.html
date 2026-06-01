@@ -10,10 +10,6 @@
           <p class="welcome-text">{{ welcomeSubline() }}@if (todayHolidayMessage()) { {{ todayHolidayMessage() }} }</p>
         </div>
         <div class="welcome-tools">
-          <a [routerLink]="meuSiteUrl() ?? '/loja'" class="welcome-btn welcome-btn--icon welcome-btn--site" title="Abrir a página da loja (site padrão ou o seu personalizado)">
-            <app-icon name="globe" />
-            <span>Meu site</span>
-          </a>
           <button type="button" class="welcome-btn welcome-btn--icon" [class.active]="showFilters()" (click)="toggleFilters()" title="Filtros">
             <app-icon name="filter" />
             <span>Filtros</span>
@@ -52,6 +48,9 @@
             <button type="button" class="btn btn-apply" (click)="applyFilters()">Aplicar</button>
             <button type="button" class="btn btn-clear" (click)="clearFilter()">Limpar filtro</button>
           </div>
+          <p class="filter-hint">
+            O gráfico actualiza automaticamente. Intervalo de datas tem prioridade. Só ano → por mês; ano+mês ou padrão → por dia; intervalo longo → por mês ou ano.
+          </p>
           @if (filterDateError()) {
             <p class="filter-error" role="alert">{{ filterDateError() }}</p>
           }
@@ -59,7 +58,7 @@
       }
     </div>
 
-    @if (!loginSummaryDismissed()) {
+    @if (showLoginSummaryPopup()) {
     <div class="login-summary-overlay" role="dialog" aria-modal="true" aria-labelledby="login-summary-title">
       <div class="login-summary-popup" [class.popup--good]="situationGood()" [class.popup--bad]="!situationGood()">
         <div class="login-summary-popup__header">
@@ -78,57 +77,90 @@
           <p class="login-summary-mood__message">{{ summaryMoodMessage() }}</p>
         </div>
 
-        <div class="login-summary-popup__grid">
-          <div class="login-summary-popup__item">
-            <span class="login-summary-popup__label">Nº encomendas</span>
-            <span class="login-summary-popup__value">{{ ordersInRange().length }}</span>
-          </div>
-          <div class="login-summary-popup__item">
-            <span class="login-summary-popup__label">Despesas</span>
-            <span class="login-summary-popup__value">{{ totalExpense() | number:'1.0-0' }} MZN</span>
-          </div>
-          <div class="login-summary-popup__item">
-            <span class="login-summary-popup__label">Retiradas</span>
-            <span class="login-summary-popup__value">{{ totalWithdrawn() | number:'1.0-0' }} MZN</span>
-          </div>
-          <div class="login-summary-popup__item">
-            <span class="login-summary-popup__label">Lembretes</span>
-            <span class="login-summary-popup__value">{{ reminderCount() }}</span>
-          </div>
-          <div class="login-summary-popup__item login-summary-popup__item--full">
-            @if (lucroFinal() >= 0) {
-              <span class="login-summary-popup__label">Lucro final (valor recebido − despesas − retiradas)</span>
-              <span class="login-summary-popup__value value--good">{{ lucroFinal() | number:'1.0-0' }} MZN</span>
-            } @else {
-              <span class="login-summary-popup__label">Prejuízo (valor recebido − despesas − retiradas)</span>
-              <span class="login-summary-popup__value value--bad">{{ lucroFinal() | number:'1.0-0' }} MZN</span>
-            }
-          </div>
+        <div class="login-summary-popup__finance">
+          @if (lucroFinal() >= 0) {
+            <span class="login-summary-popup__label">Lucro</span>
+            <span class="login-summary-popup__value value--good">{{ lucroFinal() | number:'1.0-0' }} MZN</span>
+          } @else {
+            <span class="login-summary-popup__label">Prejuízo</span>
+            <span class="login-summary-popup__value value--bad">{{ lucroFinal() | number:'1.0-0' }} MZN</span>
+          }
         </div>
-        @if (upcomingDeliveries().length > 0 || upcomingRemindersWithDays().length > 0 || upcomingNationalHolidays().length > 0) {
-          <div class="login-summary-reminders">
-            <h3 class="login-summary-reminders__title">Lembretes e entregas</h3>
-            <p class="login-summary-reminders__line">
-              Entregas: <strong>{{ upcomingDeliveries().length }}</strong> · Lembretes: <strong>{{ upcomingRemindersWithDays().length }}</strong>
-            </p>
-            @if (upcomingNationalHolidays().length > 0) {
-              <p class="login-summary-reminders__line">
-                Próximo feriado: <strong>{{ upcomingNationalHolidays()[0].date | date:'dd/MM/yyyy' }}</strong> — {{ upcomingNationalHolidays()[0].holiday.name }}
-              </p>
+
+        @if (loginSummaryDeliveries().length > 0 || upcomingRemindersWithDays().length > 0 || upcomingNationalHolidays().length > 0) {
+          <div class="login-summary-ops">
+            @if (loginSummaryDeliveries().length > 0) {
+              <div class="login-summary-ops__block">
+                <div class="login-summary-ops__head">
+                  <app-icon name="package" />
+                  <h3>Encomendas por entregar</h3>
+                  <span class="login-summary-ops__count">{{ pendingDeliveryCount() }}</span>
+                </div>
+                <p class="login-summary-ops__hint">
+                  Próximos {{ deliveryWindowDays() }} dias · ordenadas pela data de entrega
+                </p>
+                <ul class="login-summary-orders">
+                  @for (row of loginSummaryDeliveries(); track row.order.id) {
+                    <li class="login-summary-orders__row" [class.login-summary-orders__row--today]="row.urgency === 'today'" [class.login-summary-orders__row--soon]="row.urgency === 'soon'">
+                      <div class="login-summary-orders__main">
+                        <span class="login-summary-orders__client">{{ row.order.clientName }}</span>
+                        <span class="login-summary-orders__product">{{ getProductName(row.order) }}</span>
+                      </div>
+                      <div class="login-summary-orders__meta">
+                        <span class="login-summary-orders__badge" [attr.data-urgency]="row.urgency">{{ urgencyLabel(row.urgency) }}</span>
+                        <span class="login-summary-orders__date">{{ row.dateLabel }}</span>
+                        <span class="login-summary-orders__value">{{ row.order.valueCharged | number:'1.0-0' }} MZN</span>
+                        @if (row.pendingDebt > 0) {
+                          <span class="login-summary-orders__debt">Falta {{ row.pendingDebt | number:'1.0-0' }} MZN</span>
+                        }
+                      </div>
+                    </li>
+                  }
+                </ul>
+                @if (pendingDeliveryCount() > loginSummaryDeliveries().length) {
+                  <p class="login-summary-ops__more">+ {{ pendingDeliveryCount() - loginSummaryDeliveries().length }} encomenda(s) na janela.</p>
+                }
+              </div>
             }
-            @if (displayedDeliveries().length > 0) {
-              <p class="login-summary-reminders__line">
-                Próxima entrega: <strong>{{ displayedDeliveries()[0].order.clientName }}</strong> · {{ displayedDeliveries()[0].order.valueCharged | number:'1.0-0' }} MZN
+
+            @if (upcomingRemindersWithDays().length > 0) {
+              <div class="login-summary-ops__block">
+                <div class="login-summary-ops__head">
+                  <app-icon name="bell" />
+                  <h3>Lembretes na janela de aviso</h3>
+                  <span class="login-summary-ops__count">{{ upcomingRemindersWithDays().length }}</span>
+                </div>
+                <ul class="login-summary-reminders-list">
+                  @for (r of upcomingRemindersWithDays().slice(0, 4); track r.reminder.id) {
+                    <li>
+                      <strong>{{ r.reminder.clientName }}</strong>
+                      <span>Entrega {{ r.reminder.deliveryDate | date:'dd/MM/yyyy' }} · faltam {{ r.daysUntil }} dia(s)</span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+
+            @if (upcomingNationalHolidays().length > 0) {
+              <p class="login-summary-ops__holiday">
+                <app-icon name="calendar" />
+                Próximo feriado: <strong>{{ upcomingNationalHolidays()[0].date | date:'dd/MM/yyyy' }}</strong> — {{ upcomingNationalHolidays()[0].holiday.name }}
               </p>
             }
           </div>
         }
-        <button type="button" class="btn btn-primary login-summary-popup__btn" (click)="dismissLoginSummary()">Fechar</button>
+
+        <div class="login-summary-popup__actions">
+          @if (upcomingRemindersWithDays().length > 0) {
+            <a routerLink="/lembretes" class="btn btn-secondary login-summary-popup__btn" (click)="dismissLoginSummary()">Ver lembretes</a>
+          }
+          <button type="button" class="btn login-summary-popup__btn login-summary-popup__btn--close" (click)="dismissLoginSummary()">Fechar</button>
+        </div>
       </div>
     </div>
     }
 
-    <div class="grid grid--4">
+    <div class="grid grid--3">
       <article class="card card--revenue">
         <div class="card__icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -150,13 +182,6 @@
         <h3 class="card__title">Lucro</h3>
         <p class="card__value">{{ totalProfit() | number:'1.2-2' }} MZN</p>
       </article>
-      <a routerLink="/lembretes" class="card card--reminders">
-        <div class="card__icon" aria-hidden="true">
-          <app-icon name="bell" />
-        </div>
-        <h3 class="card__title">Lembretes</h3>
-        <p class="card__value">{{ reminderCount() }}</p>
-      </a>
     </div>
   </section>
 
@@ -204,12 +229,18 @@
   <section class="section charts-section">
     <header class="section__header">
       <h2>Lucro vs Despesa vs Dívidas</h2>
-      <p class="chart-subtitle">Conforme o filtro seleccionado (intervalo de datas ou ano/mês)</p>
+      <p class="chart-subtitle">{{ chartPeriodLabel() }}</p>
     </header>
     <div class="chart-card chart-card-full">
+      @if (chartRenderError()) {
+        <p class="chart-error" role="alert">{{ chartRenderError() }}</p>
+      }
       <div class="chart-container chart-line">
-        <canvas #chartProfitExpense></canvas>
+        <canvas #chartProfitExpense aria-label="Gráfico lucro, despesa e dívidas"></canvas>
       </div>
+      @if (!chartRenderError() && !chartHasValues() && ordersInRange().length === 0) {
+        <p class="chart-empty-hint">Sem encomendas neste período. Ajuste o filtro ou registe novas encomendas.</p>
+      }
     </div>
   </section>
 

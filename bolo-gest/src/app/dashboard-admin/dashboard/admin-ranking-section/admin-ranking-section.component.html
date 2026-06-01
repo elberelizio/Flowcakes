@@ -1,0 +1,44 @@
+<section class="bi-ranking">
+  <header class="bi-ranking__header">
+    <h2 class="bi-ranking__title">Ranking — lucro em encomendas</h2>
+    <a routerLink="/admin-ranking" class="bi-ranking__link">Ver tudo →</a>
+  </header>
+
+  @if (ranking().length === 0) {
+    <p class="bi-ranking__empty">Ainda não há dados de ranking.</p>
+  } @else {
+    <div class="bi-ranking__table-wrap">
+      <table class="bi-ranking__table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Cliente</th>
+            <th>Encomendas</th>
+            <th>Lucro</th>
+            <th>Logins (30d)</th>
+            <th>Licença</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of ranking(); track row.userId) {
+            <tr [class.bi-ranking__row--gold]="row.rank === 1">
+              <td class="bi-ranking__rank">{{ row.rank }}</td>
+              <td>
+                <span class="bi-ranking__name">{{ row.fullName }}</span>
+                <span class="bi-ranking__phone">{{ row.phone }}</span>
+              </td>
+              <td>{{ row.orderCount }}</td>
+              <td class="bi-ranking__profit">{{ row.totalProfit | number: '1.0-0' }} MZN</td>
+              <td>{{ row.loginCount }}</td>
+              <td>
+                <span class="bi-ranking__badge" [attr.data-status]="row.licenseStatus">
+                  {{ licenseLabel(row.licenseStatus) }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

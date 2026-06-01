@@ -1,0 +1,65 @@
+<div
+  class="admin-summary-overlay"
+  [class.closing]="closing"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="admin-summary-title">
+  <div class="admin-summary-card" (click)="$event.stopPropagation()">
+  <button type="button" class="admin-summary-close" (click)="close()" aria-label="Fechar">×</button>
+
+  @if (loading()) {
+    <p class="admin-summary-loading">A carregar resumo da plataforma…</p>
+  } @else {
+    @if (data(); as d) {
+    <header class="admin-summary-header">
+      <img src="/logotipo.png" alt="" class="admin-summary-logo" width="48" height="48" />
+      <div>
+        <p class="admin-summary-eyebrow">Bem-vindo de volta</p>
+        <h2 id="admin-summary-title">Resumo da plataforma</h2>
+      </div>
+      <div class="admin-summary-health" [attr.data-level]="healthClass(d.alerts.healthScore)">
+        <span class="admin-summary-health__value">{{ d.alerts.healthScore }}</span>
+        <span class="admin-summary-health__label">Saúde</span>
+      </div>
+    </header>
+
+    <div class="admin-summary-grid">
+      <div class="admin-summary-stat">
+        <span class="admin-summary-stat__label">Online agora</span>
+        <strong>{{ d.stats['usersOnline'] ?? 0 }}</strong>
+      </div>
+      <div class="admin-summary-stat">
+        <span class="admin-summary-stat__label">Pendentes</span>
+        <strong>{{ d.stats['pendingApprovals'] ?? 0 }}</strong>
+      </div>
+      <div class="admin-summary-stat">
+        <span class="admin-summary-stat__label">Lucro licenças (mês)</span>
+        <strong>{{ d.treasury.netProfitThisMonth | number: '1.0-0' }} MZN</strong>
+      </div>
+      <div class="admin-summary-stat">
+        <span class="admin-summary-stat__label">Mês mais rentável</span>
+        <strong>{{ formatMonth(d.treasury.bestMonth) }}</strong>
+      </div>
+    </div>
+
+    @if (d.alerts.items.length > 0) {
+      <ul class="admin-summary-alerts">
+        @for (a of d.alerts.items.slice(0, 4); track a.id) {
+          <li [attr.data-type]="a.type">
+            <strong>{{ a.title }}</strong>
+            <span>{{ a.message }}</span>
+          </li>
+        }
+      </ul>
+    }
+
+    <footer class="admin-summary-footer">
+      <button type="button" class="admin-summary-btn admin-summary-btn--primary" (click)="close()">
+        Continuar no painel
+      </button>
+      <a routerLink="/tesouraria" class="admin-summary-btn" (click)="close()">Tesouraria</a>
+    </footer>
+    }
+  }
+  </div>
+</div>

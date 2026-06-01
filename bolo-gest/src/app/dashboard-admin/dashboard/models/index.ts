@@ -1,6 +1,5 @@
 /**
  * Modelos partilhados do painel de administração.
- * Um único ficheiro de tipos evita duplicação e conflitos quando várias pessoas trabalham na feature.
  */
 
 export interface AdminStats {
@@ -10,11 +9,30 @@ export interface AdminStats {
   licensesPending: number;
   loginsToday?: number;
   uniqueUsersToday?: number;
+  usersOnline?: number;
+  blockedUsers?: number;
+  pendingApprovals?: number;
+  licenseRevenueThisMonth?: number;
+  licenseRevenueTotal?: number;
+  topProfitUserName?: string | null;
+  topProfitAmount?: number;
+  avgLoginsPerUser30d?: number;
 }
 
 export interface RevenueByMonthDto {
   month: string;
   revenue: number;
+}
+
+export interface AdminRankingRow {
+  rank: number;
+  userId: string;
+  fullName: string;
+  phone: string;
+  orderCount: number;
+  totalProfit: number;
+  loginCount: number;
+  licenseStatus: string;
 }
 
 export interface KpiTile {
@@ -23,6 +41,7 @@ export interface KpiTile {
   value: string | number;
   meta: string;
   cssClass: string;
+  route?: string;
 }
 
 export interface QuickAction {

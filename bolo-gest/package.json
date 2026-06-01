@@ -22,6 +22,7 @@
     "@angular/service-worker": "^19.2.19",
     "@primeng/themes": "^21.0.4",
     "chart.js": "^4.5.1",
+    "gsap": "^3.15.0",
     "primeicons": "^7.0.0",
     "primeng": "^19.1.4",
     "rxjs": "~7.8.0",

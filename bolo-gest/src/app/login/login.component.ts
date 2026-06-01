@@ -12,13 +12,14 @@ import {
 import { AuthService, LoginLicenseBlock } from '../services/auth.service';
 import { OrdersService } from '../services/orders.service';
 import { ReminderService } from '../services/reminder.service';
-import { OrderAlertsPopupService } from '../services/order-alerts-popup.service';
-import { LoginSuccessModalComponent } from './login-success-modal/login-success-modal.component';
+import { LoginPopupOrchestratorService } from '../services/login-popup-orchestrator.service';
+import { AdminLoginSummaryPopupService } from '../dashboard-admin/services/admin-login-summary-popup.service';
+import { RegistrationFlowService } from '@app/core/registration/registration-flow.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, LoginSuccessModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
@@ -28,9 +29,10 @@ export class LoginComponent implements OnInit {
   showLoginDiagHint = false;
   loading = false;
   showNoAccountInfo = false;
-  showLoginSuccessModal = false;
   /** Após registo com redirecionamento para o login. */
   showPostRegisterHint = false;
+  /** Banner simples após escolher teste grátis (sem barra de passos 1-2-3). */
+  showTrialLoginBanner = false;
   form!: FormGroup;
 
   licenseBlock: LoginLicenseBlock | null = null;
@@ -42,23 +44,17 @@ export class LoginComponent implements OnInit {
     private auth: AuthService,
     private orders: OrdersService,
     private reminders: ReminderService,
-    private orderAlertsPopup: OrderAlertsPopupService,
+    private loginPopupOrchestrator: LoginPopupOrchestratorService,
     private router: Router,
     private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private registrationFlow: RegistrationFlowService,
+    private adminLoginSummaryPopup: AdminLoginSummaryPopupService,
   ) {
     this.form = this.fb.nonNullable.group({
       phone: ['', [loginPhoneFormatValidator]],
       password: ['', [Validators.required, Validators.minLength(4)]],
     });
-  }
-
-  /** Query params para pré-preencher o contacto na página de pagamento. */
-  paymentPageQueryParams(): Record<string, string> {
-    const phone = this.form.get('phone')?.value ?? '';
-    const digits = phone.replace(/\D/g, '');
-    if (!digits) return {};
-    return { phone: digits };
   }
 
   /** 9 dígitos ou 258 + 9 (máx. 12 dígitos). */
@@ -78,21 +74,48 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.auth.isLoggedIn()) {
+    const q = this.route.snapshot.queryParamMap;
+    const trialQuery = q.get('trial') === '1';
+    const finalizeQuery = q.get('finalize') === '1';
+
+    if (this.registrationFlow.mustCompleteOnboarding()) {
+      if (this.registrationFlow.isChoosePlanPhase()) {
+        const phone = this.registrationFlow.getPhone();
+        void this.router.navigate(['/escolher-plano'], {
+          queryParams: phone ? { phone, registered: '1' } : { registered: '1' },
+          replaceUrl: true,
+        });
+        return;
+      }
+      if (this.registrationFlow.isFinalizePaid() && !finalizeQuery && !trialQuery) {
+        const phone = this.registrationFlow.getPhone();
+        void this.router.navigate(['/license-payment'], {
+          queryParams: phone ? { phone, from: 'register' } : { from: 'register' },
+          replaceUrl: true,
+        });
+        return;
+      }
+      if (this.auth.isLoggedIn()) {
+        this.auth.endSessionWithoutNavigation();
+      }
+    } else if (this.auth.isLoggedIn()) {
       if (this.auth.isAdmin()) {
-        this.router.navigate(['/gestao-licencas']);
+        void this.router.navigate(['/admin-dashboard']);
       } else {
-        this.router.navigate(['/dashboard']);
+        void this.router.navigate(['/dashboard']);
       }
       return;
     }
+
     this.error = '';
-    const q = this.route.snapshot.queryParamMap;
     const phoneFromUrl = q.get('phone')?.replace(/\D/g, '') ?? '';
     if (phoneFromUrl) {
       this.form.patchValue({ phone: phoneFromUrl });
     }
-    this.showPostRegisterHint = q.get('registered') === '1';
+    this.showTrialLoginBanner =
+      trialQuery || this.registrationFlow.isFinalizeTrial();
+    this.showPostRegisterHint =
+      q.get('registered') === '1' && !this.showTrialLoginBanner && !finalizeQuery;
     if (this.route.snapshot.fragment === 'login-form') {
       setTimeout(() => this.scrollToLoginForm(), 0);
     }
@@ -157,6 +180,7 @@ export class LoginComponent implements OnInit {
       const result = await this.auth.login(phone, password);
       if (!result.ok) {
         this.showPostRegisterHint = false;
+        this.showTrialLoginBanner = this.registrationFlow.isFinalizeTrial();
         if (result.code === 'ACCOUNT_NOT_FOUND') {
           this.error = result.message?.trim() || '';
           this.showNoAccountInfo = true;
@@ -171,6 +195,11 @@ export class LoginComponent implements OnInit {
           this.showNoAccountInfo = false;
           this.error = '';
           this.showLoginDiagHint = false;
+        } else if (result.code === 'ACCOUNT_BLOCKED') {
+          this.error =
+            result.message?.trim() ||
+            'Conta bloqueada por excesso de tentativas. Contacte o suporte para recuperar o acesso.';
+          this.showNoAccountInfo = false;
         } else {
           this.error = result.message?.trim() || 'Telefone ou senha incorretos.';
           this.showNoAccountInfo = false;
@@ -179,23 +208,28 @@ export class LoginComponent implements OnInit {
         return;
       }
       this.showNoAccountInfo = false;
+      this.registrationFlow.complete();
       if (this.auth.isAdmin()) {
         void this.orders.loadOrders();
-        this.showLoginSuccessModal = true;
+        this.adminLoginSummaryPopup.requestShowAfterLogin();
+        await this.router.navigate(['/admin-dashboard']);
       } else {
+        this.loginPopupOrchestrator.reset();
         await Promise.all([this.orders.loadOrders(), this.reminders.loadReminders()]);
-        this.orderAlertsPopup.tryShowSessionPopup();
-        await this.router.navigate(['/dashboard']);
+        const rawReturn = this.route.snapshot.queryParamMap.get('returnUrl')?.trim() ?? '';
+        const returnUrl = safeInternalPath(rawReturn);
+        if (returnUrl) {
+          await this.router.navigateByUrl(returnUrl);
+        } else {
+          await this.router.navigate(['/dashboard']);
+        }
+        this.loginPopupOrchestrator.markUserDataReady();
+        queueMicrotask(() => this.loginPopupOrchestrator.continueChainAfterShell());
       }
     } finally {
       this.loading = false;
       this.cdr.detectChanges();
     }
-  }
-
-  onLoginSuccessModalClosed(): void {
-    this.showLoginSuccessModal = false;
-    this.router.navigate(['/gestao-licencas']);
   }
 
   goToForgotPassword(): void {
@@ -208,6 +242,13 @@ export class LoginComponent implements OnInit {
 
 function loginPhoneDigits(value: unknown): string {
   return String(value ?? '').replace(/\D/g, '');
+}
+
+/** Evita redireccionamento aberto para domínios externos. */
+function safeInternalPath(url: string): string | null {
+  if (!url || !url.startsWith('/') || url.startsWith('//')) return null;
+  if (url.includes('://')) return null;
+  return url;
 }
 
 /** Validação do contacto só no fluxo de login (9 dígitos ou 258 + 9). */

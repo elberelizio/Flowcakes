@@ -3,18 +3,36 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { OrdersService } from '../../services/orders.service';
 import { AuthService } from '../../services/auth.service';
-import { Order, orderDisplayName, orderDisplaySize, getOrderStatusLabel } from '../../models/order.model';
+import {
+  Order,
+  orderDisplayName,
+  orderDisplaySize,
+  getOrderStatusLabel,
+  getClosureReasonLabel,
+  getProductionStageLabel,
+  getRefundTypeLabel,
+  orderActiveDebt,
+  orderClientAdvanceBeforeCancel,
+  orderOriginalAgreedBeforeCancel,
+  orderRefundToClient,
+} from '../../models/order.model';
+import { OrderCloseDialogComponent } from '../encomendas/order-close-dialog/order-close-dialog.component';
 
 @Component({
   selector: 'app-order-details',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, OrderCloseDialogComponent],
   templateUrl: './order-details.component.html',
   styleUrl: './order-details.component.scss',
 })
 export class OrderDetailsComponent implements OnInit {
   order = signal<Order | null>(null);
   notFound = signal(false);
+  showCloseDialog = signal(false);
+
+  getClosureReasonLabel = getClosureReasonLabel;
+  getProductionStageLabel = getProductionStageLabel;
+  getRefundTypeLabel = getRefundTypeLabel;
 
   displayName = orderDisplayName;
   displaySize = orderDisplaySize;
@@ -41,6 +59,24 @@ export class OrderDetailsComponent implements OnInit {
     const obs = o.observations ?? '';
     const m = obs.match(/Contacto:\s*([^|]+)/);
     return m ? m[1].trim() : '—';
+  }
+
+  getDeliveryTime(o: Order): string | null {
+    const obs = o.observations ?? '';
+    const m = obs.match(/Hora entrega:\s*([^|]+)/);
+    return m ? m[1].trim() : null;
+  }
+
+  /** Observações sem campos já mostrados noutros blocos. */
+  getObservationsExtra(o: Order): string {
+    const obs = (o.observations ?? '').trim();
+    if (!obs) return '';
+    return obs
+      .replace(/Contacto:\s*[^|]+\s*\|?\s*/gi, '')
+      .replace(/Hora entrega:\s*[^|]+\s*\|?\s*/gi, '')
+      .replace(/Local entrega:\s*[^|]+\s*\|?\s*/gi, '')
+      .replace(/Endereço:\s*[^|]+\s*\|?\s*/gi, '')
+      .trim();
   }
 
   async ngOnInit(): Promise<void> {
@@ -112,9 +148,10 @@ export class OrderDetailsComponent implements OnInit {
     return this.getVariableExpensesTotal(o);
   }
 
-  saldo(order: Order): number {
-    return Math.max(0, order.valueCharged - order.valuePaid);
-  }
+  saldo = orderActiveDebt;
+  refundToClient = orderRefundToClient;
+  clientAdvanceBeforeCancel = orderClientAdvanceBeforeCancel;
+  originalAgreedBeforeCancel = orderOriginalAgreedBeforeCancel;
 
   /** Nome do assistente inteligente */
   readonly assistantName = 'ChefAssist';
@@ -159,15 +196,41 @@ export class OrderDetailsComponent implements OnInit {
 
   /** Retorna true se a encomenda tem dívida (valor em falta) */
   hasDebt(o: Order): boolean {
+    if (o.isCancelled || o.orderStatus === 'cancelled') return false;
     return this.saldo(o) > 0;
   }
 
   /** Mensagem do assistente sobre o estado da dívida */
   getAssistantDebtMessage(o: Order): string {
+    if (o.isCancelled) {
+      const devolvido = orderRefundToClient(o);
+      if (devolvido > 0) {
+        return `Encomenda cancelada. Devolveu ${devolvido.toLocaleString('pt-MZ')} MZN ao cliente (adiantamento). Sem dívida activa.`;
+      }
+      return 'Encomenda cancelada — sem dívida activa.';
+    }
     const saldo = this.saldo(o);
     if (saldo > 0) {
       return `Esta encomenda tem dívida de ${saldo.toLocaleString('pt-MZ')} MZN.`;
     }
     return 'Esta encomenda está paga na totalidade.';
+  }
+
+  openCloseDialog(): void {
+    this.showCloseDialog.set(true);
+  }
+
+  async onOrderClosed(): Promise<void> {
+    this.showCloseDialog.set(false);
+    await this.ordersService.loadOrders();
+    const id = this.order()?.id;
+    if (id) {
+      const found = this.ordersService.getOrderById(id);
+      if (found) this.order.set(found);
+    }
+  }
+
+  dismissCloseDialog(): void {
+    this.showCloseDialog.set(false);
   }
 }

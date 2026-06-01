@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 const appRoot = path.join('src', 'app');
-const pageRoots = ['login', 'register', 'pagamento-licenca', 'public', 'dashboard-admin', 'dashboard-user'];
+const pageRoots = ['login', 'register', 'license-payment', 'public', 'dashboard-admin', 'dashboard-user'];
 const roots = ['core', 'services', 'models', 'guards', 'modals', 'validators', 'components', 'ui'];
 
 function walk(dir, cb) {

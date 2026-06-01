@@ -1,0 +1,40 @@
+@if (alerts(); as a) {
+  <section class="alerts-strip" aria-label="Alertas da plataforma">
+    <div class="alerts-strip__score" [attr.data-level]="healthClass(a.healthScore)">
+      <span class="alerts-strip__score-num">{{ a.healthScore }}</span>
+      <span class="alerts-strip__score-label">Saúde</span>
+    </div>
+
+    <div class="alerts-strip__chips">
+      <span class="alerts-strip__chip"><strong>{{ a.usersOnline }}</strong> online</span>
+      @if (a.pendingApprovals > 0) {
+        <a routerLink="/admin-novos-utilizadores" class="alerts-strip__chip alerts-strip__chip--warn">
+          <strong>{{ a.pendingApprovals }}</strong> pendentes
+        </a>
+      }
+      @if (a.feedbackThresholdReached) {
+        <a routerLink="/admin-configuracoes/sugestoes" class="alerts-strip__chip alerts-strip__chip--info">
+          <strong>{{ a.feedbackCount }}</strong> sugestões
+        </a>
+      }
+      @if (a.maintenanceDue) {
+        <a routerLink="/admin-configuracoes" class="alerts-strip__chip alerts-strip__chip--maint">Manutenção</a>
+      }
+      <a routerLink="/tesouraria" class="alerts-strip__chip alerts-strip__chip--link">Tesouraria</a>
+    </div>
+
+    @if (a.items.length > 0) {
+      <ul class="alerts-strip__msgs">
+        @for (item of a.items; track item.id) {
+          <li [attr.data-type]="item.type">
+            @if (item.route) {
+              <a [routerLink]="item.route">{{ item.title }} — {{ item.message }}</a>
+            } @else {
+              <span>{{ item.title }} — {{ item.message }}</span>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </section>
+}

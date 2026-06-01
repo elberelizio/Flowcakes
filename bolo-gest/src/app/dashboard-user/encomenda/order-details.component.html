@@ -1,176 +1,197 @@
-<div class="order-details-page">
+<div class="order-details-page order-details-page--compact">
   @if (notFound()) {
-    <div class="not-found">
+    <div class="not-found card">
       <h1>Encomenda não encontrada</h1>
-      <a routerLink="/dashboard" class="btn btn-secondary">Voltar ao início</a>
+      <a routerLink="/encomendas" class="btn-primary">Voltar às encomendas</a>
     </div>
   } @else {
     @if (order(); as o) {
-
-    <!-- Popup do assistente: avisa quando falta informação -->
-    @if (getAssistantWarnings(o).length > 0 && assistantPopupVisible()) {
-      <div class="assistant-popup-overlay" (click)="closeAssistantPopup()">
-        <div class="assistant-popup" (click)="$event.stopPropagation()">
-          <div class="assistant-header">
-            <span class="assistant-avatar">{{ assistantName.charAt(0) }}</span>
-            <div>
-              <h3 class="assistant-name">{{ assistantName }}</h3>
-              <span class="assistant-role">Assistente de encomendas</span>
+      @if (getAssistantWarnings(o).length > 0 && assistantPopupVisible()) {
+        <div class="assistant-popup-overlay" (click)="closeAssistantPopup()" role="presentation">
+          <div class="assistant-popup" (click)="$event.stopPropagation()" role="dialog">
+            <div class="assistant-header">
+              <span class="assistant-avatar">{{ assistantName.charAt(0) }}</span>
+              <strong>{{ assistantName }}</strong>
+              <button type="button" class="assistant-close" (click)="closeAssistantPopup()" aria-label="Fechar">×</button>
             </div>
-            <button type="button" class="assistant-close" (click)="closeAssistantPopup()" title="Fechar">×</button>
-          </div>
-          <p class="assistant-intro">Detectei informações em falta nesta encomenda:</p>
-          <ul class="assistant-warnings">
-            @for (msg of getAssistantWarnings(o); track msg) {
-              <li>{{ msg }}</li>
-            }
-          </ul>
-          <p class="assistant-tip">Complete os dados na edição da encomenda para um registo mais completo.</p>
-          <button type="button" class="btn-dismiss" (click)="closeAssistantPopup()">Entendido</button>
-        </div>
-      </div>
-    }
-
-    <!-- Assistenta: estado da dívida -->
-    <div class="assistant-debt-card" [class.has-debt]="hasDebt(o)">
-      <span class="assistant-debt-icon">{{ assistantName.charAt(0) }}</span>
-      <div class="assistant-debt-content">
-        <strong>{{ assistantName }}:</strong>
-        <span class="assistant-debt-msg">{{ getAssistantDebtMessage(o) }}</span>
-      </div>
-    </div>
-
-    <header class="page-header">
-      <div class="header-left">
-        <a routerLink="/encomendas" class="btn-back">← Voltar</a>
-        <div class="header-title-block">
-          <h1>Detalhes da encomenda</h1>
-          <span class="order-id">#{{ getOrderIdShort(o) }}</span>
-        </div>
-      </div>
-    </header>
-
-    <div class="details-grid">
-      <!-- Cliente -->
-      <section class="detail-card card-cliente">
-        <h2>Cliente</h2>
-        <dl>
-          <dt>Nome</dt>
-          <dd>{{ o.clientName }}</dd>
-          <dt>Contacto</dt>
-          <dd>{{ getContactFromOrder(o) }}</dd>
-        </dl>
-      </section>
-
-      <!-- Datas -->
-      <section class="detail-card card-datas">
-        <h2>Datas</h2>
-        <dl>
-          <dt>Data de criação</dt>
-          <dd>{{ formatDateTime(o.createdAt) }}</dd>
-          <dt>Data de entrega</dt>
-          <dd>{{ formatDate(o.deliveryDate) }}</dd>
-          <dt>Registado por</dt>
-          <dd>{{ getRegistadoPor() }}</dd>
-        </dl>
-      </section>
-
-      <!-- Produto -->
-      <section class="detail-card card-produto">
-        <h2>Produto</h2>
-        <dl>
-          <dt>Categoria</dt>
-          <dd>{{ getCategoryLabel(o.category) }}</dd>
-          <dt>Tipo</dt>
-          <dd>{{ o.subcategory || '—' }}</dd>
-          <dt>Produto</dt>
-          <dd>{{ displayName(o) }}</dd>
-          <dt>Tamanho / Quantidade</dt>
-          <dd>{{ displaySize(o) }}</dd>
-        </dl>
-      </section>
-
-      <!-- Valores -->
-      <section class="detail-card card-valores">
-        <h2>Valores</h2>
-        <dl>
-          <dt>Valor cobrado</dt>
-          <dd>{{ o.valueCharged | number:'1.0-0' }} MZN</dd>
-          <dt>Valor pago</dt>
-          <dd>{{ o.valuePaid | number:'1.0-0' }} MZN</dd>
-          <dt>Saldo</dt>
-          <dd>{{ saldo(o) | number:'1.0-0' }} MZN</dd>
-          <dt>Custo total (ingredientes)</dt>
-          <dd>{{ o.costTotal | number:'1.0-0' }} MZN</dd>
-          @if (o.delivered) {
-            <dt>Despesas extras</dt>
-            <dd>{{ getDespesasExtrasTotal(o) | number:'1.0-0' }} MZN</dd>
-            <dt>Lucro</dt>
-            <dd class="profit">{{ o.profit | number:'1.0-0' }} MZN</dd>
-          } @else {
-            <dt class="hint">Lucro</dt>
-            <dd class="hint">Calculado após confirmar a entrega</dd>
-          }
-        </dl>
-      </section>
-
-      <!-- Estado -->
-      <section class="detail-card card-estado">
-        <h2>Estado</h2>
-        <dl>
-          <dt>Status pagamento</dt>
-          <dd><span class="badge" [class]="o.paymentStatus">{{ getPaymentStatusLabel(o.paymentStatus) }}</span></dd>
-          <dt>Estado do pedido</dt>
-          <dd><span class="badge" [class]="'status-' + o.orderStatus">{{ getOrderStatusLabel(o.orderStatus) }}</span></dd>
-          <dt>Entregue</dt>
-          <dd>{{ o.delivered ? 'Sim' : 'Não' }}</dd>
-          <dt>Cancelado</dt>
-          <dd>{{ o.isCancelled ? 'Sim' : 'Não' }}</dd>
-        </dl>
-      </section>
-
-      <!-- Local de entrega -->
-      <section class="detail-card card-local">
-        <h2>Local de entrega</h2>
-        <dl>
-          <dt>Local</dt>
-          <dd>{{ getDeliveryLocation(o) }}</dd>
-        </dl>
-      </section>
-
-      <section class="detail-card card-despesas full-width">
-        <h2>Despesas extras</h2>
-        <p class="section-desc">Custos adicionais registados na página Despesas extras.</p>
-        @if (o.variableExpenses && o.variableExpenses.length > 0) {
-          <table class="expenses-table">
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>Valor (MZN)</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (exp of o.variableExpenses; track $index) {
-                <tr>
-                  <td>{{ exp.name }}</td>
-                  <td>{{ exp.amount | number:'1.0-0' }}</td>
-                </tr>
+            <ul class="assistant-warnings">
+              @for (msg of getAssistantWarnings(o); track msg) {
+                <li>{{ msg }}</li>
               }
-            </tbody>
-          </table>
-          <p class="expenses-total"><strong>Total:</strong> {{ getVariableExpensesTotal(o) | number:'1.0-0' }} MZN</p>
-        } @else {
-          <p class="no-expenses">Nenhuma despesa extra registada.</p>
-        }
-      </section>
+            </ul>
+            <button type="button" class="btn-dismiss" (click)="closeAssistantPopup()">Entendido</button>
+          </div>
+        </div>
+      }
 
-      @if (o.observations) {
-        <section class="detail-card card-observacoes full-width">
-          <h2>Observações</h2>
-          <p class="observations">{{ o.observations }}</p>
+      <header class="compact-top">
+        <a routerLink="/encomendas" class="compact-back">← Encomendas</a>
+        <div class="compact-top__main">
+          <h1>Detalhes <span class="order-id">#{{ getOrderIdShort(o) }}</span></h1>
+          <div class="hero-badges">
+            <span class="badge" [class]="o.paymentStatus">{{ getPaymentStatusLabel(o.paymentStatus) }}</span>
+            <span class="badge" [class]="'status-' + o.orderStatus">{{ getOrderStatusLabel(o.orderStatus) }}</span>
+            <span class="badge badge--muted">{{ o.delivered ? 'Entregue' : 'Não entregue' }}</span>
+            @if (o.isCancelled) {
+              <span class="badge badge--cancelled">Cancelada</span>
+            }
+          </div>
+          @if (!o.isCancelled && !o.delivered) {
+            <button type="button" class="btn-cancelar" (click)="openCloseDialog()">Cancelar encomenda</button>
+          }
+          @if (!o.isCancelled && o.delivered && hasDebt(o)) {
+            <a routerLink="/gestao-dividas" class="btn-cancelar btn-cancelar--link">Registar pagamento em falta</a>
+          }
+        </div>
+      </header>
+
+      @if (o.isCancelled) {
+        <section class="closure-summary card" aria-label="Resumo do encerramento">
+          <h2 class="closure-summary__title">Cancelamento</h2>
+          <dl class="closure-summary__grid">
+            @if (o.closedAt) {
+              <div><dt>Data</dt><dd>{{ formatDateTime(o.closedAt) }}</dd></div>
+            } @else {
+              <div><dt>Data</dt><dd class="closure-summary__legacy">Registo anterior (sem data de encerramento)</dd></div>
+            }
+            @if (o.closureReason) {
+            <div><dt>Motivo</dt><dd>{{ getClosureReasonLabel(o.closureReason) }}</dd></div>
+            }
+            @if (o.productionStage) {
+              <div><dt>Produção</dt><dd>{{ getProductionStageLabel(o.productionStage) }}</dd></div>
+            }
+            @if (o.refundType) {
+              <div><dt>Devolução</dt><dd>{{ getRefundTypeLabel(o.refundType) }}</dd></div>
+            }
+            @if (refundToClient(o) > 0) {
+              <div><dt>Adiantamento do cliente</dt><dd>{{ clientAdvanceBeforeCancel(o) | number:'1.0-0' }} MZN</dd></div>
+              <div><dt>Devolvido ao cliente</dt><dd>{{ refundToClient(o) | number:'1.0-0' }} MZN</dd></div>
+            }
+            @if (o.lossAmount != null && o.lossAmount > 0) {
+              <div><dt>Prejuízo</dt><dd>{{ o.lossAmount | number:'1.0-0' }} MZN</dd></div>
+            }
+            @if (o.closureNote) {
+              <div class="closure-summary__note"><dt>Notas</dt><dd>{{ o.closureNote }}</dd></div>
+            }
+          </dl>
         </section>
       }
-    </div>
+
+      <div class="compact-alert" [class.compact-alert--debt]="hasDebt(o)">
+        <span class="compact-alert__icon">{{ assistantName.charAt(0) }}</span>
+        <span class="compact-alert__text">{{ getAssistantDebtMessage(o) }}</span>
+        @if (hasDebt(o)) {
+          <a routerLink="/gestao-dividas" class="compact-alert__btn">Registar pagamento</a>
+        }
+      </div>
+
+      <section class="compact-sheet card" aria-label="Resumo da encomenda">
+        <div class="compact-finance" aria-label="Valores">
+          @if (o.isCancelled) {
+            @if (originalAgreedBeforeCancel(o); as original) {
+              <div class="fin-cell">
+                <span class="fin-cell__l">Valor acordado (original)</span>
+                <span class="fin-cell__v">{{ original | number:'1.0-0' }} MZN</span>
+              </div>
+            }
+            <div class="fin-cell fin-cell--paid">
+              <span class="fin-cell__l">Adiantamento do cliente</span>
+              <span class="fin-cell__v">{{ clientAdvanceBeforeCancel(o) | number:'1.0-0' }} MZN</span>
+            </div>
+            @if (refundToClient(o) > 0) {
+              <div class="fin-cell fin-cell--refund">
+                <span class="fin-cell__l">Devolvido ao cliente</span>
+                <span class="fin-cell__v">{{ refundToClient(o) | number:'1.0-0' }} MZN</span>
+              </div>
+            }
+            <div class="fin-cell">
+              <span class="fin-cell__l">Dívida activa</span>
+              <span class="fin-cell__v">0 MZN</span>
+            </div>
+          } @else {
+            <div class="fin-cell">
+              <span class="fin-cell__l">Valor cobrado</span>
+              <span class="fin-cell__v">{{ o.valueCharged | number:'1.0-0' }} MZN</span>
+            </div>
+            <div class="fin-cell fin-cell--paid">
+              <span class="fin-cell__l">Valor pago</span>
+              <span class="fin-cell__v">{{ o.valuePaid | number:'1.0-0' }} MZN</span>
+            </div>
+            <div class="fin-cell" [class.fin-cell--debt]="hasDebt(o)">
+              <span class="fin-cell__l">Dívida</span>
+              <span class="fin-cell__v">{{ saldo(o) | number:'1.0-0' }} MZN</span>
+            </div>
+          }
+          <div class="fin-cell">
+            <span class="fin-cell__l">Custo da encomenda</span>
+            <span class="fin-cell__v">{{ o.costTotal | number:'1.0-0' }} MZN</span>
+          </div>
+          <div class="fin-cell">
+            <span class="fin-cell__l">Despesas extras</span>
+            <span class="fin-cell__v">{{ getDespesasExtrasTotal(o) | number:'1.0-0' }} MZN</span>
+          </div>
+          <div class="fin-cell fin-cell--profit">
+            <span class="fin-cell__l">Lucro</span>
+            <span class="fin-cell__v">@if (o.delivered || o.isCancelled) { {{ o.profit | number:'1.0-0' }} MZN } @else { — }</span>
+          </div>
+        </div>
+
+        <div class="compact-grid">
+          <div class="compact-block">
+            <h2 class="compact-block__title">Cliente & datas</h2>
+            <dl class="compact-fields">
+              <dt>Cliente</dt><dd>{{ o.clientName }}</dd>
+              <dt>Contacto</dt><dd>{{ getContactFromOrder(o) }}</dd>
+              <dt>Criação</dt><dd>{{ formatDateTime(o.createdAt) }}</dd>
+              <dt>Entrega</dt>
+              <dd>
+                {{ formatDate(o.deliveryDate) }}
+                @if (getDeliveryTime(o); as hora) {
+                  <span class="inline-meta">· {{ hora }}</span>
+                }
+              </dd>
+              <dt>Registado</dt><dd>{{ getRegistadoPor() }}</dd>
+            </dl>
+          </div>
+
+          <div class="compact-block">
+            <h2 class="compact-block__title">Produto & local</h2>
+            <dl class="compact-fields">
+              <dt>Categoria</dt>
+              <dd>{{ getCategoryLabel(o.category) }}</dd>
+              <dt>Tipo</dt><dd>{{ o.subcategory || '—' }}</dd>
+              <dt>Produto</dt><dd><strong>{{ displayName(o) }}</strong></dd>
+              <dt>Tamanho</dt><dd>{{ displaySize(o) }}</dd>
+              <dt>Local</dt><dd>{{ getDeliveryLocation(o) }}</dd>
+            </dl>
+          </div>
+
+          <div class="compact-block">
+            <h2 class="compact-block__title">Despesas & notas</h2>
+            @if (o.variableExpenses && o.variableExpenses.length > 0) {
+              <ul class="compact-exp-list">
+                @for (exp of o.variableExpenses; track $index) {
+                  <li><span>{{ exp.name }}</span><strong>{{ exp.amount | number:'1.0-0' }} MZN</strong></li>
+                }
+              </ul>
+            } @else {
+              <p class="compact-muted">Sem despesas extras.</p>
+            }
+            @if (getObservationsExtra(o); as extraObs) {
+              <p class="compact-notes">{{ extraObs }}</p>
+            } @else if (!o.variableExpenses?.length && !o.observations) {
+              <p class="compact-muted">Sem notas adicionais.</p>
+            }
+          </div>
+        </div>
+      </section>
     }
+  }
+
+  @if (showCloseDialog() && order(); as o) {
+    <app-order-close-dialog
+      [order]="o"
+      (closed)="onOrderClosed()"
+      (dismissed)="dismissCloseDialog()" />
   }
 </div>

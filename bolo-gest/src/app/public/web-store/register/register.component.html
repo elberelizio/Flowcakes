@@ -7,25 +7,45 @@
 
   <main class="max-w-7xl mx-auto px-6 lg:px-12 pt-28 pb-12 lg:pt-36 lg:pb-20 relative z-10">
     <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-      <!-- Left Section - Benefits -->
-      <section class="space-y-8 opacity-0 animate-fade-in-left hidden lg:block">
-        <div class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-brand-50 to-brand-100 border border-brand-200 shadow-sm hover:shadow-md transition-shadow">
-          <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
-          <span class="text-sm font-medium text-brand-800">Cadastro rápido e seguro</span>
+      <!-- Left Section - Texto + imagem -->
+      <section class="register-aside opacity-0 animate-fade-in-left">
+        <div class="register-aside__copy hidden lg:block space-y-8">
+          <div class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-brand-50 to-brand-100 border border-brand-200 shadow-sm hover:shadow-md transition-shadow">
+            <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+            <span class="text-sm font-medium text-brand-800">Cadastro rápido e seguro</span>
+          </div>
+
+          <div>
+            <h1 class="text-5xl lg:text-6xl font-serif font-bold leading-tight text-gray-900 mb-4">
+              Crie sua conta e comece a <span class="text-gradient-animated">vender melhor</span>.
+            </h1>
+            <p class="text-lg text-gray-600 leading-relaxed opacity-90">
+              Em poucos minutos você entra no ChefControl e começa a organizar seu negócio de forma profissional. Sem complicações.
+            </p>
+          </div>
         </div>
-        
-        <div>
-          <h1 class="text-5xl lg:text-6xl font-serif font-bold leading-tight text-gray-900 mb-4">
-            Crie sua conta e comece a <span class="text-gradient-animated">vender melhor</span>.
-          </h1>
-          <p class="text-lg text-gray-600 leading-relaxed opacity-90">
-            Em poucos minutos você entra no ChefControl e começa a organizar seu negócio de forma profissional. Sem complicações.
-          </p>
-        </div>
+
+        <figure class="register-aside__figure">
+          <img
+            [src]="registerHeroImage"
+            alt="Pastelaria profissional — produtos frescos para o seu negócio"
+            class="register-aside__img"
+            loading="eager"
+            decoding="async"
+            width="1200"
+            height="900"
+          />
+          <div class="register-aside__shade" aria-hidden="true"></div>
+          <div class="register-aside__badge">
+            <i class="fa-solid fa-cake-candles" aria-hidden="true"></i>
+            <span>O seu negócio, organizado</span>
+          </div>
+        </figure>
       </section>
 
       <!-- Right Section - Form Card -->
       <section class="bg-white/80 backdrop-blur-md border border-brand-100/50 rounded-3xl shadow-2xl p-8 sm:p-10 opacity-0 animate-fade-in-right hover:shadow-3xl transition-shadow duration-500 lg:sticky lg:top-32">
+        <app-registration-progress [currentStep]="progressStep" />
         <div class="space-y-1 mb-8">
           <h2 class="text-3xl font-bold text-gray-900">Criar conta</h2>
           <p class="text-sm text-gray-500">Preencha os dados abaixo para começar hoje</p>
@@ -157,6 +177,39 @@
             <span class="block text-xs text-red-600 -mt-2 animate-fade-in-up" style="animation-delay: 350ms;"><i class="fa-solid fa-circle-exclamation mr-1"></i>Deve concordar para criar a conta.</span>
           }
 
+          <div class="register-legal animate-fade-in-up" style="animation-delay: 380ms;">
+            <label class="register-legal__check flex items-start gap-3 text-sm text-gray-700 p-4 rounded-xl bg-slate-50 border border-slate-200 hover:border-brand-200 transition-colors cursor-pointer">
+              <input
+                type="checkbox"
+                formControlName="acceptTerms"
+                class="mt-1 rounded accent-brand-600 cursor-pointer shrink-0"
+              />
+              <span>
+                Li e aceito os
+                <strong>Termos de Utilização</strong>
+                e a
+                <strong>Política de Privacidade</strong>.
+                O registo é bloqueado sem esta aceitação.
+              </span>
+            </label>
+            @if (form.get('acceptTerms')?.invalid && form.get('acceptTerms')?.touched) {
+              <span class="register-legal__error">
+                <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+                Deve aceitar os termos e a política de privacidade para continuar.
+              </span>
+            }
+            <div class="register-legal__actions">
+              <button type="button" class="register-legal__view-btn" (click)="openLegalModal('terms')">
+                <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
+                Ver termos de utilização
+              </button>
+              <button type="button" class="register-legal__view-btn" (click)="openLegalModal('privacy')">
+                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                Ver política de privacidade
+              </button>
+            </div>
+          </div>
+
           @if (error) {
             <div class="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-3 animate-shake">
               <i class="fa-solid fa-circle-exclamation text-red-600 mt-0.5"></i>
@@ -185,28 +238,9 @@
     </div>
   </main>
 
-  <!-- Success Popup -->
-  @if (showSuccessPopup) {
-    <div class="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-[1000] p-4 animate-fade-in">
-      <div class="bg-white/95 backdrop-blur rounded-3xl p-8 max-w-md w-full text-center shadow-2xl" (click)="$event.stopPropagation()" style="animation: slideUp 0.4s ease-out;">
-        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-teal-500 text-white text-3xl mx-auto mb-4 flex items-center justify-center shadow-lg">
-          <i class="fa-solid fa-check"></i>
-        </div>
-        <h3 class="text-2xl font-bold text-gray-900 mb-2">Conta criada com sucesso!</h3>
-        <p class="text-sm text-gray-600 mb-4 text-left leading-relaxed">{{ successMessage }}</p>
-        <p class="text-sm text-brand-800 font-medium mb-6 px-2 bg-brand-50 py-3 rounded-xl">
-          Para entrar, use o <strong>mesmo contacto</strong> e a <strong>mesma senha</strong> que definiu.
-        </p>
-        <p class="text-xs text-gray-500 mb-6">
-          Redirecionamento automático em <span class="font-bold text-brand-700 text-sm">{{ loginRedirectSecondsLeft }}</span>s
-        </p>
-        <button
-          type="button"
-          class="w-full py-3 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white font-bold hover:from-brand-700 hover:to-brand-800 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95"
-          (click)="goToLoginNow()">
-          <i class="fa-solid fa-arrow-right mr-2"></i>Ir para login agora
-        </button>
-      </div>
-    </div>
-  }
+  <app-legal-document-modal
+    [documentId]="legalModalDocument"
+    [open]="legalModalOpen"
+    (closed)="closeLegalModal()"
+  />
 </div>

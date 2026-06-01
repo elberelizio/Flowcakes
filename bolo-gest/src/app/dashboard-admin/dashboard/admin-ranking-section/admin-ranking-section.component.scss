@@ -1,0 +1,148 @@
+@use '../fx-theme' as fx;
+
+.bi-ranking {
+  position: relative;
+  @include fx.fx-glass-panel;
+  @include fx.fx-accent-top-line;
+  overflow: hidden;
+}
+
+.bi-ranking__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  background: #fafbfc;
+}
+
+.bi-ranking__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.bi-ranking__desc {
+  margin: 0.2rem 0 0;
+  font-size: 0.76rem;
+  color: #64748b;
+}
+
+.bi-ranking__link {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0f766e;
+  text-decoration: none;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(20, 184, 166, 0.3);
+  background: rgba(20, 184, 166, 0.08);
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(20, 184, 166, 0.16);
+  }
+}
+
+.bi-ranking__empty {
+  margin: 0;
+  padding: 2rem;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.bi-ranking__table-wrap {
+  overflow-x: auto;
+}
+
+.bi-ranking__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+
+  th,
+  td {
+    padding: 0.65rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  }
+
+  thead th {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    background: rgba(15, 23, 42, 0.03);
+  }
+
+  tbody tr:hover td {
+    background: rgba(34, 211, 238, 0.04);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.bi-ranking__row--gold td {
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.1) 0%, transparent 70%);
+}
+
+.bi-ranking__rank {
+  font-weight: 800;
+  color: #6366f1;
+  width: 2.5rem;
+}
+
+.bi-ranking__row--gold .bi-ranking__rank {
+  color: #ca8a04;
+}
+
+.bi-ranking__name {
+  display: block;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.bi-ranking__phone {
+  display: block;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-top: 0.1rem;
+}
+
+.bi-ranking__profit {
+  font-weight: 700;
+  color: #0f766e;
+  font-variant-numeric: tabular-nums;
+}
+
+.bi-ranking__badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+
+  &[data-status='paid'] {
+    color: #047857;
+    background: rgba(20, 184, 166, 0.15);
+  }
+
+  &[data-status='trial'] {
+    color: #4338ca;
+    background: rgba(99, 102, 241, 0.12);
+  }
+
+  &[data-status='pending'] {
+    color: #b45309;
+    background: rgba(251, 191, 36, 0.15);
+  }
+}

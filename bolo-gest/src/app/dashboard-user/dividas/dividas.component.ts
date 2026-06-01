@@ -3,7 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { OrdersService } from '../../services/orders.service';
 import { NotificationService } from '../../services/notification.service';
-import { Order, orderDisplayName, orderDisplaySize, getOrderStatusLabel } from '../../models/order.model';
+import {
+  Order,
+  orderDisplayName,
+  orderDisplaySize,
+  getOrderStatusLabel,
+  orderActiveDebt,
+} from '../../models/order.model';
 
 @Component({
   selector: 'app-dividas',
@@ -35,6 +41,16 @@ export class DividasComponent implements OnInit {
     return this.ordersWithDebt().reduce((s, o) => s + Math.max(0, o.valueCharged - o.valuePaid), 0);
   });
 
+  readonly debtOrderCount = computed(() => this.ordersWithDebt().length);
+
+  readonly totalPaidOnDebtOrders = computed(() =>
+    this.ordersWithDebt().reduce((s, o) => s + (o.valuePaid ?? 0), 0),
+  );
+
+  readonly totalChargedOnDebtOrders = computed(() =>
+    this.ordersWithDebt().reduce((s, o) => s + (o.valueCharged ?? 0), 0),
+  );
+
   private notification = inject(NotificationService);
 
   constructor(public ordersService: OrdersService) {}
@@ -44,7 +60,7 @@ export class DividasComponent implements OnInit {
   }
 
   getSaldo(o: Order): number {
-    return Math.max(0, o.valueCharged - o.valuePaid);
+    return orderActiveDebt(o);
   }
 
   getPaymentLabel(status: string): string {

@@ -3,12 +3,20 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { OrdersService } from '../../services/orders.service';
 import { NotificationService } from '../../services/notification.service';
-import { Order, orderDisplayName, orderDisplaySize, getOrderStatusLabel } from '../../models/order.model';
+import {
+  Order,
+  orderDisplayName,
+  orderDisplaySize,
+  getOrderStatusLabel,
+  isOrderClosed,
+  orderActiveDebt,
+} from '../../models/order.model';
+import { OrderCloseDialogComponent } from './order-close-dialog/order-close-dialog.component';
 
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, OrderCloseDialogComponent],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.scss',
 })
@@ -17,47 +25,69 @@ export class OrdersComponent implements OnInit {
   filterCategory = signal('');
   filterStatus = signal('');
   filterPayment = signal('');
+  /** Lista activa vs encerradas (as encerradas não somem — mudam de separador). */
+  listScope = signal<'active' | 'closed'>('active');
 
   allOrders = computed(() => {
     const all = this.ordersService.allOrders();
     const active = all.filter(o => !(o.isCancelled === true || o.orderStatus === 'cancelled'));
-    const cancelled = all.filter(o => o.isCancelled === true || o.orderStatus === 'cancelled');
-    return { active, cancelled };
+    const closed = all.filter(o => o.isCancelled === true || o.orderStatus === 'cancelled');
+    return { active, closed, all };
   });
 
+  activeCount = computed(() => this.allOrders().active.length);
+  closedCount = computed(() => this.allOrders().closed.length);
+
+  /** Prejuízo total registado nas encomendas encerradas */
+  closedLossTotal = computed(() =>
+    this.allOrders().closed.reduce((s, o) => s + (o.lossAmount ?? 0), 0)
+  );
+
   filteredOrders = computed(() => {
-    const { active, cancelled } = this.allOrders();
+    const { active, closed } = this.allOrders();
     const client = this.filterClient().trim().toLowerCase();
     const status = this.filterStatus();
     const payment = this.filterPayment();
     const category = this.filterCategory();
+    const scope = this.listScope();
 
-    const list = status === 'cancelled' ? cancelled : active;
+    const list = scope === 'closed' ? closed : active;
     let result = list.filter(o => {
       if (client && !o.clientName.toLowerCase().includes(client)) return false;
       if (category && (o.category || '') !== category) return false;
-      if (status && status !== 'cancelled' && (o.orderStatus || 'ordered') !== status) return false;
+      if (scope === 'active' && status && (o.orderStatus || 'ordered') !== status) return false;
       if (payment && o.paymentStatus !== payment) return false;
       return true;
     });
 
-    if (status !== 'cancelled') {
+    if (scope === 'closed') {
+      result = result.sort((a, b) => {
+        const da = a.closedAt ?? a.createdAt;
+        const db = b.closedAt ?? b.createdAt;
+        return new Date(db).getTime() - new Date(da).getTime();
+      });
+    } else {
       result = result.sort((a, b) => {
         const dateA = a.deliveryDate ? new Date(a.deliveryDate).getTime() : Number.MAX_SAFE_INTEGER;
         const dateB = b.deliveryDate ? new Date(b.deliveryDate).getTime() : Number.MAX_SAFE_INTEGER;
         return dateA - dateB;
       });
-    } else {
-      result = result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
     return result;
   });
 
-  get isShowingCancelled(): boolean {
-    return this.filterStatus() === 'cancelled';
+  get isShowingClosed(): boolean {
+    return this.listScope() === 'closed';
   }
 
-  orderToCancel = signal<Order | null>(null);
+  setListScope(scope: 'active' | 'closed'): void {
+    this.listScope.set(scope);
+    if (scope === 'closed') {
+      this.filterStatus.set('');
+    }
+  }
+
+  orderToClose = signal<Order | null>(null);
   orderToConfirmDelivery = signal<Order | null>(null);
   /** Valor digitado pelo utilizador para pagamento parcial na entrega */
   partialPaymentInput = signal<number>(0);
@@ -71,7 +101,7 @@ export class OrdersComponent implements OnInit {
   }
 
   getSaldo(order: Order): number {
-    return Math.max(0, order.valueCharged - order.valuePaid);
+    return orderActiveDebt(order);
   }
 
   getPaymentLabel(status: string): string {
@@ -122,23 +152,21 @@ export class OrdersComponent implements OnInit {
     this.partialPaymentInput.set(0);
   }
 
-  cancelOrder(order: Order): void {
-    this.orderToCancel.set(order);
+  openCloseDialog(order: Order): void {
+    this.orderToClose.set(order);
   }
 
-  confirmCancelOrder(): void {
-    const order = this.orderToCancel();
-    if (order) {
-      this.ordersService.cancelOrder(order.id).then((ok) => {
-        if (ok) this.notification.showSuccess('Encomenda cancelada.');
-        else this.notification.showError('Não foi possível cancelar a encomenda.');
-      });
-      this.closeCancelModal();
-    }
+  onOrderClosed(): void {
+    this.orderToClose.set(null);
+    void this.ordersService.loadOrders().then(() => this.setListScope('closed'));
   }
 
-  closeCancelModal(): void {
-    this.orderToCancel.set(null);
+  dismissCloseDialog(): void {
+    this.orderToClose.set(null);
+  }
+
+  formatClosedDate(o: Order): string {
+    return this.formatDate(o.closedAt ?? o.createdAt);
   }
 
   clearFilters(): void {
@@ -146,6 +174,18 @@ export class OrdersComponent implements OnInit {
     this.filterCategory.set('');
     this.filterStatus.set('');
     this.filterPayment.set('');
+  }
+
+  getClosureReasonShort(o: Order): string {
+    if (!o.closureReason) return '—';
+    const map: Record<string, string> = {
+      CLIENT_WITHDREW: 'Cliente desistiu',
+      CANNOT_PRODUCE: 'Não produziu',
+      REFUSED_AT_DELIVERY: 'Recusa na entrega',
+      REGISTRATION_ERROR: 'Erro de registo',
+      OTHER: 'Outro',
+    };
+    return map[o.closureReason] ?? o.closureReason;
   }
 
   getCategoryLabel(cat: string | undefined): string {

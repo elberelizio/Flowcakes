@@ -1,0 +1,31 @@
+@if (open) {
+  <div class="legal-modal__backdrop" role="dialog" aria-modal="true" [attr.aria-labelledby]="'legal-title-' + documentId" (click)="onBackdropClick($event)">
+    <div class="legal-modal__panel">
+      <header class="legal-modal__header">
+        <div>
+          <p class="legal-modal__eyebrow">ChefControl</p>
+          <h2 class="legal-modal__title" [id]="'legal-title-' + documentId">{{ document.title }}</h2>
+          <p class="legal-modal__date">Última actualização: {{ document.updatedAt }}</p>
+        </div>
+        <button type="button" class="legal-modal__close" (click)="close()" aria-label="Fechar">×</button>
+      </header>
+
+      <div class="legal-modal__body">
+        <p class="legal-modal__intro">{{ document.intro }}</p>
+        @for (section of document.sections; track section.title) {
+          <section class="legal-modal__section">
+            <h3>{{ section.title }}</h3>
+            @for (p of section.paragraphs; track p) {
+              <p>{{ p }}</p>
+            }
+          </section>
+        }
+      </div>
+
+      <footer class="legal-modal__footer">
+        <a [routerLink]="fullPageLink" class="legal-modal__link" (click)="close()">Abrir em página completa</a>
+        <button type="button" class="legal-modal__btn" (click)="close()">Fechar</button>
+      </footer>
+    </div>
+  </div>
+}

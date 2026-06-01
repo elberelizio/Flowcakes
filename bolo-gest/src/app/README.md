@@ -7,7 +7,7 @@
 | **`public/web-page/`** | Site público (marketing): layout `web-page-layout` e filhos (ex.: landing em `/`). |
 | **`login/`** | Login, estilos partilhados do cartão (`auth-login-shell.scss`) e **recuperar senha** (`login/recuperar-senha/`). |
 | **`register/`** | Registo de nova conta (rota **`/register`**; `/registro` redireciona). |
-| **`pagamento-licenca/`** | Página dedicada ao pagamento da licença. |
+| **`license-payment/`** | Página de pagamento da licença no site público (`/license-payment`, filha do layout web; `/pagamento-licenca` redirecciona). |
 | **`public/`** | Loja pública (`web-store/`) e site institucional (`web-page/`). |
 | **`dashboard-admin/`** | Painel admin, incluindo **ativar licença** (`ativar-licenca/`). |
 | **`dashboard-user/`** | Área do utilizador com licença. |

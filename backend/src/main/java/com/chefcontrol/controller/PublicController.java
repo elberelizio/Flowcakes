@@ -1,9 +1,14 @@
 package com.chefcontrol.controller;
 
 import com.chefcontrol.dto.LicenseInfoPublicDto;
+import com.chefcontrol.dto.LandingSuggestionDto;
+import com.chefcontrol.dto.LandingSuggestionRequest;
 import com.chefcontrol.dto.StoreSettingsDto;
+import com.chefcontrol.service.LandingSuggestionService;
 import com.chefcontrol.service.LicenseService;
 import com.chefcontrol.service.StoreSettingsService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +24,16 @@ public class PublicController {
 
     private final LicenseService licenseService;
     private final StoreSettingsService storeSettingsService;
+    private final LandingSuggestionService landingSuggestionService;
 
-    public PublicController(LicenseService licenseService, StoreSettingsService storeSettingsService) {
+    public PublicController(
+        LicenseService licenseService,
+        StoreSettingsService storeSettingsService,
+        LandingSuggestionService landingSuggestionService
+    ) {
         this.licenseService = licenseService;
         this.storeSettingsService = storeSettingsService;
+        this.landingSuggestionService = landingSuggestionService;
     }
 
     /** Confirma que este processo é o backend ChefControl (útil para depurar 404 no login). */
@@ -53,5 +64,17 @@ public class PublicController {
     @GetMapping("/store/{slug}")
     public ResponseEntity<StoreSettingsDto> storeBySlug(@PathVariable String slug) {
         return ResponseEntity.ok(storeSettingsService.getBySlug(slug));
+    }
+
+    /**
+     * Recebe sugestões da landing page pública (nome + mensagem + dispositivo).
+     */
+    @PostMapping("/landing-suggestions")
+    public ResponseEntity<LandingSuggestionDto> createLandingSuggestion(
+        @Valid @RequestBody LandingSuggestionRequest body,
+        HttpServletRequest request
+    ) {
+        LandingSuggestionDto saved = landingSuggestionService.create(body, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 }

@@ -104,15 +104,16 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
           {
             label: 'Receita (MZN)',
             data: values,
-            backgroundColor: 'rgba(37, 99, 235, 0.7)',
-            borderColor: 'rgb(37, 99, 235)',
+            backgroundColor: 'rgba(13, 148, 136, 0.75)',
+            borderColor: 'rgb(15, 118, 110)',
             borderWidth: 1,
+            borderRadius: 6,
           },
         ],
       },
       options: {
         responsive: true,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
           tooltip: {

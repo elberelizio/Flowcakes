@@ -1,5 +1,6 @@
 package com.chefcontrol.controller;
 
+import com.chefcontrol.exception.InvalidPasswordException;
 import com.chefcontrol.exception.LicenseLoginBlockedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,10 +32,25 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
 
+    @ExceptionHandler(InvalidPasswordException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidPassword(InvalidPasswordException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("message", ex.getMessage());
+        body.put("code", "INVALID_PASSWORD");
+        body.put("remainingAttempts", ex.getRemainingAttempts());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
     @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<Map<String, String>> handleResponseStatus(ResponseStatusException ex) {
-        Map<String, String> body = new HashMap<>();
-        body.put("message", ex.getReason() != null ? ex.getReason() : ex.getStatusCode().toString());
+    public ResponseEntity<Map<String, Object>> handleResponseStatus(ResponseStatusException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        String message = ex.getReason() != null ? ex.getReason() : ex.getStatusCode().toString();
+        body.put("message", message);
+        if (ex.getStatusCode() == HttpStatus.FORBIDDEN
+                && message != null
+                && message.toLowerCase().contains("bloqueada")) {
+            body.put("code", "ACCOUNT_BLOCKED");
+        }
         return ResponseEntity.status(ex.getStatusCode()).body(body);
     }
 

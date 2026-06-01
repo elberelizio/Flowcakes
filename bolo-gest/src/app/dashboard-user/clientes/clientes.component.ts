@@ -80,6 +80,12 @@ export class ClientesComponent implements OnInit {
     });
   });
 
+  readonly clientsWithDebt = computed(() => this.filteredClients().filter((c) => c.totalDebt > 0).length);
+
+  readonly totalOutstandingDebt = computed(() =>
+    this.filteredClients().reduce((sum, c) => sum + c.totalDebt, 0),
+  );
+
   clearFilters(): void {
     this.filterClient.set('');
     this.filterType.set('');

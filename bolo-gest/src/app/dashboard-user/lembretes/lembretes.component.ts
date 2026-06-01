@@ -45,6 +45,16 @@ export class LembretesComponent implements OnInit {
   /** Feriados nacionais (Moçambique) nos próximos 12 meses. */
   readonly nationalHolidays = computed(() => getUpcomingHolidays(366));
 
+  readonly reminderCount = computed(() => this.reminderService.reminders().length);
+
+  readonly upcomingCount = computed(() =>
+    this.reminderService.reminders().filter((r) => this.daysUntil(r.deliveryDate) >= 0).length,
+  );
+
+  readonly todayCount = computed(() =>
+    this.reminderService.reminders().filter((r) => this.daysUntil(r.deliveryDate) === 0).length,
+  );
+
   readonly remindersGrouped = computed(() => {
     const list = [...this.reminderService.reminders()].sort((a, b) =>
       a.deliveryDate.localeCompare(b.deliveryDate)

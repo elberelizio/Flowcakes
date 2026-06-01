@@ -1,10 +1,12 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, Injector } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 import { API_URL } from '../core/config/api.config';
 import { OrderAlertsPopupService } from './order-alerts-popup.service';
 import { LicenseExpiryPopupService } from './license-expiry-popup.service';
+import { LoginPopupOrchestratorService } from './login-popup-orchestrator.service';
+import { AdminLoginSummaryPopupService } from '../dashboard-admin/services/admin-login-summary-popup.service';
 
 /** Só dígitos; se começar por 258, usa os 9 dígitos nacionais (para pedidos à API). */
 export function normalizeMzPhoneDigits(raw: string): string {
@@ -49,6 +51,8 @@ export interface UserResponse {
   admin?: boolean;
   licenseDaysRemaining?: number;
   showLicenseExpiryWarning?: boolean;
+  showWelcomeOnboarding?: boolean;
+  createdAt?: string;
 }
 
 /** Utilizador atual (apenas em memória; sessão no backend via cookie HttpOnly) */
@@ -64,6 +68,8 @@ export interface CurrentUser {
   admin?: boolean;
   licenseDaysRemaining?: number;
   showLicenseExpiryWarning?: boolean;
+  showWelcomeOnboarding?: boolean;
+  createdAt?: string;
 }
 
 /** Resposta do registo: user + mensagem enviada por SMS/WhatsApp */
@@ -100,8 +106,10 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private router: Router,
+    private injector: Injector,
     private orderAlertsPopup: OrderAlertsPopupService,
-    private licenseExpiryPopup: LicenseExpiryPopupService
+    private licenseExpiryPopup: LicenseExpiryPopupService,
+    private adminLoginSummaryPopup: AdminLoginSummaryPopupService,
   ) {}
 
   /** Verifica sessão no backend (cookie). Chamado no arranque da app. Nenhum dado guardado no browser. */
@@ -142,6 +150,8 @@ export class AuthService {
       admin: u.admin ?? false,
       licenseDaysRemaining: u.licenseDaysRemaining,
       showLicenseExpiryWarning: u.showLicenseExpiryWarning,
+      showWelcomeOnboarding: u.showWelcomeOnboarding ?? false,
+      createdAt: u.createdAt,
     };
   }
 
@@ -152,6 +162,7 @@ export class AuthService {
     message?: string;
     code?: string;
     validUntil?: string;
+    remainingAttempts?: number;
   } {
     if (!(err instanceof HttpErrorResponse)) {
       return {};
@@ -162,19 +173,23 @@ export class AuthService {
     }
     if (typeof raw === 'object' && !Array.isArray(raw)) {
       const o = raw as Record<string, unknown>;
+      const remaining = o['remainingAttempts'];
       return {
         message: typeof o['message'] === 'string' ? o['message'] : undefined,
         code: typeof o['code'] === 'string' ? o['code'] : undefined,
         validUntil: typeof o['validUntil'] === 'string' ? o['validUntil'] : undefined,
+        remainingAttempts: typeof remaining === 'number' ? remaining : undefined,
       };
     }
     if (typeof raw === 'string') {
       try {
         const o = JSON.parse(raw) as Record<string, unknown>;
+        const remaining = o['remainingAttempts'];
         return {
           message: typeof o['message'] === 'string' ? o['message'] : undefined,
           code: typeof o['code'] === 'string' ? o['code'] : undefined,
           validUntil: typeof o['validUntil'] === 'string' ? o['validUntil'] : undefined,
+          remainingAttempts: typeof remaining === 'number' ? remaining : undefined,
         };
       } catch {
         return { message: raw };
@@ -191,9 +206,10 @@ export class AuthService {
     | { ok: true; user: UserResponse }
     | {
         ok: false;
-        code: 'ACCOUNT_NOT_FOUND' | 'INVALID_CREDENTIALS' | 'LICENSE_BLOCKED';
+        code: 'ACCOUNT_NOT_FOUND' | 'INVALID_CREDENTIALS' | 'LICENSE_BLOCKED' | 'ACCOUNT_BLOCKED';
         message?: string;
         licenseBlock?: LoginLicenseBlock;
+        remainingAttempts?: number;
       }
   > {
     const normalizedPhone = normalizeMzPhoneDigits(phone);
@@ -208,6 +224,7 @@ export class AuthService {
         this.currentUser.set(this.toCurrentUser(user));
         try {
           sessionStorage.removeItem('chefcontrol_login_summary_dismissed');
+          sessionStorage.removeItem('chefcontrol_admin_login_summary_consumed');
         } catch (_) {}
         return { ok: true, user };
       }
@@ -229,8 +246,19 @@ export class AuthService {
           },
         };
       }
+      if (status === 403 && body.code === 'ACCOUNT_BLOCKED') {
+        return { ok: false, code: 'ACCOUNT_BLOCKED', message: msg };
+      }
       if (status === 403) {
         return { ok: false, code: 'INVALID_CREDENTIALS', message: msg };
+      }
+      if (status === 400 && body.code === 'INVALID_PASSWORD') {
+        return {
+          ok: false,
+          code: 'INVALID_CREDENTIALS',
+          message: msg,
+          remainingAttempts: body.remainingAttempts,
+        };
       }
       // EN: Login 401 body is JSON `{ "message": "..." }` from GlobalExceptionHandler (ResponseStatusException).
       // PT: O 401 do login traz JSON com `message`; distingue «Conta não encontrada» de «Telefone ou senha incorretos» (ver AuthService no backend).
@@ -342,6 +370,8 @@ export class AuthService {
     this.currentUser.set(null);
     this.orderAlertsPopup.resetForNextLogin();
     this.licenseExpiryPopup.resetForNextLogin();
+    this.injector.get(LoginPopupOrchestratorService).reset();
+    this.adminLoginSummaryPopup.resetForNextLogin();
     try {
       sessionStorage.removeItem('chefcontrol_login_summary_dismissed');
     } catch (_) {}
@@ -398,7 +428,49 @@ export class AuthService {
       .catch(() => null);
   }
 
-  /** Actualiza os dados do perfil (nome, documento, província, email). O contacto não é alterável. */
+  /** Altera contacto de login (senha actual + novo número não registado). */
+  changePhone(
+    currentPassword: string,
+    newPhone: string
+  ): Promise<{
+    ok: boolean;
+    message?: string;
+    code?: string;
+    remainingAttempts?: number;
+    forceLogout?: boolean;
+  }> {
+    const normalized = normalizeMzPhoneDigits(newPhone);
+    return this.http
+      .put<UserResponse>(`${API_URL}/auth/change-phone`, {
+        currentPassword,
+        newPhone: normalized,
+      })
+      .toPromise()
+      .then((user) => {
+        if (user) {
+          this.currentUser.set(this.toCurrentUser(user));
+        }
+        return { ok: true };
+      })
+      .catch((err) => {
+        const body = err?.error ?? {};
+        const code = typeof body.code === 'string' ? body.code : undefined;
+        const message = body.message || err?.message || 'Erro ao alterar contacto';
+        if (code === 'ACCOUNT_BLOCKED' || (err?.status === 403 && String(message).toLowerCase().includes('bloqueada'))) {
+          return { ok: false, message, code: 'ACCOUNT_BLOCKED', forceLogout: true };
+        }
+        return {
+          ok: false,
+          message,
+          code,
+          remainingAttempts:
+            typeof body.remainingAttempts === 'number' ? body.remainingAttempts : undefined,
+          forceLogout: code === 'ACCOUNT_BLOCKED',
+        };
+      });
+  }
+
+  /** Actualiza os dados do perfil (nome, documento, província, email). */
   updateProfile(data: {
     fullName?: string;
     documentType?: string;
@@ -428,6 +500,17 @@ export class AuthService {
 
   isAdmin(): boolean {
     return this.currentUser()?.admin ?? false;
+  }
+
+  showWelcomeOnboarding(): boolean {
+    return this.currentUser()?.showWelcomeOnboarding === true;
+  }
+
+  clearWelcomeOnboarding(): void {
+    const u = this.currentUser();
+    if (u?.showWelcomeOnboarding) {
+      this.currentUser.set({ ...u, showWelcomeOnboarding: false });
+    }
   }
 
   getLicenseStatus(): Promise<LicenseStatusResponse | null> {

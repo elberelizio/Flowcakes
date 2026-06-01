@@ -3,6 +3,7 @@ import { authGuard } from './core/guards/auth.guard';
 import { licenseGuard } from './core/guards/license.guard';
 import { adminGuard } from './core/guards/admin.guard';
 import { redirectAdminGuard } from './core/guards/redirect-admin.guard';
+import { registrationChoosePlanGuard, registrationPaymentGuard } from './core/guards/registration-flow.guard';
 import { WebStoreTrackOrderComponent } from './public/web-store/web-store-track-order.component';
 import { webPageRoutes } from './public/web-page/web-page.routes';
 
@@ -18,16 +19,24 @@ export const routes: Routes = [
     loadComponent: () => import('./login/recuperar-senha/recuperar-senha.component').then((m) => m.RecuperarSenhaComponent),
   },
   { path: 'register', loadComponent: () => import('./public/web-store/register/register.component').then((m) => m.RegisterComponent) },
+  {
+    path: 'escolher-plano',
+    canActivate: [registrationChoosePlanGuard],
+    loadComponent: () =>
+      import('./public/web-store/post-register-plan/post-register-plan.component').then((m) => m.PostRegisterPlanComponent),
+  },
   { path: 'registro', redirectTo: 'register', pathMatch: 'full' },
   {
     path: 'ativar-licenca',
     loadComponent: () =>
       import('./dashboard-admin/ativar-licenca/ativar-licenca.component').then((m) => m.AtivarLicencaComponent),
   },
+  { path: 'pagamento-licenca', redirectTo: '/license-payment', pathMatch: 'full' },
   {
-    path: 'pagamento-licenca',
+    path: 'license-payment',
+    canActivate: [redirectAdminGuard, registrationPaymentGuard],
     loadComponent: () =>
-      import('./pagamento-licenca/pagamento-licenca.component').then((m) => m.PagamentoLicencaComponent),
+      import('./license-payment/license-payment.component').then((m) => m.LicensePaymentComponent),
   },
   { path: 'finalizar-conta', redirectTo: '/login', pathMatch: 'full' },
   {
@@ -41,23 +50,18 @@ export const routes: Routes = [
     canActivate: [authGuard, adminGuard],
   },
   {
+    path: 'tesouraria',
+    loadComponent: () => import('./dashboard-admin/tesouraria/tesouraria.component').then((m) => m.TesourariaComponent),
+    canActivate: [authGuard, adminGuard],
+  },
+  {
     path: 'gestao-licencas',
     loadComponent: () => import('./dashboard-admin/gestao-licencas/admin.component').then((m) => m.AdminComponent),
     canActivate: [authGuard, adminGuard],
   },
   {
-    path: 'admin-logs',
-    loadComponent: () => import('./dashboard-admin/logs/admin-logs.component').then((m) => m.AdminLogsComponent),
-    canActivate: [authGuard, adminGuard],
-  },
-  {
     path: 'admin-encomendas',
     loadComponent: () => import('./dashboard-admin/encomendas/admin-orders.component').then((m) => m.AdminOrdersComponent),
-    canActivate: [authGuard, adminGuard],
-  },
-  {
-    path: 'satisfacao',
-    loadComponent: () => import('./dashboard-admin/satisfacao/satisfacao.component').then((m) => m.SatisfacaoComponent),
     canActivate: [authGuard, adminGuard],
   },
   {
@@ -77,9 +81,35 @@ export const routes: Routes = [
   },
   {
     path: 'admin-configuracoes',
-    loadComponent: () => import('./dashboard-admin/configuracoes/configuracoes.component').then((m) => m.ConfiguracoesComponent),
+    loadComponent: () =>
+      import('./dashboard-admin/configuracoes/configuracoes-layout.component').then((m) => m.ConfiguracoesLayoutComponent),
     canActivate: [authGuard, adminGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./dashboard-admin/configuracoes/configuracoes.component').then((m) => m.ConfiguracoesHubComponent),
+      },
+      {
+        path: 'logs',
+        loadComponent: () =>
+          import('./dashboard-admin/configuracoes/logs/admin-logs.component').then((m) => m.AdminLogsComponent),
+      },
+      {
+        path: 'acessos',
+        loadComponent: () =>
+          import('./dashboard-admin/gestao-acessos/gestao-acessos.component').then((m) => m.GestaoAcessosComponent),
+      },
+      {
+        path: 'sugestoes',
+        loadComponent: () =>
+          import('./dashboard-admin/sugestoes/sugestoes.component').then((m) => m.SugestoesComponent),
+      },
+    ],
   },
+  { path: 'admin-logs', redirectTo: 'admin-configuracoes/logs', pathMatch: 'full' },
+  { path: 'gestao-acessos', redirectTo: 'admin-configuracoes/acessos', pathMatch: 'full' },
+  { path: 'sugestoes', redirectTo: 'admin-configuracoes/sugestoes', pathMatch: 'full' },
   {
     path: 'admin-ranking',
     loadComponent: () => import('./dashboard-admin/ranking/ranking.component').then((m) => m.RankingComponent),
@@ -99,6 +129,11 @@ export const routes: Routes = [
     path: 'minha-licenca',
     loadComponent: () => import('./dashboard-user/minha-licenca/minha-licenca.component').then((m) => m.MinhaLicencaComponent),
     canActivate: [authGuard, licenseGuard],
+  },
+  {
+    path: 'perfil',
+    loadComponent: () => import('./dashboard-user/perfil/profile.component').then((m) => m.ProfileComponent),
+    canActivate: [authGuard],
   },
   {
     path: 'despesas-variaveis',
@@ -131,6 +166,11 @@ export const routes: Routes = [
     canActivate: [authGuard, redirectAdminGuard, licenseGuard],
   },
   {
+    path: 'notificacoes',
+    loadComponent: () => import('./dashboard-user/notificacoes/notificacoes.component').then((m) => m.NotificacoesComponent),
+    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
+  },
+  {
     path: 'relatorios',
     loadComponent: () => import('./dashboard-user/relatorios/reports.component').then((m) => m.ReportsComponent),
     canActivate: [authGuard, licenseGuard],
@@ -148,7 +188,7 @@ export const routes: Routes = [
   {
     path: 'configuracoes',
     loadComponent: () => import('./dashboard-user/configuracoes/configuracoes.component').then((m) => m.ConfiguracoesComponent),
-    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
+    canActivate: [authGuard, adminGuard],
   },
   {
     path: 'loja',

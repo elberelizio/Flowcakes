@@ -1,0 +1,35 @@
+<div class="legal-page landing-page-root font-sans text-gray-800 min-h-screen bg-brand-50">
+  <app-public-site-nav />
+
+  <main class="legal-page__main">
+    <a routerLink="/register" class="legal-page__back">
+      <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+      Voltar ao registo
+    </a>
+
+    <article class="legal-page__card">
+      <header class="legal-page__header">
+        <p class="legal-page__eyebrow">ChefControl</p>
+        <h1>{{ document.title }}</h1>
+        <p class="legal-page__date">Última actualização: {{ document.updatedAt }}</p>
+      </header>
+
+      <p class="legal-page__intro">{{ document.intro }}</p>
+
+      @for (section of document.sections; track section.title) {
+        <section class="legal-page__section">
+          <h2>{{ section.title }}</h2>
+          @for (p of section.paragraphs; track p) {
+            <p>{{ p }}</p>
+          }
+        </section>
+      }
+    </article>
+
+    <p class="legal-page__nav-links">
+      <a routerLink="/termos" [class.legal-page__nav-active]="documentId === 'terms'">Termos de utilização</a>
+      ·
+      <a routerLink="/privacidade" [class.legal-page__nav-active]="documentId === 'privacy'">Política de privacidade</a>
+    </p>
+  </main>
+</div>

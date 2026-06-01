@@ -1,0 +1,133 @@
+<div class="close-overlay" role="dialog" aria-modal="true" aria-labelledby="close-dialog-title">
+  <div class="close-card" (click)="$event.stopPropagation()">
+    <button type="button" class="close-card__x" (click)="onDismiss()" aria-label="Fechar">×</button>
+
+    <header class="close-hero">
+      <h2 id="close-dialog-title" class="close-hero__title">Cancelar encomenda</h2>
+      <p class="close-hero__client">{{ order().clientName }}</p>
+      <p class="close-hero__money">
+        Cobrado <strong>{{ order().valueCharged | number:'1.0-0' }}</strong> MZN
+        · Pago <strong>{{ clientPaid() | number:'1.0-0' }}</strong> MZN
+      </p>
+    </header>
+
+    <div class="close-body">
+      <section class="close-block">
+        <h3 class="close-block__label">O que aconteceu?</h3>
+        <div class="close-chips" role="radiogroup" aria-label="Motivo">
+          @for (opt of reasonOptions; track opt.value) {
+            <button
+              type="button"
+              class="close-chip"
+              [class.close-chip--on]="closureReason() === opt.value"
+              (click)="selectReason(opt.value)">
+              {{ opt.label }}
+            </button>
+          }
+        </div>
+      </section>
+
+      <section class="close-block">
+        <h3 class="close-block__label">Produção</h3>
+        <div class="close-chips close-chips--3" role="radiogroup" aria-label="Produção">
+          @for (opt of productionOptions; track opt.value) {
+            <button
+              type="button"
+              class="close-chip"
+              [class.close-chip--on]="productionStage() === opt.value"
+              (click)="selectProduction(opt.value)">
+              {{ opt.label }}
+            </button>
+          }
+        </div>
+      </section>
+
+      @if (showRefundChoice()) {
+        <section class="close-block">
+          <h3 class="close-block__label">Devolveu dinheiro ao cliente?</h3>
+          <div class="close-chips close-chips--3" role="radiogroup" aria-label="Devolução">
+            <button
+              type="button"
+              class="close-chip"
+              [class.close-chip--on]="refundType() === 'NONE'"
+              (click)="selectRefund('NONE')">
+              Não
+            </button>
+            <button
+              type="button"
+              class="close-chip"
+              [class.close-chip--on]="refundType() === 'FULL'"
+              (click)="selectRefund('FULL')">
+              Sim, tudo
+            </button>
+            <button
+              type="button"
+              class="close-chip"
+              [class.close-chip--on]="refundType() === 'PARTIAL'"
+              (click)="selectRefund('PARTIAL')">
+              Sim, parte
+            </button>
+          </div>
+
+          @if (refundType() === 'PARTIAL') {
+            <div class="close-inline-field">
+              <label for="refundPartial">Quanto devolveu? (MZN)</label>
+              <input
+                id="refundPartial"
+                type="number"
+                min="1"
+                [max]="clientPaid()"
+                step="1"
+                [ngModel]="refundAmountInput()"
+                (ngModelChange)="refundAmountInput.set($event)" />
+            </div>
+          }
+
+          @if (refundType()) {
+            <p class="close-result">
+              @if (previewRefund() > 0) {
+                Devolve <strong>{{ previewRefund() | number:'1.0-0' }} MZN</strong>
+                · Fica registado <strong>{{ previewValuePaid() | number:'1.0-0' }} MZN</strong> pago
+              } @else {
+                Fica com <strong>{{ clientPaid() | number:'1.0-0' }} MZN</strong> que o cliente já pagou
+              }
+            </p>
+          }
+        </section>
+      } @else {
+        <p class="close-muted">Cliente ainda não pagou — não há devolução.</p>
+      }
+
+      @if (canConfirm() && suggestedLoss() > 0) {
+        <p class="close-loss-hint">Prejuízo estimado: {{ suggestedLoss() | number:'1.0-0' }} MZN</p>
+      }
+
+      <div class="close-inline-field close-inline-field--note">
+        <label for="closureNote">Nota (opcional)</label>
+        <input
+          id="closureNote"
+          type="text"
+          placeholder="Ex.: devolvi por M-Pesa"
+          [ngModel]="closureNote()"
+          (ngModelChange)="closureNote.set($event)" />
+      </div>
+
+      <p class="close-alert">
+        Só para encomendas <strong>não entregues</strong>. Não pode ser desfeito.
+      </p>
+    </div>
+
+    <footer class="close-footer">
+      <button type="button" class="close-btn close-btn--ghost" (click)="onDismiss()" [disabled]="submitting()">
+        Fechar
+      </button>
+      <button
+        type="button"
+        class="close-btn close-btn--danger"
+        (click)="confirm()"
+        [disabled]="!canConfirm() || submitting()">
+        {{ submitting() ? 'A guardar…' : 'Confirmar' }}
+      </button>
+    </footer>
+  </div>
+</div>

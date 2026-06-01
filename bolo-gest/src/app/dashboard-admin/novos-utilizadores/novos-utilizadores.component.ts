@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { API_URL } from '../../core/config/api.config';
 import { AdminStatsService } from '../../services/admin-stats.service';
+import { IconComponent } from '../../ui/icon/icon.component';
 
 /** Utilizador pendente ou rejeitado (licença pending). */
 interface NovoUtilizador {
@@ -30,14 +31,13 @@ interface SimulatedPaymentPending {
   durationMonths: number;
   transactionRef: string;
   createdAt: string;
-  /** mpesa | emola */
   simulationChannel?: string;
 }
 
 @Component({
   selector: 'app-novos-utilizadores',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, IconComponent],
   templateUrl: './novos-utilizadores.component.html',
   styleUrl: './novos-utilizadores.component.scss',
 })
@@ -51,18 +51,26 @@ export class NovosUtilizadoresComponent implements OnInit {
   aprovandoId = signal<string | null>(null);
   rejeitandoId = signal<string | null>(null);
   tabFilter = signal<TabFilter>('pendentes');
+  searchQuery = signal('');
 
-  pendentes = computed(() =>
-    this.allLista().filter((u) => !u.rejectedAt)
-  );
-  rejeitados = computed(() =>
-    this.allLista().filter((u) => u.rejectedAt)
-  );
+  pendentes = computed(() => this.allLista().filter((u) => !u.rejectedAt));
+  rejeitados = computed(() => this.allLista().filter((u) => u.rejectedAt));
   listaActual = computed(() =>
     this.tabFilter() === 'pendentes' ? this.pendentes() : this.rejeitados()
   );
 
-  /** Modal de aprovação: utilizador e ID do pagamento (18 dígitos). */
+  filteredLista = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    const list = this.listaActual();
+    if (!q) return list;
+    return list.filter((u) =>
+      [u.fullName, u.phone, u.email ?? '', u.province ?? '', u.licensePaymentReference ?? '']
+        .join(' ')
+        .toLowerCase()
+        .includes(q)
+    );
+  });
+
   modalAprovar = signal<NovoUtilizador | null>(null);
   modalTransactionId = '';
   modalMonths = 1;
@@ -148,6 +156,7 @@ export class NovosUtilizadoresComponent implements OnInit {
 
   setTab(tab: TabFilter): void {
     this.tabFilter.set(tab);
+    this.searchQuery.set('');
   }
 
   abrirModalAprovar(u: NovoUtilizador): void {
@@ -223,6 +232,10 @@ export class NovosUtilizadoresComponent implements OnInit {
 
   canalSimuladoLabel(channel?: string): string {
     return channel === 'emola' ? 'e-Mola' : 'M-Pesa';
+  }
+
+  initials(name: string): string {
+    return (name?.charAt(0) || '?').toUpperCase();
   }
 }
 

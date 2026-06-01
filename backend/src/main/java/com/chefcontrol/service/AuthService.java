@@ -2,8 +2,7 @@ package com.chefcontrol.service;
 
 import com.chefcontrol.dto.*;
 import com.chefcontrol.entity.UserEntity;
-import com.chefcontrol.entity.PhoneChangeRequestEntity;
-import com.chefcontrol.repository.PhoneChangeRequestRepository;
+import com.chefcontrol.exception.InvalidPasswordException;
 import com.chefcontrol.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -19,19 +18,27 @@ public class AuthService {
     private final UserRepository userRepository;
     private final LicenseService licenseService;
     private final NotificationService notificationService;
-    private final SmsService smsService;
-    private final PhoneChangeRequestRepository phoneChangeRequestRepository;
+    private final AccountSecurityService accountSecurityService;
+    private final SecurityEventService securityEventService;
+    private final SystemNotificationService systemNotificationService;
 
     @Value("${app.trial-days:14}")
     private int trialDays;
 
-    public AuthService(UserRepository userRepository, LicenseService licenseService, NotificationService notificationService,
-                       SmsService smsService, PhoneChangeRequestRepository phoneChangeRequestRepository) {
+    public AuthService(
+            UserRepository userRepository,
+            LicenseService licenseService,
+            NotificationService notificationService,
+            AccountSecurityService accountSecurityService,
+            SecurityEventService securityEventService,
+            SystemNotificationService systemNotificationService
+    ) {
         this.userRepository = userRepository;
         this.licenseService = licenseService;
         this.notificationService = notificationService;
-        this.smsService = smsService;
-        this.phoneChangeRequestRepository = phoneChangeRequestRepository;
+        this.accountSecurityService = accountSecurityService;
+        this.securityEventService = securityEventService;
+        this.systemNotificationService = systemNotificationService;
     }
 
     /** Normaliza telefone: só dígitos; se começar com 258 e tiver 12 dígitos (Moçambique), usa os últimos 9. */
@@ -44,10 +51,6 @@ public class AuthService {
         return digits;
     }
 
-    /**
-     * Telefone já normalizado (9 dígitos nacionais ou outro formato guardado na BD).
-     * Aceita contas antigas gravadas com prefixo 258…
-     */
     private Optional<UserEntity> findUserByNormalizedPhone(String normalizedPhone) {
         Optional<UserEntity> direct = userRepository.findByPhone(normalizedPhone);
         if (direct.isPresent()) {
@@ -68,19 +71,59 @@ public class AuthService {
                 && userRepository.existsByPhone("258" + normalized);
     }
 
-    public UserResponse login(LoginRequest request) {
+    public UserResponse login(LoginRequest request, String ipAddress, String userAgent) {
         String phone = normalizeLoginPhone(request.getPhone());
         if (phone.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Telefone inválido");
         }
-        UserEntity user = findUserByNormalizedPhone(phone)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Conta não encontrada"));
+        Optional<UserEntity> userOpt = findUserByNormalizedPhone(phone);
+        if (userOpt.isEmpty()) {
+            securityEventService.log(
+                    SecurityEventService.EVENT_LOGIN_FAILED_UNKNOWN_PHONE,
+                    null,
+                    phone,
+                    null,
+                    "Tentativa de login com contacto não registado",
+                    ipAddress,
+                    userAgent
+            );
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Conta não encontrada");
+        }
+        UserEntity user = userOpt.get();
         if (user.isBlocked()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Conta bloqueada. Contacte o suporte.");
+            securityEventService.log(
+                    SecurityEventService.EVENT_LOGIN_BLOCKED_ATTEMPT,
+                    user,
+                    "Tentativa de login em conta bloqueada",
+                    ipAddress,
+                    userAgent
+            );
+            throw accountSecurityService.blockedException();
         }
         if (!user.getPasswordHash().equals(request.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Telefone ou senha incorretos");
+            try {
+                accountSecurityService.registerFailedPassword(
+                        user,
+                        SecurityEventService.EVENT_LOGIN_FAILED_PASSWORD,
+                        "Login com senha incorrecta",
+                        ipAddress,
+                        userAgent
+                );
+            } catch (InvalidPasswordException e) {
+                throw e;
+            }
+            throw accountSecurityService.blockedException();
         }
+
+        accountSecurityService.resetFailedAttempts(user);
+        securityEventService.log(
+                SecurityEventService.EVENT_LOGIN_SUCCESS,
+                user,
+                "Login com sucesso",
+                ipAddress,
+                userAgent
+        );
+
         boolean isAdmin = user.isAdmin();
         licenseService.assertLicenseAllowsLogin(user.getId(), isAdmin);
         String licenseStatus = isAdmin ? "paid" : licenseService.findByUserId(user.getId()).map(l -> l.getStatus()).orElse("pending");
@@ -111,6 +154,7 @@ public class AuthService {
         user = userRepository.save(user);
 
         licenseService.createTrialLicenseForUser(user.getId(), trialDays);
+        notifyAdminNewRegistration(user);
 
         boolean messageSent = notificationService.sendAccountCreatedConfirmation(user.getPhone(), user.getFullName());
 
@@ -121,9 +165,41 @@ public class AuthService {
         return RegisterResponse.of(resp, messageSent);
     }
 
+    public void completeOnboarding(UUID userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizador não encontrado"));
+        if (user.isAdmin()) {
+            return;
+        }
+        if (user.getOnboardingCompletedAt() == null) {
+            user.setOnboardingCompletedAt(java.time.Instant.now());
+            userRepository.save(user);
+        }
+    }
+
+    private void notifyAdminNewRegistration(UserEntity user) {
+        String name = user.getFullName() != null && !user.getFullName().isBlank()
+                ? user.getFullName()
+                : user.getPhone();
+        String message = String.format(
+                "Nova conta registada.%nNome: %s%nTelefone: %s%nProvíncia: %s%n"
+                    + "Em «Novos utilizadores» pode rever pendentes e licenças de teste.",
+                name,
+                user.getPhone(),
+                user.getProvince() != null ? user.getProvince() : "—"
+        );
+        systemNotificationService.createOperationAlert(
+                "Novo registo: " + name,
+                message,
+                "info",
+                "registration"
+        );
+    }
+
     public void changePassword(UUID userId, ChangePasswordRequest request) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizador não encontrado"));
+        accountSecurityService.assertNotBlocked(user);
         if (!user.getPasswordHash().equals(request.getCurrentPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Senha atual incorreta");
         }
@@ -132,9 +208,16 @@ public class AuthService {
     }
 
     /**
-     * Inicia o fluxo de alteração de telefone: valida a senha actual, gera OTP e envia por SMS.
+     * Altera o contacto de login após validar a senha actual.
+     * O novo número não pode estar registado. Máximo 4 tentativas de senha incorrecta.
      */
-    public void startPhoneChange(UUID userId, String currentPassword, String newPhone) {
+    public UserResponse changePhone(
+            UUID userId,
+            String currentPassword,
+            String newPhone,
+            String ipAddress,
+            String userAgent
+    ) {
         if (newPhone == null || newPhone.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Novo contacto é obrigatório");
         }
@@ -143,62 +226,67 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Novo contacto inválido");
         }
         UserEntity user = userRepository.findById(userId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizador não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizador não encontrado"));
+        accountSecurityService.assertNotBlocked(user);
+
+        String currentNormalized = normalizeLoginPhone(user.getPhone());
+        if (normalized.equals(currentNormalized)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "O novo contacto deve ser diferente do actual");
+        }
+        if (phoneAlreadyRegistered(normalized)) {
+            securityEventService.log(
+                    SecurityEventService.EVENT_PHONE_CHANGE_REJECTED_REGISTERED,
+                    user,
+                    "Novo contacto já registado: " + normalized,
+                    ipAddress,
+                    userAgent
+            );
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Este contacto já está registado noutra conta. Não é possível utilizá-lo.");
+        }
+
         if (!user.getPasswordHash().equals(currentPassword)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Senha atual incorreta");
+            try {
+                accountSecurityService.registerFailedPassword(
+                        user,
+                        SecurityEventService.EVENT_PHONE_CHANGE_FAILED_PASSWORD,
+                        "Alteração de contacto com senha incorrecta",
+                        ipAddress,
+                        userAgent
+                );
+            } catch (InvalidPasswordException e) {
+                throw e;
+            }
+            throw accountSecurityService.blockedException();
         }
-        if (phoneAlreadyRegistered(normalized)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Já existe uma conta com este contacto");
-        }
-        PhoneChangeRequestEntity req = new PhoneChangeRequestEntity();
-        req.setUserId(userId);
-        req.setNewPhone(normalized);
-        String code = generateOtp();
-        req.setCode(code);
-        req.setExpiresAt(java.time.Instant.now().plusSeconds(600)); // 10 minutos
-        phoneChangeRequestRepository.save(req);
-        smsService.sendOtp(normalized, code);
-    }
 
-    /**
-     * Confirma a alteração de telefone com base no OTP recebido por SMS.
-     */
-    public void confirmPhoneChange(UUID userId, String newPhone, String code) {
-        if (newPhone == null || newPhone.isBlank() || code == null || code.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Contacto e código são obrigatórios");
-        }
-        String normalized = normalizeLoginPhone(newPhone);
-        PhoneChangeRequestEntity req = phoneChangeRequestRepository
-            .findTopByUserIdAndNewPhoneAndUsedFalseAndExpiresAtAfterOrderByCreatedAtDesc(
-                userId, normalized, java.time.Instant.now())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pedido de alteração não encontrado ou expirado"));
-        if (!req.getCode().equals(code.trim())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Código inválido");
-        }
-        if (phoneAlreadyRegistered(normalized)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Já existe uma conta com este contacto");
-        }
-        UserEntity user = userRepository.findById(userId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizador não encontrado"));
         user.setPhone(normalized);
-        userRepository.save(user);
-        req.setUsed(true);
-        phoneChangeRequestRepository.save(req);
-    }
+        accountSecurityService.resetFailedAttempts(user);
+        user = userRepository.save(user);
 
-    private String generateOtp() {
-        java.security.SecureRandom r = new java.security.SecureRandom();
-        StringBuilder sb = new StringBuilder(6);
-        for (int i = 0; i < 6; i++) {
-            sb.append(r.nextInt(10));
+        securityEventService.log(
+                SecurityEventService.EVENT_PHONE_CHANGE_SUCCESS,
+                user,
+                "Contacto alterado para " + normalized,
+                ipAddress,
+                userAgent
+        );
+
+        boolean isAdmin = user.isAdmin();
+        String licenseStatus = isAdmin ? "paid" : licenseService.findByUserId(userId).map(l -> l.getStatus()).orElse("pending");
+        UserResponse resp = UserResponse.fromEntity(user, licenseStatus);
+        if (!isAdmin) {
+            resp.setAccountFinalized(licenseService.isLicensePaid(userId));
+            licenseService.applyLicenseExpiryToUserResponse(userId, resp);
+        } else {
+            resp.setAccountFinalized(true);
         }
-        return sb.toString();
+        return resp;
     }
 
     public UserResponse getProfile(UUID userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizador não encontrado"));
-        // Admin não precisa de licença paga
         boolean isAdmin = user.isAdmin();
         String licenseStatus = isAdmin ? "paid" : licenseService.findByUserId(userId).map(l -> l.getStatus()).orElse("pending");
         UserResponse resp = UserResponse.fromEntity(user, licenseStatus);

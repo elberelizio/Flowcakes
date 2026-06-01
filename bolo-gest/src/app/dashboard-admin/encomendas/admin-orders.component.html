@@ -1,118 +1,196 @@
 <div class="admin-orders-page">
-  <header class="page-header">
-    <h1>Encomendas</h1>
-    <p class="subtitle">Todas as encomendas dos utilizadores do sistema.</p>
+  <header class="orders-header">
+    <div class="orders-header__main">
+      <a routerLink="/admin-dashboard" class="orders-back">← Painel</a>
+      <p class="orders-header__eyebrow">Administração</p>
+      <h1>Encomendas</h1>
+      <p class="orders-header__sub">Todas as encomendas dos utilizadores do sistema.</p>
+    </div>
+    @if (!loading && !error && orders.length > 0) {
+      <div class="orders-header__meta">
+        <span class="orders-header__pill">{{ orders.length }} encomenda(s) no total</span>
+        @if (hasActiveFilters()) {
+          <span class="orders-header__pill orders-header__pill--active">
+            {{ filteredOrders().length }} com filtros activos
+          </span>
+        }
+      </div>
+    }
   </header>
 
   @if (loading) {
-    <p class="loading">A carregar...</p>
+    <div class="orders-state" role="status">
+      <span class="orders-spinner" aria-hidden="true"></span>
+      <p>A carregar encomendas…</p>
+    </div>
   } @else if (error) {
-    <p class="msg-error">{{ error }}</p>
+    <p class="orders-alert" role="alert">{{ error }}</p>
   } @else if (orders.length === 0) {
-    <p class="empty">Nenhuma encomenda registada.</p>
+    <div class="orders-state orders-state--empty">
+      <p>Nenhuma encomenda registada.</p>
+    </div>
   } @else {
-    <!-- Estatísticas -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <span class="stat-label">Maior nº vendas (utilizador)</span>
-        <span class="stat-value">{{ stats().userWithMostSales }}</span>
-        <span class="stat-extra">{{ stats().totalVendasUser }} vendas</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-label">Total despesas</span>
-        <span class="stat-value">{{ stats().totalDespesas | number:'1.0-0' }} MZN</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-label">Produto mais vendido</span>
-        <span class="stat-value">{{ stats().productMostSold }}</span>
-        <span class="stat-extra">{{ stats().productMostSoldCount }} un.</span>
-      </div>
-      <div class="stat-card stat-card--highlight">
-        <span class="stat-label">Utilizador do mês</span>
-        <span class="stat-value">{{ stats().userOfMonth }}</span>
-        <span class="stat-extra">{{ stats().userOfMonthCount }} vendas este mês</span>
-      </div>
-    </div>
+    <section class="orders-kpis" aria-label="Resumo">
+      <article class="orders-kpi orders-kpi--sales">
+        <span class="orders-kpi__label">Maior nº vendas</span>
+        <strong class="orders-kpi__value orders-kpi__value--text" [title]="stats().userWithMostSales">
+          {{ stats().userWithMostSales }}
+        </strong>
+        <span class="orders-kpi__meta">{{ stats().totalVendasUser }} vendas</span>
+      </article>
+      <article class="orders-kpi orders-kpi--expense">
+        <span class="orders-kpi__label">Total despesas</span>
+        <strong class="orders-kpi__value">
+          {{ stats().totalDespesas | number:'1.0-0' }} <small>MZN</small>
+        </strong>
+      </article>
+      <article class="orders-kpi orders-kpi--product">
+        <span class="orders-kpi__label">Produto mais vendido</span>
+        <strong class="orders-kpi__value orders-kpi__value--text" [title]="stats().productMostSold">
+          {{ stats().productMostSold }}
+        </strong>
+        <span class="orders-kpi__meta">{{ stats().productMostSoldCount }} un.</span>
+      </article>
+      <article class="orders-kpi orders-kpi--month">
+        <span class="orders-kpi__label">Utilizador do mês</span>
+        <strong class="orders-kpi__value orders-kpi__value--text" [title]="stats().userOfMonth">
+          {{ stats().userOfMonth }}
+        </strong>
+        <span class="orders-kpi__meta">{{ stats().userOfMonthCount }} vendas este mês</span>
+      </article>
+    </section>
 
-    <!-- Filtros -->
-    <div class="filters-bar">
-      <label class="filter-item">
-        <span class="filter-label">Utilizador</span>
-        <select class="filter-select" [ngModel]="filterUser()" (ngModelChange)="filterUser.set($event)">
-          <option value="">Todos</option>
-          @for (u of uniqueUsers(); track u) {
-            <option [value]="u">{{ u }}</option>
-          }
-        </select>
-      </label>
-      <label class="filter-item">
-        <span class="filter-label">Mês</span>
-        <select class="filter-select" [ngModel]="filterMonth()" (ngModelChange)="filterMonth.set(+$event)">
-          @for (m of months; track m.v) {
-            <option [value]="m.v">{{ m.label }}</option>
-          }
-        </select>
-      </label>
-      <label class="filter-item">
-        <span class="filter-label">Ano</span>
-        <select class="filter-select" [ngModel]="filterYear()" (ngModelChange)="filterYear.set(+$event)">
-          <option [value]="0">Todos</option>
-          @for (y of years(); track y) {
-            @if (y !== 0) {
-              <option [value]="y">{{ y }}</option>
+    <section class="orders-totals" aria-label="Totais do filtro actual">
+      <div class="orders-totals__item">
+        <span class="orders-totals__label">Cobrado</span>
+        <span class="orders-totals__value">{{ stats().totalCobrado | number:'1.0-0' }} MZN</span>
+      </div>
+      <div class="orders-totals__item">
+        <span class="orders-totals__label">Pago</span>
+        <span class="orders-totals__value">{{ stats().totalPago | number:'1.0-0' }} MZN</span>
+      </div>
+      <div class="orders-totals__item" [class.orders-totals__item--neg]="stats().totalLucro < 0">
+        <span class="orders-totals__label">Lucro</span>
+        <span class="orders-totals__value">{{ stats().totalLucro | number:'1.0-0' }} MZN</span>
+      </div>
+    </section>
+
+    <section class="orders-filters" aria-label="Filtros">
+      <div class="orders-filters__head">
+        <h2>Filtros</h2>
+        @if (hasActiveFilters()) {
+          <button type="button" class="orders-filters__clear" (click)="clearFilters()">
+            Limpar filtros
+          </button>
+        }
+      </div>
+      <div class="orders-filters__grid">
+        <label class="orders-field">
+          <span>Utilizador</span>
+          <select class="orders-field__control" [ngModel]="filterUser()" (ngModelChange)="filterUser.set($event)">
+            <option value="">Todos</option>
+            @for (u of uniqueUsers(); track u) {
+              <option [value]="u">{{ u }}</option>
             }
-          }
-        </select>
-      </label>
-      <label class="filter-item">
-        <span class="filter-label">Produto</span>
-        <select class="filter-select" [ngModel]="filterProduct()" (ngModelChange)="filterProduct.set($event)">
-          <option value="">Todos</option>
-          @for (p of uniqueProducts(); track p) {
-            <option [value]="p">{{ p }}</option>
-          }
-        </select>
-      </label>
-    </div>
+          </select>
+        </label>
+        <label class="orders-field">
+          <span>Mês</span>
+          <select class="orders-field__control" [ngModel]="filterMonth()" (ngModelChange)="filterMonth.set(+$event)">
+            @for (m of months; track m.v) {
+              <option [value]="m.v">{{ m.label }}</option>
+            }
+          </select>
+        </label>
+        <label class="orders-field">
+          <span>Ano</span>
+          <select class="orders-field__control" [ngModel]="filterYear()" (ngModelChange)="filterYear.set(+$event)">
+            <option [value]="0">Todos</option>
+            @for (y of years(); track y) {
+              @if (y !== 0) {
+                <option [value]="y">{{ y }}</option>
+              }
+            }
+          </select>
+        </label>
+        <label class="orders-field">
+          <span>Produto</span>
+          <select class="orders-field__control" [ngModel]="filterProduct()" (ngModelChange)="filterProduct.set($event)">
+            <option value="">Todos</option>
+            @for (p of uniqueProducts(); track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </select>
+        </label>
+      </div>
+    </section>
 
-    <div class="table-wrap">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Utilizador</th>
-            <th>Data</th>
-            <th>Cliente</th>
-            <th>Produto</th>
-            <th>Valor cobrado</th>
-            <th>Pago</th>
-            <th>Lucro</th>
-            <th>Status</th>
-            <th>Entregue</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (o of filteredOrders(); track o.id) {
-            <tr>
-              <td class="user-cell">{{ userLabel(o) }}</td>
-              <td>{{ formatDate(o.createdAt) }}</td>
-              <td>{{ o.clientName }}</td>
-              <td>{{ displayName(toOrder(o)) }}</td>
-              <td>{{ o.valueCharged | number:'1.0-0' }} MZN</td>
-              <td>{{ o.valuePaid | number:'1.0-0' }} MZN</td>
-              <td>{{ o.profit | number:'1.0-0' }} MZN</td>
-              <td>
-                <span class="badge" [class.pendente]="o.paymentStatus === 'pendente'" [class.parcial]="o.paymentStatus === 'parcial'" [class.pago]="o.paymentStatus === 'pago'">
-                  {{ o.paymentStatus }}
-                </span>
-              </td>
-              <td>{{ o.delivered ? 'Sim' : 'Não' }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-    @if (filteredOrders().length === 0 && orders.length > 0) {
-      <p class="empty">Nenhuma encomenda corresponde aos filtros.</p>
-    }
+    <section class="orders-table-panel">
+      <div class="orders-table-panel__head">
+        <h2>Lista de encomendas</h2>
+        <span class="orders-table-panel__count">{{ filteredOrders().length }} registo(s)</span>
+      </div>
+
+      @if (filteredOrders().length === 0) {
+        <p class="orders-empty-filter">Nenhuma encomenda corresponde aos filtros seleccionados.</p>
+      } @else {
+        <div class="orders-table-wrap">
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>Utilizador</th>
+                <th>Data</th>
+                <th>Cliente</th>
+                <th>Produto</th>
+                <th class="col-num">Valor cobrado</th>
+                <th class="col-num">Pago</th>
+                <th class="col-num">Lucro</th>
+                <th>Status</th>
+                <th class="col-center">Entregue</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (o of filteredOrders(); track o.id) {
+                <tr>
+                  <td class="col-user">
+                    <span class="user-name">{{ userName(o) }}</span>
+                    @if (userPhone(o)) {
+                      <span class="user-phone">{{ userPhone(o) }}</span>
+                    }
+                  </td>
+                  <td class="col-date">
+                    <time [attr.datetime]="o.createdAt">{{ formatDate(o.createdAt) }}</time>
+                  </td>
+                  <td>{{ o.clientName }}</td>
+                  <td class="col-product">{{ displayName(toOrder(o)) }}</td>
+                  <td class="col-num">{{ o.valueCharged | number:'1.0-0' }} MZN</td>
+                  <td class="col-num">{{ o.valuePaid | number:'1.0-0' }} MZN</td>
+                  <td class="col-num" [class.col-num--neg]="o.profit < 0">
+                    {{ o.profit | number:'1.0-0' }} MZN
+                  </td>
+                  <td>
+                    <span
+                      class="badge"
+                      [class.badge--pendente]="o.paymentStatus === 'pendente'"
+                      [class.badge--parcial]="o.paymentStatus === 'parcial'"
+                      [class.badge--pago]="o.paymentStatus === 'pago'">
+                      {{ o.paymentStatus }}
+                    </span>
+                  </td>
+                  <td class="col-center">
+                    <span
+                      class="delivery-badge"
+                      [class.delivery-badge--yes]="o.delivered"
+                      [class.delivery-badge--no]="!o.delivered">
+                      {{ o.delivered ? 'Sim' : 'Não' }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
   }
 </div>

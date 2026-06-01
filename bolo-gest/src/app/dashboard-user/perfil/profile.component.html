@@ -1,97 +1,276 @@
 <div class="profile-page">
-  <header class="profile-header">
-    <a routerLink="/dashboard" class="btn-back">
-      <span class="btn-back-icon">←</span>
-      Voltar
-    </a>
-    <div class="profile-header-content">
-      <div class="profile-avatar">
-        <span class="avatar-initial">{{ userInitial() }}</span>
-      </div>
-      <div class="profile-header-text">
-        <h1>Meu perfil</h1>
-        <p class="page-subtitle">Gerir os seus dados pessoais e opções da conta</p>
-      </div>
+  <header class="page-hero">
+    <a routerLink="/dashboard" class="btn-back">← Voltar ao dashboard</a>
+    <div class="page-hero__main">
+      <p class="page-hero__eyebrow">Conta</p>
+      <h1>Meu perfil</h1>
+      <p class="page-hero__sub">Gerir os seus dados pessoais, contacto de login e senha.</p>
     </div>
   </header>
 
   @if (auth.getCurrentUser(); as user) {
-    <section class="section section-profile">
-      <h2 class="section-title">Dados pessoais</h2>
-      <p class="section-hint">Pode editar os dados abaixo. O contacto (telefone) é o seu utilizador de login e não pode ser alterado aqui.</p>
-      <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="profile-edit-form">
-        <div class="profile-form-grid">
-          <div class="field">
-            <label for="profileFullName">Nome completo</label>
-            <input id="profileFullName" type="text" formControlName="fullName" placeholder="Nome completo" />
+    <div class="profile-layout">
+      <aside class="profile-aside">
+        <div class="identity-card card">
+          <div class="identity-card__avatar" aria-hidden="true">
+            <span>{{ userInitial() }}</span>
           </div>
-          <div class="field field-readonly">
-            <label>Contacto (login)</label>
-            <span class="readonly-value">{{ user.phone }}</span>
-          </div>
-          <div class="field">
-            <label for="profileDocumentType">Tipo de documento</label>
-            <select id="profileDocumentType" formControlName="documentType">
-              <option value="bi">BI</option>
-              <option value="nuit">NUIT</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="profileDocumentNumber">Número do documento</label>
-            <input id="profileDocumentNumber" type="text" formControlName="documentNumber" placeholder="Nº do documento" maxlength="13" />
-          </div>
-          <div class="field">
-            <label for="profileProvince">Província</label>
-            <select id="profileProvince" formControlName="province">
-              <option value="">Selecione a província</option>
-              @for (p of provinces; track p) {
-                <option [value]="p">{{ p }}</option>
+          <h2 class="identity-card__name">{{ user.fullName?.trim() || 'Utilizador' }}</h2>
+          <p class="identity-card__role">{{ auth.isAdmin() ? 'Administrador' : 'Utilizador Chef Control' }}</p>
+          <div class="identity-card__chips">
+            <span class="chip chip--phone">
+              <app-icon [name]="iconPhone" />
+              {{ formatDisplayPhone(user.phone) }}
+            </span>
+            <span class="chip chip--date">
+              <app-icon [name]="iconClock" />
+              @if (user.createdAt) {
+                Desde {{ formatAccountCreatedAt(user.createdAt) }}
+              } @else {
+                Conta activa
               }
-            </select>
-          </div>
-          <div class="field">
-            <label for="profileEmail">Email</label>
-            <input id="profileEmail" type="email" formControlName="email" placeholder="exemplo&#64;email.com" />
+            </span>
           </div>
         </div>
-        @if (profileMessage) {
-          <p class="message success">{{ profileMessage }}</p>
-        }
-        @if (profileMessageError) {
-          <p class="message error">{{ profileMessageError }}</p>
-        }
-        <button type="submit" class="btn btn-primary" [disabled]="savingProfile || profileForm.pristine">
-          {{ savingProfile ? 'A guardar...' : 'Guardar alterações' }}
-        </button>
-      </form>
-    </section>
 
-    <section class="section section-password">
-      <h2 class="section-title">Alterar senha da conta</h2>
-      <p class="section-hint">Introduza a senha atual e defina uma nova senha (mín. 4 caracteres).</p>
-      <form [formGroup]="form" (ngSubmit)="changePassword()" class="password-form">
-        <div class="field">
-          <label for="currentPassword">Senha atual</label>
-          <input id="currentPassword" type="password" formControlName="currentPassword" placeholder="Senha atual" autocomplete="current-password" />
+        <div class="info-callout card">
+          <app-icon [name]="iconAlert" class="info-callout__icon" />
+          <p>
+            Os seus pedidos, clientes e licença permanecem nesta conta. Após alterar o contacto, use apenas o
+            <strong>novo número</strong> no login.
+          </p>
         </div>
-        <div class="field">
-          <label for="newPassword">Nova senha</label>
-          <input id="newPassword" type="password" formControlName="newPassword" placeholder="Nova senha (mín. 4 caracteres)" autocomplete="new-password" />
-        </div>
-        <div class="field">
-          <label for="confirmPassword">Confirmar nova senha</label>
-          <input id="confirmPassword" type="password" formControlName="confirmPassword" placeholder="Repetir a nova senha" autocomplete="new-password" />
-        </div>
-        @if (message) {
-          <p class="message success">{{ message }}</p>
+
+        <nav class="profile-nav card" aria-label="Secções do perfil">
+          <button
+            type="button"
+            class="profile-nav__item"
+            [class.active]="activeTab() === 'dados'"
+            (click)="activeTab.set('dados')"
+          >
+            <app-icon [name]="iconUser" />
+            <span>Dados pessoais</span>
+          </button>
+          <button
+            type="button"
+            class="profile-nav__item"
+            [class.active]="activeTab() === 'contacto'"
+            (click)="activeTab.set('contacto')"
+          >
+            <app-icon [name]="iconPhone" />
+            <span>Alterar contacto</span>
+          </button>
+          <button
+            type="button"
+            class="profile-nav__item"
+            [class.active]="activeTab() === 'senha'"
+            (click)="activeTab.set('senha')"
+          >
+            <app-icon [name]="iconLock" />
+            <span>Alterar senha</span>
+          </button>
+        </nav>
+      </aside>
+
+      <div class="profile-main">
+        @if (activeTab() === 'dados') {
+          <section class="panel card" aria-labelledby="panel-dados-title">
+            <header class="panel__head">
+              <span class="panel__icon panel__icon--teal" aria-hidden="true">
+                <app-icon [name]="iconUser" />
+              </span>
+              <div>
+                <h2 id="panel-dados-title" class="panel__title">Dados pessoais</h2>
+                <p class="panel__desc">Nome, documento, província e email associados à conta.</p>
+              </div>
+            </header>
+
+            <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="panel__form">
+              <div class="form-grid">
+                <div class="field field--full">
+                  <label for="profileFullName">Nome completo</label>
+                  <input id="profileFullName" type="text" formControlName="fullName" placeholder="O seu nome completo" />
+                </div>
+                <div class="field">
+                  <label for="profileDocumentType">Tipo de documento</label>
+                  <select id="profileDocumentType" formControlName="documentType">
+                    <option value="bi">BI</option>
+                    <option value="nuit">NUIT</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="profileDocumentNumber">Número do documento</label>
+                  <input
+                    id="profileDocumentNumber"
+                    type="text"
+                    formControlName="documentNumber"
+                    placeholder="Ex.: 123456789LA042"
+                    maxlength="13"
+                  />
+                </div>
+                <div class="field">
+                  <label for="profileProvince">Província</label>
+                  <select id="profileProvince" formControlName="province">
+                    <option value="">Selecione a província</option>
+                    @for (p of provinces; track p) {
+                      <option [value]="p">{{ p }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="profileEmail">Email</label>
+                  <input id="profileEmail" type="email" formControlName="email" placeholder="exemplo&#64;email.com" />
+                </div>
+              </div>
+
+              @if (profileMessage) {
+                <p class="alert alert--success" role="status">{{ profileMessage }}</p>
+              }
+              @if (profileMessageError) {
+                <p class="alert alert--error" role="alert">{{ profileMessageError }}</p>
+              }
+
+              <footer class="panel__footer">
+                <button type="submit" class="btn btn-primary" [disabled]="savingProfile || profileForm.pristine">
+                  {{ savingProfile ? 'A guardar…' : 'Guardar alterações' }}
+                </button>
+              </footer>
+            </form>
+          </section>
         }
-        @if (messageError) {
-          <p class="message error">{{ messageError }}</p>
+
+        @if (activeTab() === 'contacto') {
+          <section class="panel card" aria-labelledby="panel-contacto-title">
+            <header class="panel__head">
+              <span class="panel__icon panel__icon--amber" aria-hidden="true">
+                <app-icon [name]="iconPhone" />
+              </span>
+              <div>
+                <h2 id="panel-contacto-title" class="panel__title">Alterar contacto</h2>
+                <p class="panel__desc">
+                  O contacto é o seu utilizador de login. Confirme a senha actual. O novo número não pode estar
+                  registado noutra conta. Máximo 4 tentativas de senha incorrecta.
+                </p>
+              </div>
+            </header>
+
+            <div class="current-phone-box">
+              <span class="current-phone-box__label">Contacto actual</span>
+              <span class="current-phone-box__value">{{ formatDisplayPhone(user.phone) }}</span>
+            </div>
+
+            <form [formGroup]="phoneForm" class="panel__form phone-form" (ngSubmit)="changePhoneSubmit()">
+              <div class="form-grid form-grid--narrow">
+                <div class="field field--full">
+                  <label for="newPhone">Novo contacto</label>
+                  <input
+                    id="newPhone"
+                    type="tel"
+                    formControlName="newPhone"
+                    placeholder="Ex.: 84 123 4567"
+                    autocomplete="tel"
+                    inputmode="numeric"
+                    (input)="onNewPhoneInput($event)"
+                  />
+                  <span class="field-hint">9 dígitos ou 258 + 9 dígitos — não pode estar registado</span>
+                </div>
+                <div class="field field--full">
+                  <label for="phoneCurrentPassword">Senha actual (login)</label>
+                  <input
+                    id="phoneCurrentPassword"
+                    type="password"
+                    formControlName="currentPassword"
+                    placeholder="A senha que usa para entrar"
+                    autocomplete="current-password"
+                  />
+                </div>
+              </div>
+
+              @if (phoneMessage) {
+                <p class="alert alert--success" role="status">{{ phoneMessage }}</p>
+              }
+              @if (phoneMessageError) {
+                <p class="alert alert--error" role="alert">{{ phoneMessageError }}</p>
+              }
+
+              <footer class="panel__footer">
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  [disabled]="savingPhone || phoneForm.invalid"
+                >
+                  {{ savingPhone ? 'A guardar…' : 'Confirmar novo contacto' }}
+                </button>
+              </footer>
+            </form>
+          </section>
         }
-        <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Alterar senha</button>
-      </form>
-    </section>
+
+        @if (activeTab() === 'senha') {
+          <section class="panel card" aria-labelledby="panel-senha-title">
+            <header class="panel__head">
+              <span class="panel__icon panel__icon--violet" aria-hidden="true">
+                <app-icon [name]="iconLock" />
+              </span>
+              <div>
+                <h2 id="panel-senha-title" class="panel__title">Alterar senha</h2>
+                <p class="panel__desc">Use uma senha que só você conheça (mínimo 4 caracteres).</p>
+              </div>
+            </header>
+
+            <form [formGroup]="form" (ngSubmit)="changePassword()" class="panel__form">
+              <div class="form-grid form-grid--narrow">
+                <div class="field field--full">
+                  <label for="currentPassword">Senha actual</label>
+                  <input
+                    id="currentPassword"
+                    type="password"
+                    formControlName="currentPassword"
+                    placeholder="Senha actual"
+                    autocomplete="current-password"
+                  />
+                </div>
+                <div class="field">
+                  <label for="newPassword">Nova senha</label>
+                  <input
+                    id="newPassword"
+                    type="password"
+                    formControlName="newPassword"
+                    placeholder="Mín. 4 caracteres"
+                    autocomplete="new-password"
+                  />
+                </div>
+                <div class="field">
+                  <label for="confirmPassword">Confirmar nova senha</label>
+                  <input
+                    id="confirmPassword"
+                    type="password"
+                    formControlName="confirmPassword"
+                    placeholder="Repetir senha"
+                    autocomplete="new-password"
+                  />
+                </div>
+              </div>
+
+              @if (message) {
+                <p class="alert alert--success" role="status">{{ message }}</p>
+              }
+              @if (messageError) {
+                <p class="alert alert--error" role="alert">{{ messageError }}</p>
+              }
+
+              <footer class="panel__footer">
+                <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Alterar senha</button>
+              </footer>
+            </form>
+          </section>
+        }
+      </div>
+    </div>
   } @else {
-    <p class="loading-text">A carregar perfil...</p>
+    <div class="page-state page-state--loading">
+      <span class="page-state__spinner" aria-hidden="true"></span>
+      <p>A carregar perfil…</p>
+    </div>
   }
 </div>

@@ -2,7 +2,25 @@ import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from './auth.service';
 import { API_URL } from '../core/config/api.config';
-import { Order, OrderCategory, PaymentStatus, ProductSize } from '../models/order.model';
+import {
+  Order,
+  OrderCategory,
+  OrderClosureReason,
+  OrderProductionStage,
+  OrderRefundType,
+  PaymentStatus,
+  ProductSize,
+} from '../models/order.model';
+
+export interface OrderCloseInput {
+  closureReason: OrderClosureReason;
+  closureNote?: string;
+  productionStage: OrderProductionStage;
+  refundType: OrderRefundType;
+  valuePaidAfterClose?: number;
+  refundAmount?: number;
+  lossAmount?: number;
+}
 
 export interface OrderCreateInput {
   clientName: string;
@@ -315,43 +333,9 @@ export class OrdersService {
       .catch(() => false);
   }
 
-  cancelOrder(orderId: string): Promise<boolean> {
-    const order = this.orders().find((o) => o.id === orderId);
-    if (!order) return Promise.resolve(false);
-    
-    // Manter lucro de 50% se já foi pago parcialmente
-    const totalProfit = order.valueCharged - order.costTotal;
-    let profit = order.profit; // Manter o lucro atual (já calculado proporcionalmente)
-    
-    const body: OrderRequest = {
-      clientName: order.clientName,
-      category: order.category,
-      subcategory: order.subcategory,
-      productName: order.productName,
-      size: order.size,
-      quantityKg: order.quantityKg,
-      unitsPerKg: order.unitsPerKg,
-      valueCharged: order.valueCharged,
-      valuePaid: order.valuePaid, // Manter valor pago
-      costTotal: order.costTotal,
-      profit, // Manter lucro proporcional ao que foi pago
-      paymentStatus: order.paymentStatus,
-      delivered: order.delivered,
-      ingredientIds: order.ingredientIds || [],
-      observations: order.observations,
-      cakeName: order.cakeName,
-      cakeSize: order.cakeSize,
-      deliveryDate: order.deliveryDate,
-      clientAddress: order.clientAddress,
-      pickupAddress: order.pickupAddress,
-      deliveryAddress: order.deliveryAddress,
-      hasDelivery: order.hasDelivery || false,
-      deliveryCost: order.deliveryCost || 0,
-      orderStatus: 'cancelled',
-      isCancelled: true,
-    };
+  closeOrder(orderId: string, input: OrderCloseInput): Promise<boolean> {
     return this.http
-      .put<OrderApi>(`${API_URL}/orders/${orderId}`, body)
+      .post<OrderApi>(`${API_URL}/orders/${orderId}/close`, input)
       .toPromise()
       .then((updated) => {
         if (updated) {
@@ -359,13 +343,19 @@ export class OrdersService {
           this.orders.update((list) =>
             list.map((o) => (o.id === orderId ? updatedOrder : o))
           );
-          // Recarregar lista completa do backend para garantir sincronização
-          this.loadOrders();
           return true;
         }
         return false;
       })
-      .catch(() => false);
+      .catch((err) => {
+        const body = err?.error;
+        const msg =
+          typeof body === 'object' && body?.message
+            ? String(body.message)
+            : err?.message ?? 'Erro ao encerrar encomenda';
+        this.error.set(msg);
+        return false;
+      });
   }
 
   updateOrder(orderId: string, updates: {
@@ -607,8 +597,15 @@ interface OrderApi {
   hasDelivery?: boolean; // Se tem transporte
   deliveryCost?: number; // Custo de transporte
   orderStatus?: string; // Estado do pedido: ordered, in_progress, completed, cancelled
-  isCancelled?: boolean; // Se foi cancelado
-  variableExpenses?: { name: string; amount: number }[]; // Despesas variáveis
+  isCancelled?: boolean;
+  closedAt?: string;
+  closureReason?: string;
+  closureNote?: string;
+  productionStage?: string;
+  refundType?: string;
+  refundAmount?: number;
+  lossAmount?: number;
+  variableExpenses?: { name: string; amount: number }[];
 }
 
 function apiToOrder(a: OrderApi): Order {
@@ -642,7 +639,14 @@ function apiToOrder(a: OrderApi): Order {
     orderStatus: (a.orderStatus as Order['orderStatus']) || 'ordered', // Estado do pedido
     // Mapear isCancelled explicitamente: se não vier da API, verificar orderStatus
     isCancelled: a.isCancelled !== undefined ? a.isCancelled : (a.orderStatus === 'cancelled'),
-    variableExpenses: a.variableExpenses || [], // Despesas variáveis
+    closedAt: a.closedAt,
+    closureReason: a.closureReason as Order['closureReason'],
+    closureNote: a.closureNote,
+    productionStage: a.productionStage as Order['productionStage'],
+    refundType: a.refundType as Order['refundType'],
+    refundAmount: a.refundAmount,
+    lossAmount: a.lossAmount,
+    variableExpenses: a.variableExpenses || [],
   };
 }
 

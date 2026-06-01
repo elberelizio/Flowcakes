@@ -1,5 +1,11 @@
 <div class="login-page">
   <div class="login-wrap">
+    <nav class="login-nav" aria-label="Navegação">
+      <a routerLink="/" class="login-nav__back" title="Voltar à página inicial">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+        Voltar ao início
+      </a>
+    </nav>
     <div class="login-card">
       <div class="card-panel card-welcome">
         <img src="/logotipo.png" alt="Chef Control" class="card-logo" />
@@ -9,7 +15,17 @@
       </div>
       <div class="card-panel card-form">
         <h2 class="form-title" id="login-form-heading">Entrar</h2>
-        @if (showPostRegisterHint) {
+        @if (showTrialLoginBanner) {
+          <div class="msg-trial-login" role="status">
+            <i class="fa-solid fa-gift msg-trial-login__icon" aria-hidden="true"></i>
+            <div>
+              <strong>Teste grátis seleccionado</strong>
+              <span class="msg-trial-login__text">
+                Introduza o contacto e a senha que definiu no registo. Só depois de entrar terá acesso ao sistema — o login não é automático.
+              </span>
+            </div>
+          </div>
+        } @else if (showPostRegisterHint) {
           <p class="msg-success" role="status">
             Conta criada com sucesso. Introduza a mesma senha que definiu no registo para iniciar sessão.
           </p>
@@ -94,19 +110,15 @@
           <p class="license-modal__price-per">por mês · escolha a duração na página de pagamento</p>
         </div>
 
-        <a
-          [routerLink]="['/pagamento-licenca']"
-          [queryParams]="paymentPageQueryParams()"
-          class="license-modal__btn-paypage">
-          Ir para pagamento / renovação
-        </a>
-        <p class="license-modal__hint-inline">Na página seguinte escolhe <strong>M-Pesa</strong> ou <strong>e-Mola</strong> e o número de meses.</p>
-        <p class="license-modal__footer-short">Vai precisar do contacto e da senha que acabou de usar.</p>
+        <a routerLink="/license-payment" class="license-modal__btn-paypage">Ir para pagamento da licença</a>
+        <p class="license-modal__hint-inline">
+          Na página pública escolha <strong>M-Pesa</strong> (84 ou 85) ou <strong>e-Mola</strong> (86 ou 87), indique o número da carteira e, se pedido, o contacto e a senha da conta.
+        </p>
+        <p class="license-modal__footer-short">
+          Se o login continuar bloqueado por licença, o pagamento com contacto/senha na mesma página pode resolver; caso contrário, contacte o administrador do Chef Control.
+        </p>
       </div>
     </div>
   }
 
-  @if (showLoginSuccessModal) {
-    <app-login-success-modal (closed)="onLoginSuccessModalClosed()" />
-  }
 </div>

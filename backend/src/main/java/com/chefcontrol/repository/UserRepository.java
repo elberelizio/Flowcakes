@@ -2,6 +2,7 @@ package com.chefcontrol.repository;
 
 import com.chefcontrol.entity.UserEntity;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,4 +13,10 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID> {
     Optional<UserEntity> findByPhone(String phone);
 
     boolean existsByPhone(String phone);
+
+    List<UserEntity> findByBlockedTrueOrderByUpdatedAtDesc();
+
+    long countByBlockedTrue();
+
+    long countByAdminFalse();
 }

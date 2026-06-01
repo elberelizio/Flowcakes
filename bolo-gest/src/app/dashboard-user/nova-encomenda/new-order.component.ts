@@ -17,6 +17,7 @@ import {
   SALGADOS_SUBCATEGORIES,
   type OrderCategory,
 } from '../../models/order.model';
+import { NEW_ORDER_CATEGORY_META, type NewOrderCategoryMeta } from './new-order.category-meta';
 
 @Component({
   selector: 'app-new-order',
@@ -37,12 +38,14 @@ export class NewOrderComponent implements OnInit {
     return new Date().toISOString().split('T')[0];
   }
 
+  readonly categoryMetaDoces: NewOrderCategoryMeta = NEW_ORDER_CATEGORY_META.doces;
+  readonly categoryMetaSalgados: NewOrderCategoryMeta = NEW_ORDER_CATEGORY_META.salgados;
   readonly docesSubcategories = DOCES_SUBCATEGORIES;
   readonly salgadosSubcategories = SALGADOS_SUBCATEGORIES;
   readonly docesSizesByName = DOCES_SIZES_BY_NAME;
   readonly docesSizesByNumber = DOCES_SIZES_BY_NUMBER;
   /** Doces: por número de forma (15, 20, 47) ou por escala (Pequeno, Médio, Grande) - null = nada selecionado */
-  sizeType: 'nome' | 'numero' | null = 'nome';
+  sizeType: 'nome' | 'numero' | null = null;
 
   form!: FormGroup;
 
@@ -58,19 +61,30 @@ export class NewOrderComponent implements OnInit {
     return this.category === 'salgados';
   }
 
+  get categoryMeta() {
+    return this.category ? NEW_ORDER_CATEGORY_META[this.category] : null;
+  }
+
   /** Percentagem aproximada já paga em relação ao valor cobrado */
   get paymentPercentDisplay(): number | null {
-    const charged = Number(this.form.get('valueCharged')?.value ?? 0);
-    const paid = Number(this.form.get('valuePaid')?.value ?? 0);
-    if (!Number.isFinite(charged) || charged <= 0 || !Number.isFinite(paid) || paid < 0) {
+    const charged = this.parseOptionalNumber(this.form.get('valueCharged')?.value);
+    const paid = this.parseOptionalNumber(this.form.get('valuePaid')?.value);
+    if (charged == null || charged <= 0 || paid == null || paid < 0) {
       return null;
     }
     return Math.round((paid / charged) * 100);
   }
 
   /** Pré-visualização do custo total (despesa) desta encomenda */
-  get costTotalPreview(): number {
-    return this.getCostTotal();
+  get costTotalPreview(): number | null {
+    if (this.expenseMode === 'simples') {
+      const raw = this.form.get('expenseTotal')?.value;
+      if (raw == null || raw === '') return null;
+    } else if (!this.ingredients.length) {
+      return null;
+    }
+    const total = this.getCostTotal();
+    return total > 0 ? total : null;
   }
 
   setSizeType(type: 'nome' | 'numero'): void {
@@ -81,12 +95,36 @@ export class NewOrderComponent implements OnInit {
   setHasDelivery(value: boolean): void {
     this.form.patchValue({ hasDelivery: value });
     if (!value) {
-      this.form.patchValue({ deliveryAddress: '', deliveryCost: 0 });
+      this.form.patchValue({ deliveryAddress: '', deliveryCost: null });
     }
+  }
+
+  onClientContactInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const digits = input.value.replace(/\D/g, '').slice(0, 9);
+    this.form.get('clientContact')?.setValue(digits, { emitEvent: false });
+    if (input.value !== digits) {
+      input.value = digits;
+    }
+  }
+
+  formatSummaryMoney(controlName: string): string {
+    const v = this.parseOptionalNumber(this.form.get(controlName)?.value);
+    if (v == null) return '—';
+    return `${v.toLocaleString('pt-MZ', { maximumFractionDigits: 0 })} MZN`;
+  }
+
+  private parseOptionalNumber(value: unknown): number | null {
+    if (value == null || value === '') return null;
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
   }
 
   setExpenseMode(mode: 'detalhado' | 'simples'): void {
     this.expenseMode = mode;
+    if (mode === 'detalhado' && this.ingredients.length === 0) {
+      this.addIngredient();
+    }
   }
 
   /** Retorna true apenas quando delivery = Sim */
@@ -122,7 +160,7 @@ export class NewOrderComponent implements OnInit {
   private buildForm(): void {
     this.form = this.fb.group({
       clientName: ['', Validators.required],
-      clientContact: [''],
+      clientContact: ['', [Validators.pattern(/^\d{0,9}$/)]],
       clientAddress: [''],       // Endereço do cliente (independente do local de entrega)
       deliveryTime: [''],        // Hora de entrega do bolo
       deliveryAddress: [''],     // Local de entrega (só quando delivery = Sim)
@@ -133,13 +171,13 @@ export class NewOrderComponent implements OnInit {
       quantityKg: [null as number | null],
       unitsPerKg: [null as number | null],
       valueCharged: [null as number | null, [Validators.required, Validators.min(1)]],
-      valuePaid: [0 as number | null, [Validators.required, Validators.min(0)]],
-      discount: [0 as number | null, [Validators.min(0)]],
+      valuePaid: [null as number | null, [Validators.min(0)]],
+      discount: [null as number | null, [Validators.min(0)]],
       deliveryDate: ['', Validators.required],
       hasDelivery: [false as boolean | null],
-      deliveryCost: [0 as number | null, [Validators.min(0)]],
+      deliveryCost: [null as number | null, [Validators.min(0)]],
       observations: [''],
-      expenseTotal: [0, [Validators.min(0)]],
+      expenseTotal: [null as number | null, [Validators.min(0)]],
       expenseDescription: [''],
       ingredients: this.fb.array([]),
     });
@@ -147,39 +185,35 @@ export class NewOrderComponent implements OnInit {
 
   selectCategory(cat: OrderCategory): void {
     this.category = cat;
-    this.sizeType = cat === 'doces' ? 'nome' : null;
+    this.sizeType = null;
     this.expenseMode = 'simples';
-    this.form.patchValue({
+    this.form.reset({
+      clientName: '',
+      clientContact: '',
+      clientAddress: '',
+      deliveryTime: '',
+      deliveryAddress: '',
       subcategory: '',
-      hasDelivery: false,
-      valuePaid: 0,
-      deliveryCost: 0,
-      discount: 0,
+      productName: '',
       size: '',
       sizeNumberCustom: null,
+      quantityKg: null,
+      unitsPerKg: null,
+      valueCharged: null,
+      valuePaid: null,
+      discount: null,
+      deliveryDate: '',
+      hasDelivery: false,
+      deliveryCost: null,
+      observations: '',
+      expenseTotal: null,
+      expenseDescription: '',
     });
     this.ingredients.clear();
-    const defaults =
-      cat === 'doces'
-        ? [
-            { name: 'Ovos', quantity: 0, unitValue: 0 },
-            { name: 'Trigo', quantity: 0, unitValue: 0 },
-            { name: 'Açúcar', quantity: 0, unitValue: 0 },
-          ]
-        : [
-            { name: 'Massa', quantity: 0, unitValue: 0 },
-            { name: 'Carne', quantity: 0, unitValue: 0 },
-            { name: 'Óleo', quantity: 0, unitValue: 0 },
-          ];
-    defaults.forEach((d) =>
-      this.ingredients.push(
-        this.fb.group({
-          name: [d.name],
-          quantity: [d.quantity, [Validators.required, Validators.min(0)]],
-          unitValue: [d.unitValue, [Validators.required, Validators.min(0)]],
-        })
-      )
-    );
+    const date = this.route.snapshot.queryParamMap.get('deliveryDate');
+    if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      this.form.patchValue({ deliveryDate: date });
+    }
     this.step = 2;
   }
 
@@ -192,8 +226,8 @@ export class NewOrderComponent implements OnInit {
     this.ingredients.push(
       this.fb.group({
         name: [''],
-        quantity: [0, [Validators.required, Validators.min(0)]],
-        unitValue: [0, [Validators.required, Validators.min(0)]],
+        quantity: [null as number | null, [Validators.min(0)]],
+        unitValue: [null as number | null, [Validators.min(0)]],
       })
     );
   }

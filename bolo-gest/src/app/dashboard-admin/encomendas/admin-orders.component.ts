@@ -1,6 +1,7 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { API_URL } from '../../core/config/api.config';
 import { Order, orderDisplayName, orderDisplaySize } from '../../models/order.model';
@@ -31,7 +32,7 @@ export interface AdminOrder {
 @Component({
   selector: 'app-admin-orders',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './admin-orders.component.html',
   styleUrl: './admin-orders.component.scss',
 })
@@ -156,8 +157,15 @@ export class AdminOrdersComponent implements OnInit {
       }
     });
 
+    const totalCobrado = list.reduce((s, o) => s + (Number(o.valueCharged) || 0), 0);
+    const totalPago = list.reduce((s, o) => s + (Number(o.valuePaid) || 0), 0);
+    const totalLucro = list.reduce((s, o) => s + (Number(o.profit) || 0), 0);
+
     return {
       totalDespesas,
+      totalCobrado,
+      totalPago,
+      totalLucro,
       userWithMostSales: userWithMostSales || '—',
       totalVendasUser: maxCount,
       productMostSold: productMostSold || '—',
@@ -166,6 +174,13 @@ export class AdminOrdersComponent implements OnInit {
       userOfMonthCount: maxMonth,
     };
   });
+
+  readonly hasActiveFilters = computed(() =>
+    !!this.filterUser().trim()
+    || this.filterMonth() > 0
+    || this.filterYear() > 0
+    || !!this.filterProduct().trim()
+  );
 
   /** Meses para o filtro */
   readonly months = [
@@ -220,5 +235,20 @@ export class AdminOrdersComponent implements OnInit {
   userLabel(o: AdminOrder): string {
     if (o.userFullName?.trim()) return `${o.userFullName} (${o.userPhone || '—'})`;
     return o.userPhone || '—';
+  }
+
+  userName(o: AdminOrder): string {
+    return o.userFullName?.trim() || '—';
+  }
+
+  userPhone(o: AdminOrder): string {
+    return o.userPhone?.trim() || '';
+  }
+
+  clearFilters(): void {
+    this.filterUser.set('');
+    this.filterMonth.set(0);
+    this.filterYear.set(0);
+    this.filterProduct.set('');
   }
 }

@@ -1,10 +1,10 @@
 <nav
-  class="public-site-nav fixed w-full z-50 transition-all duration-300 px-6 lg:px-12"
+  class="public-site-nav fixed left-0 right-0 w-full z-50 transition-all duration-300 px-6 lg:px-12 xl:px-16"
   [class.py-4]="!navScrolled"
   [class.py-2]="navScrolled"
   [ngClass]="{ 'public-site-nav--scrolled': navScrolled }"
 >
-  <div class="max-w-7xl w-full mx-auto flex justify-between items-center">
+  <div class="flex w-full max-w-none justify-between items-center">
     <a routerLink="/" class="flex items-center gap-3 group" (click)="closeMobileMenu()">
       <img src="/logotipo.png" alt="ChefControl" class="h-10 w-auto object-contain" />
       <span class="text-2xl font-serif font-bold text-brand-800 tracking-wide">Chef<span class="text-brand-600">Control</span></span>
@@ -19,6 +19,12 @@
         [routerLinkActiveOptions]="{ exact: true }"
         class="text-gray-600 hover:text-brand-600 font-medium transition-colors"
         >Contacto</a
+      >
+      <a
+        [routerLink]="['/']"
+        fragment="mensagem-equipa"
+        class="text-gray-600 hover:text-brand-600 font-medium transition-colors"
+        >Sugestões</a
       >
     </div>
     <div class="hidden md:flex items-center gap-3">
@@ -48,6 +54,7 @@
     <a [routerLink]="['/']" fragment="pricing" (click)="closeMobileMenu()" class="block py-2 text-gray-600 hover:text-brand-600">Preços</a>
     <a [routerLink]="['/']" fragment="testimonials" (click)="closeMobileMenu()" class="block py-2 text-gray-600 hover:text-brand-600">Depoimentos</a>
     <a routerLink="/contacto" (click)="closeMobileMenu()" class="block py-2 text-gray-600 hover:text-brand-600">Contacto</a>
+    <a [routerLink]="['/']" fragment="mensagem-equipa" (click)="closeMobileMenu()" class="block py-2 text-gray-600 hover:text-brand-600">Sugestões</a>
     <hr class="border-gray-100" />
     <a
       routerLink="/login"

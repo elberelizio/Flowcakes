@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -15,8 +15,10 @@ import { Withdrawal, WithdrawalCreate } from '../../models/withdrawal.model';
 })
 export class RetiradasComponent implements OnInit {
   private notification = inject(NotificationService);
+  readonly withdrawalService = inject(WithdrawalService);
 
-  constructor(public withdrawalService: WithdrawalService) {}
+  readonly saving = signal(false);
+  readonly withdrawalCount = computed(() => this.withdrawalService.withdrawals().length);
 
   amount: number | null = null;
   withdrawalDate = '';
@@ -39,6 +41,7 @@ export class RetiradasComponent implements OnInit {
       withdrawalDate: date,
       description: (this.description || '').trim() || undefined,
     };
+    this.saving.set(true);
     this.withdrawalService
       .add(data)
       .then(() => {
@@ -49,7 +52,8 @@ export class RetiradasComponent implements OnInit {
       .catch((err) => {
         console.warn('Erro ao registar retirada', err);
         this.notification.showError('Não foi possível registar a retirada.');
-      });
+      })
+      .finally(() => this.saving.set(false));
   }
 
   remove(w: Withdrawal): void {

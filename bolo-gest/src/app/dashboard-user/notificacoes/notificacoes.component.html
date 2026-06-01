@@ -1,0 +1,43 @@
+<div class="notif-page">
+  <header class="notif-header">
+    <a routerLink="/dashboard" class="notif-back">← Dashboard</a>
+    <div class="notif-header__row">
+      <div>
+        <h1>Notificações</h1>
+        <p class="notif-sub">Avisos de manutenção e comunicados da plataforma</p>
+      </div>
+      @if (unreadCount() > 0) {
+        <span class="notif-unread-badge">{{ unreadCount() }} por ler</span>
+      }
+    </div>
+  </header>
+
+  @if (systemNotifications.loading()) {
+    <p class="notif-empty">A carregar…</p>
+  } @else if (items().length === 0) {
+    <section class="notif-card notif-card--empty">
+      <p>Não há notificações activas.</p>
+      <p class="notif-empty-hint">Os avisos de manutenção desaparecem automaticamente após o período indicado.</p>
+    </section>
+  } @else {
+    <ul class="notif-list">
+      @for (n of items(); track n.id) {
+        <li class="notif-item" [class.notif-item--read]="n.dismissed" [attr.data-category]="n.category">
+          <div class="notif-item__top">
+            <span class="notif-item__badge">{{ phaseLabel(n) }}</span>
+            @if (n.category === 'maintenance' && n.maintenanceEndAt) {
+              <span class="notif-item__until">Até {{ formatDate(n.maintenanceEndAt) }}</span>
+            }
+          </div>
+          <h2 class="notif-item__title">{{ n.title }}</h2>
+          <p class="notif-item__msg" [innerHTML]="systemNotifications.messageHtml(n)"></p>
+          @if (!n.dismissed) {
+            <button type="button" class="notif-item__btn" (click)="dismiss(n.id)">Marcar como lida</button>
+          } @else {
+            <span class="notif-item__read-label">Lida</span>
+          }
+        </li>
+      }
+    </ul>
+  }
+</div>

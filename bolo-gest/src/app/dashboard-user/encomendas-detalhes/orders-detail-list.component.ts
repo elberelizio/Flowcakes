@@ -2,7 +2,13 @@ import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { OrdersService } from '../../services/orders.service';
-import { Order, orderDisplayName, orderDisplaySize, getOrderStatusLabel } from '../../models/order.model';
+import {
+  Order,
+  orderDisplayName,
+  orderDisplaySize,
+  getOrderStatusLabel,
+  orderActiveDebt,
+} from '../../models/order.model';
 
 @Component({
   selector: 'app-orders-detail-list',
@@ -15,16 +21,31 @@ export class OrdersDetailListComponent implements OnInit {
   filterClient = signal('');
   filterCategory = signal('');
   filterStatus = signal('');
+  listScope = signal<'active' | 'closed'>('active');
+
+  private splitOrders = computed(() => {
+    const all = this.ordersService.allOrders();
+    const active = all.filter(o => !o.isCancelled && o.orderStatus !== 'cancelled');
+    const closed = all.filter(o => o.isCancelled === true || o.orderStatus === 'cancelled');
+    return { active, closed };
+  });
+
+  activeCount = computed(() => this.splitOrders().active.length);
+  closedCount = computed(() => this.splitOrders().closed.length);
 
   orders = computed(() => {
-    const all = this.ordersService.allOrders();
-    return all
-      .filter(o => !o.isCancelled && o.orderStatus !== 'cancelled')
-      .sort((a, b) => {
-        const dateA = a.deliveryDate ? new Date(a.deliveryDate).getTime() : Number.MAX_SAFE_INTEGER;
-        const dateB = b.deliveryDate ? new Date(b.deliveryDate).getTime() : Number.MAX_SAFE_INTEGER;
-        return dateA - dateB;
-      });
+    const { active, closed } = this.splitOrders();
+    const list = this.listScope() === 'closed' ? closed : active;
+    return [...list].sort((a, b) => {
+      if (this.listScope() === 'closed') {
+        const da = a.closedAt ?? a.createdAt;
+        const db = b.closedAt ?? b.createdAt;
+        return new Date(db).getTime() - new Date(da).getTime();
+      }
+      const dateA = a.deliveryDate ? new Date(a.deliveryDate).getTime() : Number.MAX_SAFE_INTEGER;
+      const dateB = b.deliveryDate ? new Date(b.deliveryDate).getTime() : Number.MAX_SAFE_INTEGER;
+      return dateA - dateB;
+    });
   });
 
   filteredOrders = computed(() => {
@@ -32,11 +53,12 @@ export class OrdersDetailListComponent implements OnInit {
     const client = this.filterClient().trim().toLowerCase();
     const category = this.filterCategory();
     const status = this.filterStatus();
+    const scope = this.listScope();
 
     return list.filter(o => {
       if (client && !o.clientName.toLowerCase().includes(client)) return false;
       if (category && (o.category || '') !== category) return false;
-      if (status && (o.orderStatus || 'ordered') !== status) return false;
+      if (scope === 'active' && status && (o.orderStatus || 'ordered') !== status) return false;
       return true;
     });
   });
@@ -50,6 +72,11 @@ export class OrdersDetailListComponent implements OnInit {
     this.ordersService.loadOrders();
   }
 
+  setListScope(scope: 'active' | 'closed'): void {
+    this.listScope.set(scope);
+    if (scope === 'closed') this.filterStatus.set('');
+  }
+
   formatDate(iso: string | undefined): string {
     if (!iso) return '—';
     return new Date(iso).toLocaleDateString('pt-MZ', {
@@ -57,6 +84,10 @@ export class OrdersDetailListComponent implements OnInit {
       month: '2-digit',
       year: 'numeric',
     });
+  }
+
+  formatClosedDate(o: Order): string {
+    return this.formatDate(o.closedAt ?? o.createdAt);
   }
 
   getCategoryLabel(cat: string | undefined): string {
@@ -93,7 +124,7 @@ export class OrdersDetailListComponent implements OnInit {
   }
 
   saldo(order: Order): number {
-    return Math.max(0, order.valueCharged - order.valuePaid);
+    return orderActiveDebt(order);
   }
 
   clearFilters(): void {

@@ -3,8 +3,28 @@
     <div class="header-left">
       <a routerLink="/dashboard" class="btn-back">← Voltar</a>
       <h1>Detalhes dos pedidos</h1>
+      <p class="page-header__sub">Activas e canceladas — após entrega confirmada, o pedido deixa de poder ser cancelado aqui.</p>
     </div>
   </header>
+
+  <section class="orders-scope" aria-label="Separadores">
+    <button
+      type="button"
+      class="orders-scope__tab"
+      [class.orders-scope__tab--active]="listScope() === 'active'"
+      (click)="setListScope('active')">
+      <span class="orders-scope__label">Activas</span>
+      <span class="orders-scope__count">{{ activeCount() }}</span>
+    </button>
+    <button
+      type="button"
+      class="orders-scope__tab orders-scope__tab--closed"
+      [class.orders-scope__tab--active]="listScope() === 'closed'"
+      (click)="setListScope('closed')">
+      <span class="orders-scope__label">Canceladas</span>
+      <span class="orders-scope__count">{{ closedCount() }}</span>
+    </button>
+  </section>
 
   <section class="filters-section">
     <div class="filters-row">
@@ -25,21 +45,29 @@
           <option value="salgados">Salgados</option>
         </select>
       </div>
-      <div class="filter-group">
-        <label>Estado</label>
-        <select [value]="filterStatus()" (change)="filterStatus.set($any($event.target).value)" class="filter-select">
-          <option value="">Todos</option>
-          <option value="ordered">Encomenda feita</option>
-          <option value="in_progress">Em processo</option>
-          <option value="completed">Finalizada</option>
-        </select>
-      </div>
+      @if (listScope() === 'active') {
+        <div class="filter-group">
+          <label>Estado</label>
+          <select [value]="filterStatus()" (change)="filterStatus.set($any($event.target).value)" class="filter-select">
+            <option value="">Todos</option>
+            <option value="ordered">Encomenda feita</option>
+            <option value="in_progress">Em processo</option>
+            <option value="completed">Finalizada</option>
+          </select>
+        </div>
+      }
       <button type="button" class="btn btn-outline" (click)="clearFilters()">Limpar filtros</button>
     </div>
   </section>
 
   @if (filteredOrders().length === 0) {
-    <p class="empty">Nenhuma encomenda encontrada.</p>
+    <p class="empty">
+      @if (listScope() === 'closed') {
+        Nenhuma encomenda cancelada.
+      } @else {
+        Nenhuma encomenda activa encontrada.
+      }
+    </p>
   } @else {
     <div class="table-wrap">
       <table class="orders-detail-table">
@@ -56,10 +84,15 @@
             <th>Despesas var.</th>
             <th>Lucro</th>
             <th>Status pag.</th>
-            <th>Estado</th>
-            <th>Data entrega</th>
-            <th>Local entrega</th>
-            <th>Entregue</th>
+            @if (listScope() === 'closed') {
+              <th>Data cancelamento</th>
+              <th>Estado</th>
+            } @else {
+              <th>Estado</th>
+              <th>Data entrega</th>
+              <th>Local entrega</th>
+              <th>Entregue</th>
+            }
             <th>Ação</th>
           </tr>
         </thead>
@@ -83,12 +116,19 @@
               <td data-label="Status pag.">
                 <span class="badge" [class]="o.paymentStatus">{{ getPaymentStatusLabel(o.paymentStatus) }}</span>
               </td>
-              <td data-label="Estado">
-                <span class="badge" [class]="'status-' + (o.orderStatus || 'ordered')">{{ getOrderStatusLabel(o.orderStatus) }}</span>
-              </td>
-              <td data-label="Data entrega">{{ formatDate(o.deliveryDate) }}</td>
-              <td data-label="Local entrega"><span class="local-text">{{ getDeliveryLocation(o) }}</span></td>
-              <td data-label="Entregue">{{ o.delivered ? 'Sim' : 'Não' }}</td>
+              @if (listScope() === 'closed') {
+                <td data-label="Data encerramento">{{ formatClosedDate(o) }}</td>
+                <td data-label="Estado">
+                  <span class="badge badge--closed">Cancelada</span>
+                </td>
+              } @else {
+                <td data-label="Estado">
+                  <span class="badge" [class]="'status-' + (o.orderStatus || 'ordered')">{{ getOrderStatusLabel(o.orderStatus) }}</span>
+                </td>
+                <td data-label="Data entrega">{{ formatDate(o.deliveryDate) }}</td>
+                <td data-label="Local entrega"><span class="local-text">{{ getDeliveryLocation(o) }}</span></td>
+                <td data-label="Entregue">{{ o.delivered ? 'Sim' : 'Não' }}</td>
+              }
               <td data-label="Ação">
                 <a [routerLink]="['/encomendas', o.id]" class="btn-sm btn-details">Detalhes</a>
               </td>

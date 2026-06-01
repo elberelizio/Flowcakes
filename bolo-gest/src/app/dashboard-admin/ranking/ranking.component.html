@@ -1,52 +1,179 @@
-<div class="ranking-page">
-  <header class="page-header">
-    <div class="header-main">
-      <h1>Ranking</h1>
-      <p class="subtitle">Classificação dos utilizadores por número de encomendas e receita.</p>
+<div class="rk-page">
+  <header class="rk-hero">
+    <div class="rk-hero__top">
+      <a routerLink="/admin-dashboard" class="rk-hero__back">
+        <app-icon name="chevron-left" />
+        Painel
+      </a>
+      @if (!loading() && ranking().length > 0 && leader(); as l) {
+        <span class="rk-chip">
+          <app-icon name="chart" />
+          Líder: {{ l.fullName || l.phone }}
+        </span>
+      }
     </div>
-    <a routerLink="/admin-dashboard" class="btn btn-back">Voltar ao painel</a>
+    <div class="rk-hero__main">
+      <p class="rk-hero__eyebrow">Desempenho</p>
+      <h1>Ranking</h1>
+      <p class="rk-hero__sub">Classificação dos utilizadores por número de encomendas e receita gerada na plataforma.</p>
+    </div>
   </header>
 
   @if (error()) {
-    <div class="alert alert-error">{{ error() }}</div>
+    <div class="rk-alert" role="alert">
+      <app-icon name="alert-circle" />
+      <span>{{ error() }}</span>
+    </div>
   } @else if (loading()) {
-    <div class="loading-state">
-      <span class="loading-spinner"></span>
-      <p>A carregar...</p>
+    <div class="rk-loading">
+      <span class="rk-spinner" aria-hidden="true"></span>
+      <p>A carregar ranking…</p>
     </div>
   } @else if (ranking().length === 0) {
-    <div class="empty-state">
-      <p>Nenhum dado de ranking disponível.</p>
-      <p class="hint">O ranking será preenchido quando houver encomendas.</p>
+    <div class="rk-empty">
+      <app-icon name="chart" />
+      <p class="rk-empty__title">Nenhum dado de ranking disponível</p>
+      <p class="rk-empty__desc">O ranking será preenchido quando houver encomendas registadas.</p>
     </div>
   } @else {
-    <div class="table-wrap">
-      <table class="data-table ranking-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Utilizador</th>
-            <th>Contacto</th>
-            <th>Encomendas</th>
-            <th>Receita</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (r of ranking(); track r.userId) {
-            <tr class="rank-row" [class.rank-top]="r.rank <= 3">
-              <td class="rank-cell">
-                <span class="rank-badge" [class.gold]="r.rank === 1" [class.silver]="r.rank === 2" [class.bronze]="r.rank === 3">
-                  {{ r.rank }}
-                </span>
-              </td>
-              <td>{{ r.fullName || '—' }}</td>
-              <td>{{ r.phone }}</td>
-              <td>{{ r.orderCount }}</td>
-              <td>{{ (r.totalRevenue ?? 0) | number:'1.0-0' }} MZN</td>
-            </tr>
+    <section class="rk-metrics" aria-label="Resumo">
+      <article class="rk-metric" data-accent="blue">
+        <span class="rk-metric__icon"><app-icon name="user" /></span>
+        <div>
+          <span class="rk-metric__label">Utilizadores</span>
+          <strong class="rk-metric__value">{{ ranking().length }}</strong>
+        </div>
+      </article>
+      <article class="rk-metric" data-accent="green">
+        <span class="rk-metric__icon"><app-icon name="list" /></span>
+        <div>
+          <span class="rk-metric__label">Total encomendas</span>
+          <strong class="rk-metric__value">{{ totalOrders() }}</strong>
+        </div>
+      </article>
+      <article class="rk-metric" data-accent="green">
+        <span class="rk-metric__icon"><app-icon name="receipt" /></span>
+        <div>
+          <span class="rk-metric__label">Receita total</span>
+          <strong class="rk-metric__value rk-metric__value--green">{{ totalRevenue() | number: '1.0-0' }} <small>MZN</small></strong>
+        </div>
+      </article>
+      @if (leader(); as l) {
+        <article class="rk-metric rk-metric--leader" data-accent="leader">
+          <span class="rk-metric__icon"><app-icon name="brand" /></span>
+          <div>
+            <span class="rk-metric__label">Líder</span>
+            <strong class="rk-metric__value rk-metric__value--name">{{ l.fullName || l.phone }}</strong>
+            <span class="rk-metric__meta">{{ l.orderCount }} encomenda(s)</span>
+          </div>
+        </article>
+      }
+    </section>
+
+    @if (topThree().length > 0) {
+      <section class="rk-podium-section" aria-label="Top 3">
+        <h2 class="rk-section-title">
+          <app-icon name="chart" />
+          Top 3
+        </h2>
+        <div class="rk-podium">
+          @if (topThree()[1]; as second) {
+            <article class="rk-podium-card" [ngClass]="podiumClass(2)">
+              <span class="rk-podium-card__rank">2</span>
+              <span class="rk-avatar">{{ initials(second.fullName) }}</span>
+              <h3>{{ second.fullName || '—' }}</h3>
+              <p class="rk-podium-card__phone"><app-icon name="phone" /> {{ second.phone }}</p>
+              <dl class="rk-podium-card__stats">
+                <div><dt>Encomendas</dt><dd>{{ second.orderCount }}</dd></div>
+                <div><dt>Receita</dt><dd>{{ (second.totalRevenue ?? 0) | number: '1.0-0' }} MZN</dd></div>
+              </dl>
+            </article>
           }
-        </tbody>
-      </table>
-    </div>
+          @if (topThree()[0]; as first) {
+            <article class="rk-podium-card" [ngClass]="podiumClass(1)">
+              <span class="rk-podium-card__rank">1</span>
+              <span class="rk-avatar rk-avatar--lg">{{ initials(first.fullName) }}</span>
+              <h3>{{ first.fullName || '—' }}</h3>
+              <p class="rk-podium-card__phone"><app-icon name="phone" /> {{ first.phone }}</p>
+              <dl class="rk-podium-card__stats">
+                <div><dt>Encomendas</dt><dd>{{ first.orderCount }}</dd></div>
+                <div><dt>Receita</dt><dd>{{ (first.totalRevenue ?? 0) | number: '1.0-0' }} MZN</dd></div>
+              </dl>
+            </article>
+          }
+          @if (topThree()[2]; as third) {
+            <article class="rk-podium-card" [ngClass]="podiumClass(3)">
+              <span class="rk-podium-card__rank">3</span>
+              <span class="rk-avatar">{{ initials(third.fullName) }}</span>
+              <h3>{{ third.fullName || '—' }}</h3>
+              <p class="rk-podium-card__phone"><app-icon name="phone" /> {{ third.phone }}</p>
+              <dl class="rk-podium-card__stats">
+                <div><dt>Encomendas</dt><dd>{{ third.orderCount }}</dd></div>
+                <div><dt>Receita</dt><dd>{{ (third.totalRevenue ?? 0) | number: '1.0-0' }} MZN</dd></div>
+              </dl>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    <section class="rk-card">
+      <header class="rk-card__head">
+        <div>
+          <h2>Classificação completa</h2>
+          <p>{{ ranking().length }} utilizador(es) · {{ filteredRanking().length }} visível(is)</p>
+        </div>
+        <label class="rk-search">
+          <app-icon name="list" />
+          <input
+            type="search"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+            name="rankingSearch"
+            placeholder="Pesquisar nome ou telefone…"
+            aria-label="Pesquisar no ranking" />
+        </label>
+      </header>
+
+      @if (filteredRanking().length === 0) {
+        <div class="rk-empty rk-empty--sm">
+          <p>Nenhum resultado para «{{ searchQuery() }}».</p>
+        </div>
+      } @else {
+        <div class="rk-table-shell">
+          <table class="rk-table">
+            <thead>
+              <tr>
+                <th class="col-rank">#</th>
+                <th>Utilizador</th>
+                <th>Contacto</th>
+                <th class="col-num">Encomendas</th>
+                <th class="col-num">Receita</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of filteredRanking(); track r.userId) {
+                <tr [class.rk-table__row--top]="r.rank <= 3">
+                  <td class="col-rank">
+                    <span class="rk-rank-badge" [ngClass]="rankBadgeClass(r.rank)">{{ r.rank }}</span>
+                  </td>
+                  <td class="cell-name">
+                    <span class="rk-table-user">
+                      <span class="rk-avatar rk-avatar--xs">{{ initials(r.fullName) }}</span>
+                      {{ r.fullName || '—' }}
+                    </span>
+                  </td>
+                  <td class="cell-phone">{{ r.phone }}</td>
+                  <td class="col-num">
+                    <span class="rk-orders-pill" [class.rk-orders-pill--active]="r.orderCount > 0">{{ r.orderCount }}</span>
+                  </td>
+                  <td class="col-num cell-revenue">{{ (r.totalRevenue ?? 0) | number: '1.0-0' }} MZN</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
   }
 </div>

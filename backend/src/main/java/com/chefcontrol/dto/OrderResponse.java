@@ -37,6 +37,13 @@ public class OrderResponse {
     private BigDecimal deliveryCost;
     private String orderStatus;
     private boolean isCancelled;
+    private String closedAt;
+    private String closureReason;
+    private String closureNote;
+    private String productionStage;
+    private String refundType;
+    private BigDecimal refundAmount;
+    private BigDecimal lossAmount;
     private List<VariableExpense> variableExpenses = new ArrayList<>();
 
     public static OrderResponse fromEntity(OrderEntity o) {
@@ -69,6 +76,13 @@ public class OrderResponse {
         r.setDeliveryCost(o.getDeliveryCost());
         r.setOrderStatus(o.getOrderStatus());
         r.setCancelled(o.isCancelled());
+        r.setClosedAt(o.getClosedAt() != null ? o.getClosedAt().toString() : null);
+        r.setClosureReason(o.getClosureReason());
+        r.setClosureNote(o.getClosureNote());
+        r.setProductionStage(o.getProductionStage());
+        r.setRefundType(o.getRefundType());
+        r.setRefundAmount(o.getRefundAmount());
+        r.setLossAmount(o.getLossAmount());
         r.setVariableExpenses(o.getVariableExpenses() != null ? o.getVariableExpenses() : new ArrayList<>());
         return r;
     }
@@ -129,6 +143,20 @@ public class OrderResponse {
     public void setOrderStatus(String orderStatus) { this.orderStatus = orderStatus; }
     public boolean isCancelled() { return isCancelled; }
     public void setCancelled(boolean cancelled) { isCancelled = cancelled; }
+    public String getClosedAt() { return closedAt; }
+    public void setClosedAt(String closedAt) { this.closedAt = closedAt; }
+    public String getClosureReason() { return closureReason; }
+    public void setClosureReason(String closureReason) { this.closureReason = closureReason; }
+    public String getClosureNote() { return closureNote; }
+    public void setClosureNote(String closureNote) { this.closureNote = closureNote; }
+    public String getProductionStage() { return productionStage; }
+    public void setProductionStage(String productionStage) { this.productionStage = productionStage; }
+    public String getRefundType() { return refundType; }
+    public void setRefundType(String refundType) { this.refundType = refundType; }
+    public BigDecimal getRefundAmount() { return refundAmount; }
+    public void setRefundAmount(BigDecimal refundAmount) { this.refundAmount = refundAmount; }
+    public BigDecimal getLossAmount() { return lossAmount; }
+    public void setLossAmount(BigDecimal lossAmount) { this.lossAmount = lossAmount; }
     public List<VariableExpense> getVariableExpenses() { return variableExpenses; }
     public void setVariableExpenses(List<VariableExpense> variableExpenses) { 
         this.variableExpenses = variableExpenses != null ? variableExpenses : new ArrayList<>(); 

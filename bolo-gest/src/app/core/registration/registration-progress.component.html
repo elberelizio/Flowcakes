@@ -1,0 +1,32 @@
+<nav class="reg-progress" aria-label="Progresso da criação de conta">
+  <ol class="reg-progress__list">
+    @for (step of steps; track step.id) {
+      <li
+        class="reg-progress__item"
+        [class.reg-progress__item--done]="step.id < currentStep"
+        [class.reg-progress__item--active]="step.id === currentStep"
+      >
+        <span class="reg-progress__marker" aria-hidden="true">
+          @if (step.id < currentStep) {
+            <i class="fa-solid fa-check"></i>
+          } @else {
+            {{ step.id }}
+          }
+        </span>
+        <span class="reg-progress__label">{{ step.label }}</span>
+      </li>
+      @if (step.id < 3) {
+        <li class="reg-progress__connector" [class.reg-progress__connector--done]="step.id < currentStep" aria-hidden="true"></li>
+      }
+    }
+  </ol>
+  @if (hint || currentStep < 3) {
+    <p class="reg-progress__hint">
+      @if (hint) {
+        {{ hint }}
+      } @else {
+        Complete todos os passos para aceder ao sistema.
+      }
+    </p>
+  }
+</nav>

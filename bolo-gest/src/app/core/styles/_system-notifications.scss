@@ -1,0 +1,257 @@
+.sys-maint-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  margin: 0 0 0.75rem;
+  padding: 0.65rem 1rem;
+  border-radius: 12px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #78350f;
+
+  app-icon,
+  ::ng-deep svg {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #b45309;
+  }
+}
+
+.sys-maint-banner__text {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+
+  strong {
+    font-size: 0.88rem;
+    color: #92400e;
+  }
+
+  > span {
+    font-size: 0.8rem;
+  }
+}
+
+.sys-maint-banner__hint {
+  font-size: 0.75rem !important;
+  color: #b45309;
+}
+
+.sys-maint-banner__btn {
+  flex-shrink: 0;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #b45309;
+  cursor: pointer;
+
+  &:hover {
+    background: #fef3c7;
+  }
+}
+
+.sys-notif-modal {
+  &[data-type='warning'] .popup-header app-icon {
+    color: #b45309;
+  }
+}
+
+/* Overlay dos popups pós-login — não fecha ao clicar fora */
+.login-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 1rem;
+  animation: orderAlertsFadeIn 0.2s ease-out;
+}
+
+.sys-aviso-popup {
+  width: 100%;
+  max-width: 26rem;
+  padding: 1.35rem 1.35rem 1.15rem;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #fde68a;
+  box-shadow:
+    0 24px 48px rgba(180, 83, 9, 0.12),
+    0 8px 24px rgba(15, 23, 42, 0.08);
+  animation: orderAlertsSlideIn 0.28s ease-out;
+
+  &[data-category='maintenance'] {
+    border-color: #fcd34d;
+    background: linear-gradient(180deg, #fffbeb 0%, #ffffff 38%);
+  }
+
+  &[data-type='warning'] .sys-aviso-popup__badge {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fde68a;
+  }
+}
+
+.sys-aviso-popup__top {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.85rem;
+}
+
+.sys-aviso-popup__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+
+  app-icon,
+  ::ng-deep svg {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+}
+
+.sys-aviso-popup__title {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #78350f;
+}
+
+.sys-aviso-popup__period {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0f766e;
+
+  app-icon,
+  ::ng-deep svg {
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.sys-aviso-popup__body {
+  margin-bottom: 0.75rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 12px;
+  background: #fffbeb;
+  border: 1px solid #fef3c7;
+
+  p {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: #44403c;
+    white-space: pre-wrap;
+    text-align: left;
+  }
+
+  :host ::ng-deep .sys-aviso-popup__emphasis,
+  .sys-aviso-popup__emphasis {
+    color: #dc2626;
+    font-weight: 700;
+  }
+}
+
+.sys-aviso-popup__footer-note {
+  margin: 0 0 0.85rem;
+  font-size: 0.78rem;
+  color: #78716c;
+  text-align: center;
+}
+
+.sys-aviso-popup__actions {
+  display: flex;
+  justify-content: stretch;
+}
+
+.sys-aviso-popup__btn {
+  width: 100%;
+  padding: 0.72rem 1rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  background: #0f766e;
+  color: #fff;
+
+  &:hover {
+    background: #0d9488;
+  }
+}
+
+.sys-notif-modal__period {
+  font-weight: 600;
+  color: #0f766e !important;
+}
+
+.sys-notif-modal__message {
+  white-space: pre-wrap;
+  text-align: left;
+}
+
+.welcome-onboarding-popup {
+  max-width: 28rem;
+
+  .popup-header app-icon {
+    color: #0f766e;
+  }
+}
+
+.welcome-onboarding-list {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: 10px;
+    background: #f0fdfa;
+    border: 1px solid #ccfbf1;
+
+    strong {
+      font-size: 0.82rem;
+      color: #0f766e;
+    }
+
+    span {
+      font-size: 0.78rem;
+      color: #334155;
+      line-height: 1.35;
+    }
+  }
+}

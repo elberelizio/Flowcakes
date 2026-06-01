@@ -24,4 +24,21 @@ public interface UserLicenseRepository extends JpaRepository<UserLicenseEntity, 
 
     @Query("SELECT l FROM UserLicenseEntity l WHERE l.userId IN (SELECT u.id FROM UserEntity u WHERE u.admin = false) AND l.status IN ('paid','trial') AND l.validUntil IS NOT NULL AND l.validUntil > :now AND l.validUntil <= :until")
     List<UserLicenseEntity> findNonAdminPaidExpiringBetween(@Param("now") Instant now, @Param("until") Instant until);
+
+    @Query("SELECT COALESCE(SUM(l.amount), 0) FROM UserLicenseEntity l WHERE l.paidAt IS NOT NULL")
+    java.math.BigDecimal sumPaidLicenseRevenue();
+
+    @Query("SELECT COALESCE(SUM(l.amount), 0) FROM UserLicenseEntity l WHERE l.paidAt IS NOT NULL AND l.paidAt >= :since")
+    java.math.BigDecimal sumPaidLicenseRevenueSince(@Param("since") Instant since);
+
+    @Query(value = """
+        SELECT to_char(date_trunc('month', paid_at), 'YYYY-MM') AS month,
+               COALESCE(SUM(amount), 0) AS revenue
+        FROM user_licenses
+        WHERE paid_at IS NOT NULL
+        GROUP BY date_trunc('month', paid_at)
+        ORDER BY month DESC
+        LIMIT 12
+        """, nativeQuery = true)
+    List<Object[]> findLicenseRevenueByMonth();
 }

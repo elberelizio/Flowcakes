@@ -1,11 +1,13 @@
 package com.chefcontrol.dto;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public class UserResponse {
 
     private UUID id;
     private String phone;
+    private Instant createdAt;
     private String fullName;
     private String documentType;
     private String documentNumber;
@@ -17,6 +19,8 @@ public class UserResponse {
     private Boolean admin;
     private Long licenseDaysRemaining;
     private Boolean showLicenseExpiryWarning;
+    /** True na primeira sessão até concluir o popup de boas-vindas (utilizadores normais). */
+    private Boolean showWelcomeOnboarding;
 
     public static UserResponse fromEntity(com.chefcontrol.entity.UserEntity u) {
         return fromEntity(u, null);
@@ -31,9 +35,11 @@ public class UserResponse {
         r.setDocumentNumber(u.getDocumentNumber());
         r.setProvince(u.getProvince());
         r.setEmail(u.getEmail());
+        r.setCreatedAt(u.getCreatedAt());
         r.setLicenseStatus(licenseStatus);
         r.setAccountFinalized("paid".equals(licenseStatus) || "trial".equals(licenseStatus));
         r.setAdmin(u.isAdmin());
+        r.setShowWelcomeOnboarding(!u.isAdmin() && u.getOnboardingCompletedAt() == null);
         return r;
     }
 
@@ -41,6 +47,8 @@ public class UserResponse {
     public void setId(UUID id) { this.id = id; }
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
     public String getDocumentType() { return documentType; }
@@ -61,4 +69,6 @@ public class UserResponse {
     public void setLicenseDaysRemaining(Long licenseDaysRemaining) { this.licenseDaysRemaining = licenseDaysRemaining; }
     public Boolean getShowLicenseExpiryWarning() { return showLicenseExpiryWarning; }
     public void setShowLicenseExpiryWarning(Boolean showLicenseExpiryWarning) { this.showLicenseExpiryWarning = showLicenseExpiryWarning; }
+    public Boolean getShowWelcomeOnboarding() { return showWelcomeOnboarding; }
+    public void setShowWelcomeOnboarding(Boolean showWelcomeOnboarding) { this.showWelcomeOnboarding = showWelcomeOnboarding; }
 }

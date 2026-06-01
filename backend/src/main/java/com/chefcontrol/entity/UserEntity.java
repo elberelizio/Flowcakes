@@ -39,11 +39,20 @@ public class UserEntity {
     @Column(nullable = false)
     private boolean blocked = false;
 
+    @Column(name = "failed_password_attempts", nullable = false)
+    private int failedPasswordAttempts = 0;
+
+    @Column(name = "block_reason", length = 50)
+    private String blockReason;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    @Column(name = "onboarding_completed_at")
+    private Instant onboardingCompletedAt;
 
     @PrePersist
     protected void onCreate() {
@@ -77,8 +86,14 @@ public class UserEntity {
     public void setAdmin(boolean admin) { this.admin = admin; }
     public boolean isBlocked() { return blocked; }
     public void setBlocked(boolean blocked) { this.blocked = blocked; }
+    public int getFailedPasswordAttempts() { return failedPasswordAttempts; }
+    public void setFailedPasswordAttempts(int failedPasswordAttempts) { this.failedPasswordAttempts = failedPasswordAttempts; }
+    public String getBlockReason() { return blockReason; }
+    public void setBlockReason(String blockReason) { this.blockReason = blockReason; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+    public Instant getOnboardingCompletedAt() { return onboardingCompletedAt; }
+    public void setOnboardingCompletedAt(Instant onboardingCompletedAt) { this.onboardingCompletedAt = onboardingCompletedAt; }
 }

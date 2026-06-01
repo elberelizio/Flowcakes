@@ -1,0 +1,100 @@
+<div class="gestao-acessos-page">
+  <header class="page-header">
+    <a routerLink="/admin-configuracoes" class="ga-back">← Configurações</a>
+    <h1>Gestão de acessos</h1>
+    <p class="subtitle">
+      Auditoria de tentativas de login, alteração de contacto e contas bloqueadas por segurança.
+    </p>
+  </header>
+
+  <nav class="tabs" aria-label="Secções">
+    <button type="button" class="tab" [class.active]="tab() === 'events'" (click)="setTab('events')">
+      Eventos de segurança
+    </button>
+    <button type="button" class="tab" [class.active]="tab() === 'blocked'" (click)="setTab('blocked')">
+      Contas bloqueadas
+      @if (blocked().length > 0) {
+        <span class="tab-badge">{{ blocked().length }}</span>
+      }
+    </button>
+  </nav>
+
+  @if (loading()) {
+    <p class="loading">A carregar…</p>
+  } @else if (error()) {
+    <p class="msg-error">{{ error() }}</p>
+  } @else if (tab() === 'events') {
+    @if (events().length === 0) {
+      <p class="empty">Nenhum evento registado.</p>
+    } @else {
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Data/Hora</th>
+              <th>Evento</th>
+              <th>Contacto</th>
+              <th>Nome</th>
+              <th>Detalhes</th>
+              <th>IP</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (e of events(); track e.id) {
+              <tr [class.row-danger]="e.eventType.includes('FAILED') || e.eventType.includes('BLOCKED')">
+                <td>{{ formatDate(e.createdAt) }}</td>
+                <td><span class="event-type">{{ eventLabel(e.eventType) }}</span></td>
+                <td>{{ e.userPhone || '—' }}</td>
+                <td>{{ e.userFullName || '—' }}</td>
+                <td class="details-cell">{{ e.details || '—' }}</td>
+                <td>{{ e.ipAddress || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  } @else {
+    @if (blocked().length === 0) {
+      <p class="empty">Nenhuma conta bloqueada.</p>
+    } @else {
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Contacto</th>
+              <th>Nome</th>
+              <th>Motivo</th>
+              <th>Tentativas</th>
+              <th>Última actualização</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (a of blocked(); track a.id) {
+              <tr>
+                <td>{{ a.phone }}</td>
+                <td>{{ a.fullName || '—' }}</td>
+                <td>{{ reasonLabel(a.blockReason) }}</td>
+                <td>{{ a.failedPasswordAttempts }}</td>
+                <td>{{ formatDate(a.blockedAt || '') }}</td>
+                <td>
+                  @if (canUnblock(a)) {
+                    <button
+                      type="button"
+                      class="btn-unblock"
+                      [disabled]="actionId() === a.id"
+                      (click)="unblock(a)"
+                    >
+                      {{ actionId() === a.id ? '…' : 'Desbloquear' }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

@@ -1,12 +1,17 @@
 package com.chefcontrol.service;
 
+import com.chefcontrol.config.SessionConfig;
 import com.chefcontrol.dto.AccessLogDto;
+import com.chefcontrol.dto.AccessLogUsersPageDto;
 import com.chefcontrol.dto.AdminOrderResponse;
+import com.chefcontrol.dto.AdminRankingRowDto;
 import com.chefcontrol.dto.AdminStatsResponse;
 import com.chefcontrol.dto.AdminUserDetailDto;
 import com.chefcontrol.dto.AdminUpdateUserRequest;
 import com.chefcontrol.dto.AdminUserRow;
+import com.chefcontrol.dto.BlockedAccountRowDto;
 import com.chefcontrol.dto.RevenueByMonthDto;
+import com.chefcontrol.dto.SecurityEventDto;
 import com.chefcontrol.dto.SimulatedPaymentPendingDto;
 import com.chefcontrol.entity.MpesaPaymentEntity;
 import com.chefcontrol.entity.OrderEntity;
@@ -21,7 +26,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -35,16 +44,22 @@ public class AdminService {
     private final OrderRepository orderRepository;
     private final AccessLogService accessLogService;
     private final MpesaPaymentRepository mpesaPaymentRepository;
+    private final SecurityEventService securityEventService;
+    private final AccountSecurityService accountSecurityService;
 
     public AdminService(UserRepository userRepository, UserLicenseRepository licenseRepository,
                         LicenseService licenseService, OrderRepository orderRepository,
-                        AccessLogService accessLogService, MpesaPaymentRepository mpesaPaymentRepository) {
+                        AccessLogService accessLogService, MpesaPaymentRepository mpesaPaymentRepository,
+                        SecurityEventService securityEventService,
+                        AccountSecurityService accountSecurityService) {
         this.userRepository = userRepository;
         this.licenseRepository = licenseRepository;
         this.licenseService = licenseService;
         this.orderRepository = orderRepository;
         this.accessLogService = accessLogService;
         this.mpesaPaymentRepository = mpesaPaymentRepository;
+        this.securityEventService = securityEventService;
+        this.accountSecurityService = accountSecurityService;
     }
 
     public void requireAdmin(UUID userId) {
@@ -73,12 +88,103 @@ public class AdminService {
         r.setLicensesPending(licenseRepository.countByStatusAndRejectedAtIsNull(LicenseService.STATUS_PENDING));
         r.setLoginsToday(accessLogService.countLoginsToday());
         r.setUniqueUsersToday(accessLogService.countUniqueUsersToday());
+
+        r.setUsersOnline(countNonAdminUsersOnline());
+
+        r.setBlockedUsers(userRepository.countByBlockedTrue());
+        long simPending = mpesaPaymentRepository
+            .findByStatusAndThirdPartyIdStartingWithOrderByCreatedAtDesc("pending", "SIM-").size();
+        r.setPendingApprovals(r.getLicensesPending() + simPending);
+
+        Instant monthStart = LocalDate.now().withDayOfMonth(1).atStartOfDay().toInstant(ZoneOffset.UTC);
+        BigDecimal licMonth = licenseRepository.sumPaidLicenseRevenueSince(monthStart);
+        BigDecimal licTotal = licenseRepository.sumPaidLicenseRevenue();
+        r.setLicenseRevenueThisMonth(licMonth != null ? licMonth : BigDecimal.ZERO);
+        r.setLicenseRevenueTotal(licTotal != null ? licTotal : BigDecimal.ZERO);
+
+        List<Object[]> topRows = orderRepository.findTopUsersByProfit(1);
+        if (!topRows.isEmpty()) {
+            Object[] row = topRows.get(0);
+            r.setTopProfitUserName(row[1] != null ? row[1].toString() : "—");
+            r.setTopProfitAmount(toBigDecimal(row[4]));
+        } else {
+            r.setTopProfitUserName(null);
+            r.setTopProfitAmount(BigDecimal.ZERO);
+        }
+
+        Instant since30 = LocalDate.now().minusDays(30).atStartOfDay().toInstant(ZoneOffset.UTC);
+        long logins30 = accessLogService.countLoginsSince(since30);
+        long activeUsers30 = accessLogService.countDistinctNonAdminUsersSince(since30);
+        r.setAvgLoginsPerUser30d(activeUsers30 > 0
+            ? BigDecimal.valueOf(logins30).divide(BigDecimal.valueOf(activeUsers30), 1, RoundingMode.HALF_UP).doubleValue()
+            : 0);
+
         return r;
+    }
+
+    public List<AdminRankingRowDto> getRanking(UUID adminUserId, int limit) {
+        requireAdmin(adminUserId);
+        int cap = limit > 0 ? Math.min(limit, 20) : 10;
+        Instant since30 = LocalDate.now().minusDays(30).atStartOfDay().toInstant(ZoneOffset.UTC);
+        List<Object[]> rows = orderRepository.findTopUsersByProfit(cap);
+        List<AdminRankingRowDto> result = new ArrayList<>();
+        int rank = 1;
+        for (Object[] row : rows) {
+            UUID uid = row[0] instanceof UUID ? (UUID) row[0] : UUID.fromString(row[0].toString());
+            AdminRankingRowDto dto = new AdminRankingRowDto();
+            dto.setRank(rank++);
+            dto.setUserId(uid.toString());
+            dto.setFullName(row[1] != null ? row[1].toString() : "—");
+            dto.setPhone(row[2] != null ? row[2].toString() : "");
+            dto.setOrderCount(row[3] instanceof Number ? ((Number) row[3]).longValue() : 0);
+            dto.setTotalProfit(toBigDecimal(row[4]));
+            dto.setLoginCount(accessLogService.countByUserIdSince(uid, since30));
+            licenseRepository.findByUserId(uid).ifPresent(lic -> dto.setLicenseStatus(lic.getStatus()));
+            if (dto.getLicenseStatus() == null) dto.setLicenseStatus("pending");
+            result.add(dto);
+        }
+        return result;
+    }
+
+    public List<RevenueByMonthDto> getLicenseRevenueByMonth(UUID adminUserId) {
+        requireAdmin(adminUserId);
+        return licenseRepository.findLicenseRevenueByMonth().stream()
+            .map(row -> new RevenueByMonthDto(
+                row[0] != null ? row[0].toString() : null,
+                toBigDecimal(row[1])))
+            .collect(Collectors.toList());
+    }
+
+    private static BigDecimal toBigDecimal(Object v) {
+        if (v == null) return BigDecimal.ZERO;
+        if (v instanceof BigDecimal) return (BigDecimal) v;
+        if (v instanceof Number) return BigDecimal.valueOf(((Number) v).doubleValue());
+        try {
+            return new BigDecimal(v.toString());
+        } catch (Exception e) {
+            return BigDecimal.ZERO;
+        }
     }
 
     public List<AccessLogDto> getAccessLogs(UUID adminUserId, int limit) {
         requireAdmin(adminUserId);
         return accessLogService.getRecentLogs(limit > 0 ? Math.min(limit, 200) : 100);
+    }
+
+    public AccessLogUsersPageDto getAccessLogUsersPage(
+            UUID adminUserId, String search, int page, int size) {
+        requireAdmin(adminUserId);
+        return accessLogService.getUserSummariesPage(search, page, size);
+    }
+
+    public List<SecurityEventDto> getSecurityEvents(UUID adminUserId, int limit) {
+        requireAdmin(adminUserId);
+        return securityEventService.getRecentEvents(limit);
+    }
+
+    public List<BlockedAccountRowDto> getBlockedAccounts(UUID adminUserId) {
+        requireAdmin(adminUserId);
+        return securityEventService.getBlockedAccounts();
     }
 
     public List<AdminUserRow> getUsers(UUID adminUserId) {
@@ -270,7 +376,7 @@ public class AdminService {
 
     public List<AccessLogDto> getUserAccessLogs(UUID adminUserId, UUID targetUserId, int limit) {
         requireAdmin(adminUserId);
-        return accessLogService.getLogsByUserId(targetUserId, limit > 0 ? Math.min(limit, 50) : 30);
+        return accessLogService.getLogsByUserId(targetUserId, limit > 0 ? Math.min(limit, 100) : 30);
     }
 
     public AdminUserRow blockUser(UUID adminUserId, UUID targetUserId) {
@@ -279,16 +385,18 @@ public class AdminService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizador não encontrado"));
         if (u.isAdmin()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível bloquear administrador");
         u.setBlocked(true);
+        u.setBlockReason(SecurityEventService.BLOCK_REASON_MANUAL);
         userRepository.save(u);
         return toAdminRow(u);
     }
 
-    public AdminUserRow unblockUser(UUID adminUserId, UUID targetUserId) {
+    public AdminUserRow unblockUser(UUID adminUserId, UUID targetUserId, String ipAddress, String userAgent) {
         requireAdmin(adminUserId);
-        UserEntity u = userRepository.findById(targetUserId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizador não encontrado"));
-        u.setBlocked(false);
-        userRepository.save(u);
+        if (!userRepository.existsById(targetUserId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizador não encontrado");
+        }
+        accountSecurityService.unblockByAdmin(targetUserId, adminUserId, ipAddress, userAgent);
+        UserEntity u = userRepository.findById(targetUserId).orElseThrow();
         return toAdminRow(u);
     }
 
@@ -311,6 +419,13 @@ public class AdminService {
             .orElseGet(() -> licenseService.createPendingLicenseForUser(targetUserId));
         licenseService.extendLicense(targetUserId, months);
         return toAdminRow(u);
+    }
+
+    private long countNonAdminUsersOnline() {
+        return SessionConfig.getActiveUserIds().stream()
+            .filter(id -> userRepository.findById(id).map(u -> !u.isAdmin()).orElse(false))
+            .distinct()
+            .count();
     }
 
     private AdminUserRow toAdminRow(UserEntity u) {

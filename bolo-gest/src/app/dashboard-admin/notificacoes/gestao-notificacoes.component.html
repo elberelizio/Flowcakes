@@ -1,67 +1,338 @@
-<div class="notificacoes-page">
-  <header class="page-header">
-    <h1>Gestão de notificações</h1>
-    <a routerLink="/admin-dashboard" class="btn btn-secondary">Voltar</a>
-  </header>
-
-  <section class="create-section">
-    <h2>Enviar notificação</h2>
-    <p class="intro">As notificações são exibidas aos utilizadores quando acedem ao sistema.</p>
-    <form class="create-form" (ngSubmit)="submit()">
-      <div class="form-group">
-        <label for="title">Título</label>
-        <input id="title" type="text" [(ngModel)]="title" name="title" placeholder="Ex: Manutenção programada" maxlength="200" />
-      </div>
-      <div class="form-group">
-        <label for="message">Mensagem</label>
-        <textarea id="message" [(ngModel)]="message" name="message" placeholder="Mensagem para todos os utilizadores..." rows="3"></textarea>
-      </div>
-      <div class="form-group">
-        <label for="type">Tipo</label>
-        <select id="type" [(ngModel)]="type" name="type">
-          <option value="info">Info</option>
-          <option value="warning">Aviso</option>
-          <option value="success">Sucesso</option>
-          <option value="error">Erro</option>
-        </select>
-      </div>
-      @if (createError()) {
-        <p class="form-error">{{ createError() }}</p>
+<div class="gn2">
+  <nav class="gn2-tabs" aria-label="Secção">
+    <button
+      type="button"
+      class="gn2-tab"
+      [class.gn2-tab--on]="pageSection() === 'broadcast'"
+      (click)="setPageSection('broadcast')">
+      <app-icon name="globe" />
+      Avisos aos clientes
+    </button>
+    <button
+      type="button"
+      class="gn2-tab"
+      [class.gn2-tab--on]="pageSection() === 'operations'"
+      (click)="setPageSection('operations')">
+      <app-icon name="receipt" />
+      Registos e pagamentos
+      @if (activeOperations().length > 0) {
+        <span class="gn2-tab__badge">{{ activeOperations().length }}</span>
       }
-      <button type="submit" class="btn btn-primary" [disabled]="creating()">
-        {{ creating() ? 'A enviar...' : 'Enviar notificação' }}
-      </button>
-    </form>
-  </section>
+    </button>
+  </nav>
+  @if (pageSection() === 'broadcast') {
+    <header class="gn2-hero">
+      <div class="gn2-hero__text">
+        <h1 class="gn2__title">Notificações do Sistema</h1>
+        <p class="gn2__subtitle">Avisos aos clientes · Alertas internos de pagamentos</p>
+      </div>
+      <div class="gn2-hero__stats">
+        <article class="gn2-stat-inline">
+          <span class="gn2-stat-inline__icon gn2-stat-inline__icon--green"><app-icon name="bell" /></span>
+          <div>
+            <strong>{{ statsTotal() }}</strong>
+            <span>Avisos totais</span>
+          </div>
+          @if (publishedToday() > 0) {
+            <span class="gn2-stat-inline__pill">+{{ publishedToday() }} hoje</span>
+          }
+        </article>
+        <article class="gn2-stat-inline">
+          <span class="gn2-stat-inline__icon gn2-stat-inline__icon--emerald"><app-icon name="check-circle" /></span>
+          <div>
+            <strong>{{ statsActive() }}</strong>
+            <span>Activos</span>
+          </div>
+        </article>
+      </div>
+    </header>
 
-  <section class="list-section">
-    <h2>Notificações enviadas</h2>
-    @if (loading()) {
-      <p class="loading">A carregar...</p>
-    } @else if (error()) {
-      <p class="msg-error">{{ error() }}</p>
-    } @else if (notifications().length === 0) {
-      <p class="empty">Nenhuma notificação enviada.</p>
-    } @else {
-      <div class="notification-list">
-        @for (n of notifications(); track n.id) {
-          <div class="notification-card" [class.inactive]="!n.active">
-            <div class="notification-header">
-              <span class="notification-title">{{ n.title }}</span>
-              <span class="notification-date">{{ formatDate(n.createdAt) }}</span>
+    <div class="gn2-stack">
+      <section id="notice-form" class="gn2-card gn2-card--form">
+        <header class="gn2-card__head gn2-card__head--form">
+          <div class="gn2-card__head-main">
+            <span class="gn2-form-icon" aria-hidden="true"><app-icon name="alert-circle" /></span>
+            <div>
+              <h2>Criar aviso de manutenção</h2>
+              <p>Preencha os dados abaixo ou escolha um modelo rápido.</p>
             </div>
-            <p class="notification-message">{{ n.message }}</p>
-            <div class="notification-footer">
-              <span class="badge" [class]="'badge-' + n.type">{{ n.type }}</span>
-              @if (n.active) {
-                <button type="button" class="btn btn-sm btn-secondary" (click)="deactivate(n.id)">Desactivar</button>
-              } @else {
-                <span class="muted">Desactivada</span>
+          </div>
+        </header>
+
+        <form class="gn2-form" (ngSubmit)="submit()">
+          <div class="gn2-form-block">
+            <span class="gn2-form-block__label">Modelo rápido</span>
+            <div class="gn2-chips">
+              @for (chip of quickChips; track chip.id) {
+                <button type="button" class="gn2-chip" (click)="applyTemplate(chip)">
+                  {{ chip.label }}
+                </button>
               }
             </div>
           </div>
+
+          <div class="gn2-fields">
+            <label class="gn2-field gn2-field--full">
+              <span>Título</span>
+              <input type="text" [(ngModel)]="title" name="mtitle" [placeholder]="titlePlaceholder" maxlength="200" />
+            </label>
+            <label class="gn2-field">
+              <span>Data de início</span>
+              <input
+                type="date"
+                [(ngModel)]="maintenanceStart"
+                name="mstart"
+                [min]="todayMin"
+                [max]="maintenanceStartMax"
+                (ngModelChange)="onMaintenanceStartChange()"
+                required />
+            </label>
+            <label class="gn2-field">
+              <span>Data de fim</span>
+              <input
+                type="date"
+                [(ngModel)]="maintenanceEnd"
+                name="mend"
+                [min]="maintenanceEndMin"
+                (ngModelChange)="onMaintenanceEndChange()"
+                required />
+            </label>
+            <label class="gn2-field gn2-field--full">
+              <span>Texto do aviso</span>
+              <select [(ngModel)]="maintenanceTemplate" name="mtemplate">
+                @for (opt of maintenanceMessageOptions; track opt.value) {
+                  <option [value]="opt.value">{{ opt.label }}</option>
+                }
+              </select>
+            </label>
+          </div>
+
+          @if (previewMessage()) {
+            <div class="gn2-preview">
+              <span><app-icon name="help-circle" /> Pré-visualização</span>
+              <p>{{ previewMessage() }}</p>
+            </div>
+          }
+
+          @if (createError()) {
+            <p class="gn2-error" role="alert"><app-icon name="alert-circle" /> {{ createError() }}</p>
+          }
+
+          <div class="gn2-actions">
+            <button type="button" class="gn2-btn gn2-btn--cancel" (click)="cancelForm()" [disabled]="creating()">
+              Cancelar
+            </button>
+            <button type="submit" class="gn2-btn gn2-btn--primary" [disabled]="creating()">
+              {{ creating() ? 'A publicar…' : 'Publicar' }}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="gn2-card gn2-card--table">
+        <header class="gn2-card__head gn2-card__head--plain">
+          <h2>Histórico — avisos aos clientes</h2>
+        </header>
+
+        @if (loading()) {
+          <div class="gn2-empty"><app-icon name="clock" /><p>A carregar…</p></div>
+        } @else if (error()) {
+          <div class="gn2-empty gn2-empty--err"><app-icon name="alert-circle" /><p>{{ error() }}</p></div>
+        } @else if (broadcasts().length === 0) {
+          <div class="gn2-empty"><app-icon name="bell" /><p>Nenhum aviso publicado.</p></div>
+        } @else {
+          <div class="gn2-table-wrap">
+            <table class="gn2-table">
+              <thead>
+                <tr>
+                  <th>Título</th>
+                  <th>Tipo</th>
+                  <th>Período</th>
+                  <th>Publicado</th>
+                  <th>Estado</th>
+                  <th class="gn2-table__actions-h">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (n of paginatedBroadcasts(); track n.id) {
+                  <tr [class.gn2-table__row--off]="!n.active">
+                    <td>
+                      <div class="gn2-row-title">
+                        <span class="gn2-row-icon" [attr.data-kind]="n.category">
+                          <app-icon [name]="categoryIcon(n)" />
+                        </span>
+                        <div>
+                          <strong>{{ n.title }}</strong>
+                          <p class="gn2-row-preview">{{ messagePreview(n.message) }}</p>
+                          @if (expandedId() === n.id) {
+                            <p class="gn2-row-full">{{ n.message }}</p>
+                          }
+                          @if (n.message.length > 90) {
+                            <button type="button" class="gn2-link" (click)="toggleExpand(n.id)">
+                              {{ expandedId() === n.id ? 'Ocultar' : 'Ver texto' }}
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="gn2-badge" [attr.data-kind]="n.category">
+                        <app-icon [name]="categoryIcon(n)" />
+                        {{ n.category === 'maintenance' ? 'Manutenção' : 'Mensagem' }}
+                      </span>
+                    </td>
+                    <td class="gn2-period">
+                      @if (formatPeriodParts(n); as p) {
+                        <span>{{ p.start }}</span>
+                        <span class="gn2-period__sep">— {{ p.end }}</span>
+                      } @else {
+                        <span class="gn2-muted">—</span>
+                      }
+                    </td>
+                    <td class="gn2-date">
+                      @if (formatDateParts(n.createdAt); as d) {
+                        <span>{{ d.date }}</span>
+                        <span class="gn2-date__time">{{ d.time }}</span>
+                      }
+                    </td>
+                    <td>
+                      <span class="gn2-status" [attr.data-tone]="statusTone(n)">{{ statusLabel(n) }}</span>
+                    </td>
+                    <td class="gn2-table__actions">
+                      @if (n.active) {
+                        <button type="button" class="gn2-btn gn2-btn--danger-text" (click)="deactivate(n.id)">Desactivar</button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <footer class="gn2-pager">
+            <span>{{ broadcastRangeLabel() }}</span>
+            <div class="gn2-pager__nums">
+              <button type="button" class="gn2-pager-btn" [disabled]="broadcastPage() <= 1" (click)="goBroadcastPage(broadcastPage() - 1)">
+                <app-icon name="chevron-left" />
+              </button>
+              @for (p of broadcastPageList(); track p) {
+                <button
+                  type="button"
+                  class="gn2-pager-num"
+                  [class.gn2-pager-num--on]="p === broadcastPage()"
+                  (click)="goBroadcastPage(p)">
+                  {{ p }}
+                </button>
+              }
+              <button
+                type="button"
+                class="gn2-pager-btn"
+                [disabled]="broadcastPage() >= broadcastTotalPages()"
+                (click)="goBroadcastPage(broadcastPage() + 1)">
+                <app-icon name="chevron-right" />
+              </button>
+            </div>
+          </footer>
         }
+      </section>
+    </div>
+  } @else {
+    <header class="gn2-hero gn2-hero--solo">
+      <div class="gn2-hero__text">
+        <h1 class="gn2__title">Notificações do Sistema</h1>
+        <p class="gn2__subtitle">Alertas internos de registos e pagamentos</p>
       </div>
-    }
-  </section>
+    </header>
+
+    <section class="gn2-card gn2-card--table">
+      <header class="gn2-card__head gn2-card__head--plain">
+        <h2>Histórico — registos e pagamentos</h2>
+        <span class="gn2-muted">{{ operations().length }} registo(s)</span>
+      </header>
+
+      @if (loading()) {
+        <div class="gn2-empty"><app-icon name="clock" /><p>A carregar…</p></div>
+      } @else if (operations().length === 0) {
+        <div class="gn2-empty"><app-icon name="check-circle" /><p>Nenhum alerta interno.</p></div>
+      } @else {
+        <div class="gn2-table-wrap">
+          <table class="gn2-table gn2-table--ops">
+            <thead>
+              <tr>
+                <th>Assunto</th>
+                <th>Resumo</th>
+                <th>Data</th>
+                <th>Estado</th>
+                <th class="gn2-table__actions-h">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (n of paginatedOperations(); track n.id) {
+                <tr [class.gn2-table__row--off]="!n.active">
+                  <td>
+                    <div class="gn2-row-title">
+                      <span class="gn2-row-icon" data-kind="ops"><app-icon name="receipt" /></span>
+                      <strong>{{ n.title }}</strong>
+                    </div>
+                  </td>
+                  <td>
+                    <p class="gn2-row-preview">{{ messagePreview(n.message, 120) }}</p>
+                    @if (expandedId() === n.id) {
+                      <p class="gn2-row-full">{{ n.message }}</p>
+                    }
+                    @if (n.message.length > 120) {
+                      <button type="button" class="gn2-link" (click)="toggleExpand(n.id)">
+                        {{ expandedId() === n.id ? 'Ocultar' : 'Detalhes' }}
+                      </button>
+                    }
+                  </td>
+                  <td class="gn2-date">
+                    @if (formatDateParts(n.createdAt); as d) {
+                      <span>{{ d.date }}</span>
+                      <span class="gn2-date__time">{{ d.time }}</span>
+                    }
+                  </td>
+                  <td>
+                    <span class="gn2-status" [attr.data-tone]="n.active ? 'active' : 'muted'">
+                      {{ n.active ? 'Pendente' : 'Arquivado' }}
+                    </span>
+                  </td>
+                  <td class="gn2-table__actions">
+                    @if (n.active) {
+                      <button type="button" class="gn2-btn gn2-btn--danger-text" (click)="deactivate(n.id)">Arquivar</button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <footer class="gn2-pager">
+          <span>{{ operationsRangeLabel() }}</span>
+          <div class="gn2-pager__nums">
+            <button type="button" class="gn2-pager-btn" [disabled]="operationsPage() <= 1" (click)="goOperationsPage(operationsPage() - 1)">
+              <app-icon name="chevron-left" />
+            </button>
+            @for (p of operationsPageList(); track p) {
+              <button
+                type="button"
+                class="gn2-pager-num"
+                [class.gn2-pager-num--on]="p === operationsPage()"
+                (click)="goOperationsPage(p)">
+                {{ p }}
+              </button>
+            }
+            <button
+              type="button"
+              class="gn2-pager-btn"
+              [disabled]="operationsPage() >= operationsTotalPages()"
+              (click)="goOperationsPage(operationsPage() + 1)">
+              <app-icon name="chevron-right" />
+            </button>
+          </div>
+        </footer>
+      }
+    </section>
+  }
 </div>

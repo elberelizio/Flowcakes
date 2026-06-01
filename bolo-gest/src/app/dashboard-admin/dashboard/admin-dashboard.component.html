@@ -1,25 +1,36 @@
-<div class="admin-dashboard-page">
-  <header class="page-header">
-    <div class="page-header-inner">
-      <span class="page-header-eyebrow">Área de administração</span>
+@if (adminLoginSummaryPopup.visible()) {
+  <app-admin-login-summary-modal (closed)="adminLoginSummaryPopup.close()" />
+}
+
+<div class="bi-dashboard">
+  <header class="bi-header">
+    <div class="bi-header__main">
       <h1>Painel de administração</h1>
-      <p class="subtitle">Visão geral do sistema, clientes e acompanhamento de vendas</p>
+      <p class="bi-header__subtitle">Utilizadores, licenças, receitas e ranking</p>
     </div>
+    @if (lastUpdated()) {
+      <time class="bi-header__time" [attr.datetime]="lastUpdated()!.toISOString()">
+        Actualizado {{ formatDateTime(lastUpdated()!) }}
+      </time>
+    }
   </header>
 
   @if (loading()) {
-    <p class="loading-msg">A carregar...</p>
-  } @else {
-    <div class="dashboard-admin">
-      <app-admin-kpi-section
-        [kpiTiles]="kpiTiles()"
-        [adminStats]="adminStats()"
-      />
-      <app-admin-charts-section
-        [revenueByMonth]="revenueByMonth()"
-        [adminStats]="adminStats()"
-      />
-      <app-admin-quick-actions-section [actions]="quickActions()" />
+    <div class="bi-loading">
+      <span class="bi-loading__spinner" aria-hidden="true"></span>
+      <p>A carregar…</p>
     </div>
+  } @else {
+    <app-admin-alerts-bar [alerts]="alerts()" />
+
+    <app-admin-kpi-section [adminStats]="adminStats()" />
+
+    <app-admin-charts-section
+      [ordersRevenueByMonth]="ordersRevenueByMonth()"
+      [licenseRevenueByMonth]="licenseRevenueByMonth()"
+      [adminStats]="adminStats()"
+    />
+
+    <app-admin-ranking-section [ranking]="ranking()" />
   }
 </div>

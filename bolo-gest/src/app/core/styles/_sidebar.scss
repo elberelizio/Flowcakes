@@ -20,9 +20,9 @@
     width: v.$sidebar-collapsed;
     min-width: v.$sidebar-collapsed;
 
-    .brand-text,
+    .brand-name,
     .brand-tagline,
-    .brand-profile,
+    .brand-role,
     .nav-label {
       opacity: 0;
       width: 0;
@@ -60,61 +60,100 @@
 
 .sidebar-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 1.25rem 1.25rem;
-  min-height: 72px;
+  padding: 1rem 0.85rem 1rem 1rem;
+  min-height: 76px;
   border-bottom: 1px solid v.$sidebar-border;
-  gap: 0.5rem;
+  gap: 0.35rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, transparent 100%);
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.7rem;
   text-decoration: none;
   color: #fff;
   font-weight: 600;
   flex: 1;
   min-width: 0;
+  padding: 0.15rem 0;
+  border-radius: v.$radius;
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
 }
 
 .brand-inner {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.12rem;
+  min-width: 0;
 }
 
 .brand-logo {
-  width: 40px;
-  height: 40px;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  flex-shrink: 0;
-  border-radius: v.$radius;
+  display: block;
 }
 
-.brand-text {
-  font-size: 1.2rem;
+.brand-name {
+  font-size: 1.05rem;
+  font-weight: 800;
   letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: opacity 0.2s, width 0.2s, margin 0.2s, padding 0.2s;
 }
 
 .brand-tagline {
-  font-size: 0.75rem;
-  font-weight: 400;
+  font-size: 0.7rem;
+  font-weight: 500;
   color: v.$sidebar-muted;
-  letter-spacing: 0.01em;
+  line-height: 1.3;
   transition: opacity 0.2s, width 0.2s;
 }
 
-.brand-profile {
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.5);
-  text-transform: uppercase;
+.brand-role {
+  display: inline-flex;
+  align-self: flex-start;
+  margin-top: 0.2rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: 9999px;
+  font-size: 0.62rem;
+  font-weight: 700;
   letter-spacing: 0.05em;
-  margin-top: 0.15rem;
+  text-transform: uppercase;
+  color: #5eead4;
+  background: rgba(13, 148, 136, 0.2);
+  border: 1px solid rgba(94, 234, 212, 0.25);
   transition: opacity 0.2s, width 0.2s;
+
+  &--admin {
+    color: #fcd34d;
+    background: rgba(245, 158, 11, 0.15);
+    border-color: rgba(251, 191, 36, 0.3);
+  }
 }
 
 .sidebar-toggle {
@@ -143,6 +182,12 @@
   flex-direction: column;
   gap: 2px;
   overflow-y: auto;
+}
+
+.sidebar-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .nav-item {
@@ -193,6 +238,10 @@
   background: var(--primary, #6366f1);
   color: white;
   border-radius: 999px;
+
+  &.nav-badge--alert {
+    background: #dc2626;
+  }
 }
 
 .sidebar-license {

@@ -1,11 +1,16 @@
-<section class="quick-actions-section">
-  <h2 class="section-heading">Acesso rápido</h2>
-  <div class="quick-actions">
+<nav class="bi-nav-panel" aria-label="Acesso rápido">
+  <header class="bi-nav-panel__header">
+    <h2 class="bi-nav-panel__title">Acesso rápido</h2>
+    <p class="bi-nav-panel__desc">Navegação às áreas de gestão</p>
+  </header>
+  <ul class="bi-nav-list">
     @for (action of actions(); track action.route) {
-      <a [routerLink]="action.route" class="action-tile">
-        <span class="action-title">{{ action.title }}</span>
-        <span class="action-desc">{{ action.desc }}</span>
-      </a>
+      <li>
+        <a [routerLink]="action.route" class="bi-nav-link">
+          <span class="bi-nav-link__title">{{ action.title }}</span>
+          <span class="bi-nav-link__desc">{{ action.desc }}</span>
+        </a>
+      </li>
     }
-  </div>
-</section>
+  </ul>
+</nav>

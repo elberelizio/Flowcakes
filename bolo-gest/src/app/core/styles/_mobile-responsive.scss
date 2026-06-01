@@ -66,10 +66,18 @@
 
   .navbar-datetime {
     font-size: 0.7rem;
+    padding: 0.3rem 0.5rem;
+
+    time {
+      max-width: 9rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
 
-  .navbar-user-name {
-    display: none; // Ocultar nome em mobile muito pequeno
+  .navbar-user-meta,
+  .navbar-user-chevron {
+    display: none;
   }
 }
 

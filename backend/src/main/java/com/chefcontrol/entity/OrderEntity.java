@@ -103,6 +103,27 @@ public class OrderEntity {
     @Column(name = "is_cancelled", nullable = false)
     private boolean isCancelled = false;
 
+    @Column(name = "closed_at")
+    private Instant closedAt;
+
+    @Column(name = "closure_reason", length = 40)
+    private String closureReason;
+
+    @Column(name = "closure_note", length = 1000)
+    private String closureNote;
+
+    @Column(name = "production_stage", length = 20)
+    private String productionStage;
+
+    @Column(name = "refund_type", length = 20)
+    private String refundType;
+
+    @Column(name = "refund_amount", precision = 12, scale = 2)
+    private BigDecimal refundAmount;
+
+    @Column(name = "loss_amount", precision = 12, scale = 2)
+    private BigDecimal lossAmount;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "variable_expenses", columnDefinition = "jsonb")
     private List<VariableExpense> variableExpenses = new ArrayList<>();
@@ -173,6 +194,20 @@ public class OrderEntity {
     public void setOrderStatus(String orderStatus) { this.orderStatus = orderStatus != null ? orderStatus : "ordered"; }
     public boolean isCancelled() { return isCancelled; }
     public void setCancelled(boolean cancelled) { isCancelled = cancelled; }
+    public Instant getClosedAt() { return closedAt; }
+    public void setClosedAt(Instant closedAt) { this.closedAt = closedAt; }
+    public String getClosureReason() { return closureReason; }
+    public void setClosureReason(String closureReason) { this.closureReason = closureReason; }
+    public String getClosureNote() { return closureNote; }
+    public void setClosureNote(String closureNote) { this.closureNote = closureNote; }
+    public String getProductionStage() { return productionStage; }
+    public void setProductionStage(String productionStage) { this.productionStage = productionStage; }
+    public String getRefundType() { return refundType; }
+    public void setRefundType(String refundType) { this.refundType = refundType; }
+    public BigDecimal getRefundAmount() { return refundAmount; }
+    public void setRefundAmount(BigDecimal refundAmount) { this.refundAmount = refundAmount; }
+    public BigDecimal getLossAmount() { return lossAmount; }
+    public void setLossAmount(BigDecimal lossAmount) { this.lossAmount = lossAmount; }
     public List<VariableExpense> getVariableExpenses() { return variableExpenses; }
     public void setVariableExpenses(List<VariableExpense> variableExpenses) { 
         this.variableExpenses = variableExpenses != null ? variableExpenses : new ArrayList<>(); 

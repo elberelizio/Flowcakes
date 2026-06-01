@@ -1,23 +1,23 @@
-<section class="charts-row">
-  <div class="report-card chart-card-wide">
-    <h2 class="report-title">Receita por mês</h2>
-    <p class="report-desc">Evolução da receita (todos os utilizadores)</p>
-    <div class="chart-container chart-tall">
-      <canvas #chartRevenueMonth></canvas>
+<section class="bi-charts" aria-label="Gráficos">
+  <article class="bi-visual bi-visual--main">
+    <header class="bi-visual__header">
+      <h2 class="bi-visual__title">Receitas — licenças vs lucro encomendas</h2>
+    </header>
+    <div class="bi-visual__body">
+      <div class="chart-container chart-main">
+        <canvas #chartRevenueCompare></canvas>
+      </div>
     </div>
-  </div>
-  <div class="report-card">
-    <h2 class="report-title">Distribuição de licenças</h2>
-    <p class="report-desc">Activos vs não activos</p>
-    <div class="chart-container chart-medium">
-      <canvas #chartLicenses></canvas>
+  </article>
+
+  <article class="bi-visual bi-visual--side">
+    <header class="bi-visual__header">
+      <h2 class="bi-visual__title">Licenças</h2>
+    </header>
+    <div class="bi-visual__body">
+      <div class="chart-container chart-side">
+        <canvas #chartLicenses></canvas>
+      </div>
     </div>
-  </div>
-  <div class="report-card">
-    <h2 class="report-title">Actividade hoje</h2>
-    <p class="report-desc">Logins e utilizadores únicos</p>
-    <div class="chart-container chart-medium">
-      <canvas #chartActivity></canvas>
-    </div>
-  </div>
+  </article>
 </section>

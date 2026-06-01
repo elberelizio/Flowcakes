@@ -1,6 +1,7 @@
 package com.chefcontrol.controller;
 
 import com.chefcontrol.config.CurrentUserId;
+import com.chefcontrol.dto.OrderCloseRequest;
 import com.chefcontrol.dto.OrderRequest;
 import com.chefcontrol.dto.OrderResponse;
 import com.chefcontrol.dto.RevenueByMonthDto;
@@ -50,6 +51,14 @@ public class OrderController {
             @CurrentUserId UUID userId,
             @Valid @RequestBody OrderRequest request) {
         return ResponseEntity.ok(orderService.update(id, userId, request));
+    }
+
+    @PostMapping("/{id}/close")
+    public ResponseEntity<OrderResponse> close(
+            @PathVariable UUID id,
+            @CurrentUserId UUID userId,
+            @Valid @RequestBody OrderCloseRequest request) {
+        return ResponseEntity.ok(orderService.closeOrder(id, userId, request));
     }
 
     @DeleteMapping("/{id}")

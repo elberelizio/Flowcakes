@@ -1,17 +1,15 @@
-import { Component, inject, OnInit, computed, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DecimalPipe } from '@angular/common';
 import { AdminDashboardService } from './admin-dashboard.service';
-import type { AdminStats, KpiTile } from './models';
-import { ADMIN_QUICK_ACTIONS } from './constants/quick-actions';
+import type { AdminRankingRow, AdminStats, RevenueByMonthDto } from './models';
 import { AdminKpiSectionComponent } from './admin-kpi-section/admin-kpi-section.component';
 import { AdminChartsSectionComponent } from './admin-charts-section/admin-charts-section.component';
-import { AdminQuickActionsSectionComponent } from './admin-quick-actions-section/admin-quick-actions-section.component';
+import { AdminRankingSectionComponent } from './admin-ranking-section/admin-ranking-section.component';
+import { AdminAlertsBarComponent } from './admin-alerts-bar/admin-alerts-bar.component';
+import { AdminTreasuryService, type AdminAlerts } from '../services/admin-treasury.service';
+import { AdminLoginSummaryPopupService } from '../services/admin-login-summary-popup.service';
+import { AdminLoginSummaryModalComponent } from '../../login/admin-login-summary-modal/admin-login-summary-modal.component';
 
-/**
- * Shell do painel de administração.
- * Responsabilidades: carregar dados (via service), calcular KPIs, passar dados aos componentes de secção.
- */
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
@@ -19,66 +17,68 @@ import { AdminQuickActionsSectionComponent } from './admin-quick-actions-section
     CommonModule,
     AdminKpiSectionComponent,
     AdminChartsSectionComponent,
-    AdminQuickActionsSectionComponent,
+    AdminRankingSectionComponent,
+    AdminAlertsBarComponent,
+    AdminLoginSummaryModalComponent,
   ],
-  providers: [DecimalPipe],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss',
 })
 export class AdminDashboardComponent implements OnInit {
   private readonly service = inject(AdminDashboardService);
-  private readonly decimalPipe = inject(DecimalPipe);
+  private readonly treasuryService = inject(AdminTreasuryService);
+  readonly adminLoginSummaryPopup = inject(AdminLoginSummaryPopupService);
 
   adminStats = signal<AdminStats | null>(null);
-  revenueByMonth = signal<{ month: string; revenue: number }[]>([]);
-  revenueThisMonth = signal(0);
+  ordersRevenueByMonth = signal<RevenueByMonthDto[]>([]);
+  licenseRevenueByMonth = signal<RevenueByMonthDto[]>([]);
+  ranking = signal<AdminRankingRow[]>([]);
+  alerts = signal<AdminAlerts | null>(null);
   loading = signal(true);
-  private readonly today = new Date();
-
-  kpiTiles = computed<KpiTile[]>(() => {
-    const stats = this.adminStats();
-    const revenue = this.revenueThisMonth();
-    if (!stats) return [];
-    return [
-      { id: 'users', label: 'Total utilizadores', value: stats.totalUsers ?? 0, meta: 'registados no sistema', cssClass: 'kpi-tile-users' },
-      {
-        id: 'active',
-        label: 'Clientes activos',
-        value: (stats.licensesPaid ?? 0) + (stats.licensesTrial ?? 0),
-        meta: 'licença paga ou em teste, válida',
-        cssClass: 'kpi-tile-active',
-      },
-      { id: 'blocked', label: 'Não activos', value: stats.licensesPending ?? 0, meta: 'sem licença ou pendentes', cssClass: 'kpi-tile-blocked' },
-      {
-        id: 'revenue',
-        label: 'Receita este mês',
-        value: this.decimalPipe.transform(revenue, '1.0-0') ?? '0',
-        meta: 'MZN · todos os clientes',
-        cssClass: 'kpi-tile-revenue',
-      },
-    ];
-  });
-
-  quickActions = signal(ADMIN_QUICK_ACTIONS);
+  lastUpdated = signal<Date | null>(null);
 
   ngOnInit(): void {
+    this.adminLoginSummaryPopup.tryShowOnDashboard();
+
     this.service.getStats().subscribe({
       next: (s) => {
         this.adminStats.set(s);
         this.loading.set(false);
+        this.lastUpdated.set(new Date());
       },
       error: () => this.loading.set(false),
     });
 
     this.service.getRevenueByMonth().subscribe({
-      next: (list) => {
-        const withNum = (list || []).map((x) => ({ month: x.month, revenue: Number(x.revenue) }));
-        this.revenueByMonth.set(withNum);
-        const key = `${this.today.getFullYear()}-${String(this.today.getMonth() + 1).padStart(2, '0')}`;
-        const found = withNum.find((x) => x.month === key);
-        this.revenueThisMonth.set(found ? found.revenue : 0);
-      },
+      next: (list) =>
+        this.ordersRevenueByMonth.set((list ?? []).map((x) => ({ month: x.month, revenue: Number(x.revenue) }))),
       error: () => {},
+    });
+
+    this.service.getLicenseRevenueByMonth().subscribe({
+      next: (list) =>
+        this.licenseRevenueByMonth.set((list ?? []).map((x) => ({ month: x.month, revenue: Number(x.revenue) }))),
+      error: () => {},
+    });
+
+    this.service.getRanking(8).subscribe({
+      next: (list) => this.ranking.set(list ?? []),
+      error: () => this.ranking.set([]),
+    });
+
+    this.treasuryService.getAlerts().subscribe({
+      next: (a) => this.alerts.set(a),
+      error: () => this.alerts.set(null),
+    });
+  }
+
+  formatDateTime(d: Date): string {
+    return d.toLocaleString('pt-MZ', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   }
 }

@@ -1,0 +1,333 @@
+:host {
+  display: block;
+}
+
+.plan-page {
+  position: relative;
+  min-height: 100vh;
+  background: linear-gradient(165deg, #f0fdfa 0%, #f8fafc 45%, #f1f5f9 100%);
+  overflow-x: hidden;
+}
+
+.plan-page__bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.plan-page__blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(72px);
+  opacity: 0.45;
+}
+
+.plan-page__blob--one {
+  width: 22rem;
+  height: 22rem;
+  top: 8%;
+  left: -8%;
+  background: #5eead4;
+}
+
+.plan-page__blob--two {
+  width: 20rem;
+  height: 20rem;
+  bottom: 10%;
+  right: -6%;
+  background: #99f6e4;
+}
+
+.plan-page__main {
+  position: relative;
+  z-index: 1;
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 6.5rem 1.25rem 3.5rem;
+}
+
+@media (min-width: 768px) {
+  .plan-page__main {
+    padding: 7.5rem 2rem 4rem;
+  }
+}
+
+.plan-page__success {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.15rem;
+  border-radius: 1rem;
+  border: 1px solid #86efac;
+  background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.12);
+  font-size: 0.9375rem;
+  color: #14532d;
+}
+
+.plan-page__success-icon {
+  margin-top: 0.1rem;
+  font-size: 1.35rem;
+  color: #16a34a;
+  flex-shrink: 0;
+}
+
+.plan-page__success-sub {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #166534;
+}
+
+.plan-page__header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.plan-page__eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #0d9488;
+}
+
+.plan-page__title {
+  margin: 0 0 0.65rem;
+  font-family: ui-serif, Georgia, 'Fraunces', serif;
+  font-size: clamp(1.85rem, 4vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.plan-page__lead {
+  margin: 0 auto;
+  max-width: 36rem;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: #64748b;
+}
+
+.plan-page__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 720px) {
+  .plan-page__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: stretch;
+  }
+}
+
+.plan-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1.35rem 1.35rem;
+  border-radius: 1.35rem;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.plan-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(13, 148, 136, 0.12);
+}
+
+.plan-card--pro {
+  border: 2px solid rgba(13, 148, 136, 0.35);
+  background: linear-gradient(165deg, #fff 0%, #f0fdfa 100%);
+}
+
+.plan-card__badge {
+  position: absolute;
+  top: -0.65rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #0d9488, #14b8a6);
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);
+}
+
+.plan-card__head {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.plan-card--pro .plan-card__head {
+  margin-top: 0.35rem;
+}
+
+.plan-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.85rem;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.plan-card__icon--trial {
+  background: #ecfdf5;
+  color: #0d9488;
+}
+
+.plan-card__icon--pro {
+  background: #0d9488;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(13, 148, 136, 0.3);
+}
+
+.plan-card__title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.plan-card__tagline {
+  margin: 0.15rem 0 0;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.plan-card__price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.5rem;
+  margin: 0 0 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.plan-card__price-currency {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #0f766e;
+}
+
+.plan-card__price-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.plan-card__price-meta {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.plan-card__features {
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+  flex: 1;
+}
+
+.plan-card__features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #475569;
+  margin-bottom: 0.5rem;
+}
+
+.plan-card__features i {
+  margin-top: 0.15rem;
+  color: #0d9488;
+  font-size: 0.7rem;
+}
+
+.plan-card__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: 0.85rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    filter 0.15s,
+    transform 0.15s;
+}
+
+.plan-card__btn:hover {
+  transform: translateY(-1px);
+}
+
+.plan-card__btn--outline {
+  background: #fff;
+  color: #0f766e;
+  border: 2px solid #99f6e4;
+}
+
+.plan-card__btn--outline:hover {
+  background: #f0fdfa;
+  border-color: #0d9488;
+}
+
+.plan-card__btn--primary {
+  background: linear-gradient(135deg, #0d9488, #14b8a6);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(13, 148, 136, 0.3);
+}
+
+.plan-card__btn--primary:hover {
+  filter: brightness(1.05);
+}
+
+.plan-page__footer-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem 0.5rem;
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.plan-page__footer-link {
+  font-weight: 700;
+  color: #0d9488;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

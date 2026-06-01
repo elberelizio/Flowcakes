@@ -38,7 +38,7 @@ public class AuthController {
 
     @PostMapping(value = {"/login", "/login/"}, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest, HttpServletResponse response) {
-        UserResponse user = authService.login(request);
+        UserResponse user = authService.login(request, getClientIp(httpRequest), httpRequest.getHeader("User-Agent"));
         accessLogService.logLogin(user.getId(), user.getPhone(), user.getFullName(), Boolean.TRUE.equals(user.getAdmin()), getClientIp(httpRequest), httpRequest.getHeader("User-Agent"));
         UUID sessionId = SessionConfig.createSession(user.getId());
         addSessionCookie(response, sessionId);
@@ -80,6 +80,12 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/onboarding-complete")
+    public ResponseEntity<Void> completeOnboarding(@CurrentUserId UUID userId) {
+        authService.completeOnboarding(userId);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/profile")
     public ResponseEntity<UserResponse> profile(@CurrentUserId UUID userId) {
         return ResponseEntity.ok(authService.getProfile(userId));
@@ -100,24 +106,18 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/change-phone/request")
-    public ResponseEntity<Void> startPhoneChange(
+    @PutMapping("/change-phone")
+    public ResponseEntity<UserResponse> changePhone(
             @CurrentUserId UUID userId,
-            @RequestBody java.util.Map<String, String> body) {
-        String currentPassword = body != null ? body.get("currentPassword") : null;
-        String newPhone = body != null ? body.get("newPhone") : null;
-        authService.startPhoneChange(userId, currentPassword, newPhone);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/change-phone/confirm")
-    public ResponseEntity<Void> confirmPhoneChange(
-            @CurrentUserId UUID userId,
-            @RequestBody java.util.Map<String, String> body) {
-        String newPhone = body != null ? body.get("newPhone") : null;
-        String code = body != null ? body.get("code") : null;
-        authService.confirmPhoneChange(userId, newPhone, code);
-        return ResponseEntity.noContent().build();
+            @Valid @RequestBody ChangePhoneRequest request,
+            HttpServletRequest httpRequest) {
+        UserResponse user = authService.changePhone(
+                userId,
+                request.getCurrentPassword(),
+                request.getNewPhone(),
+                getClientIp(httpRequest),
+                httpRequest.getHeader("User-Agent"));
+        return ResponseEntity.ok(user);
     }
 
     @GetMapping("/store-settings")

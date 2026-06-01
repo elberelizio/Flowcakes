@@ -137,6 +137,18 @@ export class AdminComponent implements OnInit {
     ).length;
   });
 
+  activeLicensesCount = computed(() => (this.stats?.licensesPaid ?? 0) + (this.stats?.licensesTrial ?? 0));
+
+  filterTabLabel = computed(() => {
+    const labels: Record<FilterTab, string> = {
+      activas: 'Licenças activas',
+      expiradas: 'Expiradas',
+      expiring: 'A expirar',
+      admins: 'Administradores',
+    };
+    return labels[this.filterTab()];
+  });
+
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
@@ -363,6 +375,13 @@ export class AdminComponent implements OnInit {
     const paid = this.formatDate(paidAt);
     const period = this.formatLicensePeriod(paidAt, validUntil);
     return `${paid} · ${period}`;
+  }
+
+  /** Destaque visual quando faltam ≤10 dias (e ainda não expirou). */
+  isTimeRemainingUrgent(validUntil: string | undefined): boolean {
+    if (!validUntil) return false;
+    const days = Math.floor((new Date(validUntil).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    return days >= 0 && days <= 10;
   }
 
   /** Quanto tempo falta para a licença expirar; "Expirada" se já passou. */

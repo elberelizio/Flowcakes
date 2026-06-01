@@ -6,7 +6,10 @@
     <div class="page-hero__main">
       <p class="page-hero__eyebrow">Encomendas</p>
       <h1 class="page-hero__title">As suas encomendas</h1>
-      <p class="page-hero__sub">Filtre, consulte estados e abra o detalhe de cada pedido.</p>
+      <p class="page-hero__sub">
+        As activas aparecem por defeito. As canceladas (antes da entrega) ficam no separador
+        <strong>Canceladas</strong>. Após confirmar entrega, use <strong>Gestão de dívidas</strong> se faltar pagamento.
+      </p>
       <div class="page-hero__actions">
         <a routerLink="/nova-encomenda" class="btn btn-primary">Criar encomenda</a>
         <a routerLink="/encomendas/detalhes" class="btn btn-secondary">Detalhes dos pedidos</a>
@@ -14,6 +17,30 @@
       </div>
     </div>
   </header>
+
+  <section class="orders-scope card" aria-label="Separadores da lista">
+    <button
+      type="button"
+      class="orders-scope__tab"
+      [class.orders-scope__tab--active]="listScope() === 'active'"
+      (click)="setListScope('active')">
+      <span class="orders-scope__label">Activas</span>
+      <span class="orders-scope__count">{{ activeCount() }}</span>
+    </button>
+    <button
+      type="button"
+      class="orders-scope__tab orders-scope__tab--closed"
+      [class.orders-scope__tab--active]="listScope() === 'closed'"
+      (click)="setListScope('closed')">
+      <span class="orders-scope__label">Canceladas</span>
+      <span class="orders-scope__count">{{ closedCount() }}</span>
+    </button>
+    @if (closedCount() > 0 && closedLossTotal() > 0) {
+      <p class="orders-scope__meta">
+        Prejuízo total (canceladas): <strong>{{ closedLossTotal() | number:'1.0-0' }} MZN</strong>
+      </p>
+    }
+  </section>
 
   <section class="filters-section card">
     <h3 class="filters-title">Filtros</h3>
@@ -35,16 +62,17 @@
           <option value="salgados">Salgados</option>
         </select>
       </div>
-      <div class="filter-group">
-        <label>Estado</label>
-        <select [value]="filterStatus()" (change)="filterStatus.set($any($event.target).value)" class="filter-select">
-          <option value="">Todos</option>
-          <option value="ordered">Encomenda feita</option>
-          <option value="in_progress">Em processo</option>
-          <option value="completed">Finalizada</option>
-          <option value="cancelled">Canceladas</option>
-        </select>
-      </div>
+      @if (listScope() === 'active') {
+        <div class="filter-group">
+          <label>Estado</label>
+          <select [value]="filterStatus()" (change)="filterStatus.set($any($event.target).value)" class="filter-select">
+            <option value="">Todos</option>
+            <option value="ordered">Encomenda feita</option>
+            <option value="in_progress">Em processo</option>
+            <option value="completed">Finalizada</option>
+          </select>
+        </div>
+      }
       <div class="filter-group">
         <label>Pagamento</label>
         <select [value]="filterPayment()" (change)="filterPayment.set($any($event.target).value)" class="filter-select">
@@ -61,10 +89,10 @@
   @if (filteredOrders().length === 0) {
     <div class="empty-state card">
       <p class="empty">
-        @if (isShowingCancelled) {
+        @if (isShowingClosed) {
           Nenhuma encomenda cancelada.
         } @else {
-          Nenhuma encomenda. <a routerLink="/nova-encomenda">Criar primeira encomenda</a>.
+          Nenhuma encomenda activa. <a routerLink="/nova-encomenda">Criar primeira encomenda</a>.
         }
       </p>
     </div>
@@ -82,8 +110,9 @@
               <th>Tipo pagamento</th>
               <th>Valor adiantado</th>
               <th>Valor em falta</th>
-              @if (isShowingCancelled) {
+              @if (isShowingClosed) {
                 <th>Data cancelamento</th>
+                <th>Motivo</th>
               } @else {
                 <th>Data entrega</th>
                 <th>Local entrega</th>
@@ -116,8 +145,9 @@
                 <td data-label="Valor em falta">
                   <span [class.has-debt]="getSaldo(o) > 0">{{ getSaldo(o) | number:'1.0-0' }} MZN</span>
                 </td>
-                @if (isShowingCancelled) {
-                  <td data-label="Data cancelamento">{{ formatDate(o.createdAt) }}</td>
+                @if (isShowingClosed) {
+                  <td data-label="Data cancelamento">{{ formatClosedDate(o) }}</td>
+                  <td data-label="Motivo"><span class="closure-reason-pill">{{ getClosureReasonShort(o) }}</span></td>
                 } @else {
                   <td data-label="Data entrega">{{ o.deliveryDate ? formatDate(o.deliveryDate) : '—' }}</td>
                   <td data-label="Local entrega"><span class="local-text">{{ getDeliveryLocation(o) }}</span></td>
@@ -136,8 +166,8 @@
                     @if (!o.isCancelled) {
                       @if (!o.delivered) {
                         <button type="button" class="btn-sm btn-success" (click)="markDelivered(o)">Confirmar entrega</button>
+                        <button type="button" class="btn-sm btn-danger" (click)="openCloseDialog(o)">Cancelar</button>
                       }
-                      <button type="button" class="btn-sm btn-danger" (click)="cancelOrder(o)">Cancelar</button>
                     }
                   </div>
                 </td>
@@ -223,22 +253,10 @@
     </div>
   }
 
-  @if (orderToCancel()) {
-    <div class="confirm-cancel-overlay" (click)="closeCancelModal()">
-      <div class="confirm-cancel-card" (click)="$event.stopPropagation()">
-        <button type="button" class="confirm-cancel-close" (click)="closeCancelModal()" aria-label="Fechar">×</button>
-        <h3>Cancelar encomenda</h3>
-        <p class="confirm-cancel-message">
-          Tem certeza que deseja cancelar a encomenda de <strong>{{ orderToCancel()?.clientName }}</strong>?
-        </p>
-        <p class="confirm-cancel-warning">
-          A encomenda será marcada como cancelada.
-        </p>
-        <div class="confirm-cancel-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeCancelModal()">Não</button>
-          <button type="button" class="btn btn-danger" (click)="confirmCancelOrder()">Sim, cancelar</button>
-        </div>
-      </div>
-    </div>
+  @if (orderToClose(); as closeOrder) {
+    <app-order-close-dialog
+      [order]="closeOrder"
+      (closed)="onOrderClosed()"
+      (dismissed)="dismissCloseDialog()" />
   }
 </div>

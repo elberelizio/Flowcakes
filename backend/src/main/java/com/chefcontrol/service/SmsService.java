@@ -1,5 +1,7 @@
 package com.chefcontrol.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -17,6 +19,7 @@ import java.util.Map;
 @Service
 public class SmsService {
 
+    private static final Logger log = LoggerFactory.getLogger(SmsService.class);
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${app.sms.base-url:https://api.mozesms.com}")
@@ -38,7 +41,7 @@ public class SmsService {
 
     public void sendOtp(String phone, String code) {
         if (bearerToken == null || bearerToken.isBlank()) {
-            // Em produção pode lançar excepção; aqui apenas evitamos chamada sem credenciais.
+            log.warn("SMS não configurado — OTP para {} (apenas diagnóstico local): {}", phone, code);
             return;
         }
         String url = baseUrl + sendPath;

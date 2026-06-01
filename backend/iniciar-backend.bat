@@ -40,6 +40,17 @@ if not exist "%JAVA_HOME%\bin\java.exe" (
 
 :java_ok
 echo Java: %JAVA_HOME%
+
+netstat -ano | findstr ":%SERVER_PORT% " | findstr "LISTENING" >nul 2>&1
+if not errorlevel 1 (
+  echo.
+  echo AVISO: A porta %SERVER_PORT% ja esta em uso — o backend provavelmente ja esta a correr.
+  echo        Nao e necessario iniciar outra instancia.
+  echo        Para reiniciar: feche a janela anterior ou termine o processo Java na porta %SERVER_PORT%.
+  echo.
+  exit /b 0
+)
+
 echo A iniciar backend na porta %SERVER_PORT%...
 call "%~dp0mvnw.cmd" spring-boot:run %*
 exit /b %ERRORLEVEL%

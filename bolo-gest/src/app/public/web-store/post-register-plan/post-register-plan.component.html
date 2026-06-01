@@ -1,0 +1,95 @@
+<div class="plan-page landing-page-root font-sans text-gray-800 min-h-screen">
+  <div class="plan-page__bg" aria-hidden="true">
+    <div class="plan-page__blob plan-page__blob--one"></div>
+    <div class="plan-page__blob plan-page__blob--two"></div>
+  </div>
+
+  <app-public-site-nav />
+
+  <main class="plan-page__main">
+    <app-registration-progress
+      [currentStep]="progressStep"
+      hint="Passo 2 de 3: escolha teste grátis ou plano Pro. A seguir será o login (grátis) ou o pagamento (Pro)."
+    />
+
+    @if (fromRegister) {
+      <div class="plan-page__success" role="status">
+        <i class="fa-solid fa-circle-check plan-page__success-icon" aria-hidden="true"></i>
+        <div>
+          <strong>Conta criada com sucesso.</strong>
+          <span class="plan-page__success-sub">Agora escolha como quer começar no ChefControl.</span>
+        </div>
+      </div>
+    }
+
+    <header class="plan-page__header">
+      <p class="plan-page__eyebrow">Passo 2 · Escolher plano</p>
+      <h1 class="plan-page__title">Como quer começar?</h1>
+      <p class="plan-page__lead">
+        Seleccione uma opção. O teste grátis leva-o ao <strong>login</strong> com as credenciais que acabou de criar.
+        O plano Pro leva-o primeiro ao <strong>pagamento</strong> (M-Pesa ou e-Mola).
+      </p>
+    </header>
+
+    <div class="plan-page__grid">
+      <article class="plan-card plan-card--trial">
+        <div class="plan-card__head">
+          <span class="plan-card__icon plan-card__icon--trial" aria-hidden="true">
+            <i class="fa-solid fa-gift"></i>
+          </span>
+          <div>
+            <h2 class="plan-card__title">Teste grátis</h2>
+            <p class="plan-card__tagline">Ideal para experimentar</p>
+          </div>
+        </div>
+        <p class="plan-card__price">
+          <span class="plan-card__price-value">Grátis</span>
+          <span class="plan-card__price-meta">14 dias · sem cartão</span>
+        </p>
+        <ul class="plan-card__features">
+          <li><i class="fa-solid fa-check" aria-hidden="true"></i> Funcionalidades do plano Pro no período de teste</li>
+          <li><i class="fa-solid fa-check" aria-hidden="true"></i> Pedidos, stock e relatórios em MZN</li>
+          <li><i class="fa-solid fa-check" aria-hidden="true"></i> Depois: <strong>login manual</strong> com o seu contacto e senha</li>
+        </ul>
+        <button type="button" class="plan-card__btn plan-card__btn--outline" (click)="chooseFreeTrial()">
+          Continuar com teste grátis
+          <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+        </button>
+      </article>
+
+      <article class="plan-card plan-card--pro">
+        <span class="plan-card__badge">Mais popular</span>
+        <div class="plan-card__head">
+          <span class="plan-card__icon plan-card__icon--pro" aria-hidden="true">
+            <i class="fa-solid fa-bolt"></i>
+          </span>
+          <div>
+            <h2 class="plan-card__title">Plano Pro</h2>
+            <p class="plan-card__tagline">Para crescer a sério</p>
+          </div>
+        </div>
+        <p class="plan-card__price">
+          <span class="plan-card__price-currency">MZN</span>
+          <span class="plan-card__price-value">500</span>
+          <span class="plan-card__price-meta">/ mês</span>
+        </p>
+        <ul class="plan-card__features">
+          <li><i class="fa-solid fa-check" aria-hidden="true"></i> Pedidos e clientes ilimitados</li>
+          <li><i class="fa-solid fa-check" aria-hidden="true"></i> Estoque e relatórios financeiros</li>
+          <li><i class="fa-solid fa-check" aria-hidden="true"></i> Pagamento por M-Pesa ou e-Mola</li>
+        </ul>
+        <button type="button" class="plan-card__btn plan-card__btn--primary" (click)="choosePaidPro()">
+          Ir para pagamento
+          <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+        </button>
+      </article>
+    </div>
+
+    <p class="plan-page__footer-note">
+      <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+      Já tem conta e só quer entrar?
+      <a routerLink="/login" class="plan-page__footer-link">Iniciar sessão</a>
+      (não substitui a escolha de plano neste registo)
+    </p>
+  </main>
+</div>

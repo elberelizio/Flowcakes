@@ -1,43 +1,83 @@
-.quick-actions-section {
-  .section-heading {
-    margin: 0 0 1rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text);
+@use '../fx-theme' as fx;
+
+.bi-nav-panel {
+  position: relative;
+  @include fx.fx-glass-panel;
+  @include fx.fx-accent-top-line;
+  overflow: hidden;
+}
+
+.bi-nav-panel__header {
+  padding: 1rem 1.05rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.15) 100%);
+}
+
+.bi-nav-panel__title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.bi-nav-panel__desc {
+  margin: 0.18rem 0 0;
+  font-size: 0.73rem;
+  color: #64748b;
+}
+
+.bi-nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.45rem 0.35rem 0.55rem;
+  max-height: min(72vh, 640px);
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.35);
+    border-radius: 999px;
   }
 }
 
-.quick-actions {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1rem;
-}
-
-.action-tile {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  padding: 1.25rem;
-  background: var(--card-bg);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
+.bi-nav-link {
+  display: block;
+  margin: 0.15rem 0.35rem;
+  padding: 0.62rem 0.75rem;
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: background 0.18s, border-color 0.18s, transform 0.18s;
 
   &:hover {
-    border-color: var(--primary);
-    box-shadow: 0 4px 12px rgba(13, 148, 136, 0.12);
-  }
+    background: linear-gradient(105deg, rgba(20, 184, 166, 0.1) 0%, rgba(99, 102, 241, 0.06) 100%);
+    border-color: rgba(34, 211, 238, 0.22);
+    transform: translateX(2px);
 
-  .action-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--primary);
+    .bi-nav-link__title {
+      color: #0f766e;
+    }
   }
+}
 
-  .action-desc {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-  }
+.bi-nav-link__title {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.3;
+  transition: color 0.18s;
+}
+
+.bi-nav-link__desc {
+  display: block;
+  margin-top: 0.14rem;
+  font-size: 0.68rem;
+  color: #64748b;
+  line-height: 1.35;
 }

@@ -1,13 +1,13 @@
 package com.chefcontrol.controller;
 
+import com.chefcontrol.config.CurrentUserId;
 import com.chefcontrol.dto.SystemNotificationDto;
 import com.chefcontrol.service.SystemNotificationService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Notificações activas para utilizadores autenticados.
@@ -23,7 +23,13 @@ public class NotificationsController {
     }
 
     @GetMapping
-    public ResponseEntity<List<SystemNotificationDto>> getActive() {
-        return ResponseEntity.ok(notificationService.getActiveForUser());
+    public ResponseEntity<List<SystemNotificationDto>> getActive(@CurrentUserId UUID userId) {
+        return ResponseEntity.ok(notificationService.getActiveForUser(userId));
+    }
+
+    @PostMapping("/{id}/dismiss")
+    public ResponseEntity<Void> dismiss(@CurrentUserId UUID userId, @PathVariable UUID id) {
+        notificationService.dismiss(userId, id);
+        return ResponseEntity.noContent().build();
     }
 }

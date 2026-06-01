@@ -33,6 +33,66 @@
     font-weight: 700;
     color: var(--text);
   }
+
+  &__sub {
+    margin: 0.25rem 0 0;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+  }
+}
+
+.orders-scope {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card-bg);
+}
+
+.orders-scope__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  border: 2px solid var(--border);
+  border-radius: 999px;
+  background: var(--secondary);
+  cursor: pointer;
+  font: inherit;
+
+  &--active {
+    border-color: #0d9488;
+    background: #f0fdfa;
+    .orders-scope__count { background: #0d9488; color: #fff; }
+  }
+
+  &--closed.orders-scope__tab--active {
+    border-color: #b91c1c;
+    background: #fef2f2;
+    .orders-scope__count { background: #dc2626; color: #fff; }
+  }
+}
+
+.orders-scope__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.orders-scope__count {
+  min-width: 1.4rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: #e2e8f0;
+}
+
+.badge--closed {
+  background: #fef2f2 !important;
+  color: #991b1b !important;
 }
 
 .filters-section {

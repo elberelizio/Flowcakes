@@ -1,0 +1,648 @@
+<div class="tr-page">
+  <header class="tr-hero">
+    <div class="tr-hero__top">
+      <a routerLink="/admin-dashboard" class="tr-hero__back">
+        <app-icon name="chevron-left" />
+        Painel
+      </a>
+      @if (summary(); as s) {
+        <div class="tr-hero__chips">
+          <span class="tr-chip">
+            <app-icon name="wallet" />
+            {{ s.accountBalance | number: '1.0-0' }} MZN
+          </span>
+          <span class="tr-chip" [ngClass]="roiClass(s.roiStatus)">
+            <app-icon name="chart" />
+            {{ roiLabel(s.roiStatus) }}
+          </span>
+        </div>
+      }
+    </div>
+    <div class="tr-hero__main">
+      <p class="tr-hero__eyebrow">Finanças da plataforma</p>
+      <h1>Tesouraria</h1>
+      <p class="tr-hero__sub">Conta, investimentos, faturamento, alocações, despesas e lucro — num só lugar.</p>
+    </div>
+  </header>
+
+  @if (error()) {
+    <div class="tr-alert" role="alert">
+      <app-icon name="alert-circle" />
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="tr-loading">
+      <span class="tr-loading__spinner" aria-hidden="true"></span>
+      <p>A carregar tesouraria…</p>
+    </div>
+  } @else {
+    <div class="tr-layout">
+      <nav class="tr-nav" aria-label="Secções da tesouraria">
+        @for (t of tabs; track t.id) {
+          <button
+            type="button"
+            class="tr-nav__item"
+            [class.tr-nav__item--active]="activeTab() === t.id"
+            (click)="setTab(t.id)">
+            <span class="tr-nav__icon" aria-hidden="true">
+              <app-icon [name]="t.icon" />
+            </span>
+            <span class="tr-nav__text">
+              <strong>{{ t.label }}</strong>
+              <small>{{ t.description }}</small>
+            </span>
+            @if (t.id === 'suggestions' && (summary()?.pendingSuggestionsCount ?? 0) > 0) {
+              <span class="tr-nav__badge">{{ summary()!.pendingSuggestionsCount }}</span>
+            }
+          </button>
+        }
+      </nav>
+
+      <main class="tr-main">
+        @if (summary(); as s) {
+          @if (needsSetup()) {
+            <aside class="tr-setup-banner">
+              <div class="tr-setup-banner__icon" aria-hidden="true">
+                <app-icon name="settings" />
+              </div>
+              <div>
+                <strong>Configure a tesouraria</strong>
+                <p>Defina o saldo da conta em Alocações e registe o investimento inicial (ex.: 5 000 MZN).</p>
+              </div>
+              <div class="tr-setup-banner__actions">
+                <button type="button" class="tr-btn tr-btn--primary" (click)="setTab('allocations')">Alocações</button>
+                <button type="button" class="tr-btn tr-btn--ghost" (click)="setTab('investments')">Investimentos</button>
+              </div>
+            </aside>
+          }
+
+          @if (activeTab() === 'overview') {
+            <section class="tr-metrics" aria-label="Indicadores principais">
+              <article class="tr-metric" data-accent="blue">
+                <span class="tr-metric__icon"><app-icon name="wallet" /></span>
+                <div>
+                  <span class="tr-metric__label">Saldo na conta</span>
+                  <strong class="tr-metric__value">{{ s.accountBalance | number: '1.0-0' }} <small>MZN</small></strong>
+                </div>
+              </article>
+              <article class="tr-metric" data-accent="green">
+                <span class="tr-metric__icon"><app-icon name="receipt" /></span>
+                <div>
+                  <span class="tr-metric__label">Receita (mês)</span>
+                  <strong class="tr-metric__value">{{ s.licenseRevenueThisMonth | number: '1.0-0' }} <small>MZN</small></strong>
+                </div>
+              </article>
+              <article class="tr-metric" data-accent="amber">
+                <span class="tr-metric__icon"><app-icon name="file-text" /></span>
+                <div>
+                  <span class="tr-metric__label">Despesas (mês)</span>
+                  <strong class="tr-metric__value">{{ s.expensesThisMonth | number: '1.0-0' }} <small>MZN</small></strong>
+                </div>
+              </article>
+              <article class="tr-metric" data-accent="teal" [attr.data-trend]="profitClass(s.netProfitThisMonth)">
+                <span class="tr-metric__icon"><app-icon name="chart" /></span>
+                <div>
+                  <span class="tr-metric__label">Lucro (mês)</span>
+                  <strong class="tr-metric__value" [ngClass]="profitClass(s.netProfitThisMonth)">
+                    {{ s.netProfitThisMonth | number: '1.0-0' }} <small>MZN</small>
+                  </strong>
+                </div>
+              </article>
+            </section>
+
+            <article class="tr-roi-card" [ngClass]="roiClass(s.roiStatus)">
+              <div class="tr-roi-card__icon" aria-hidden="true">
+                <app-icon [name]="s.roiStatus === 'profit' ? 'check-circle' : 'alert-circle'" />
+              </div>
+              <div class="tr-roi-card__body">
+                <span class="tr-roi-card__status">{{ roiLabel(s.roiStatus) }}</span>
+                <p>
+                  Investido <strong>{{ s.totalInvested | number: '1.0-0' }} MZN</strong>
+                  · Lucro acumulado
+                  <strong [ngClass]="profitClass(s.netProfitTotal)">{{ s.netProfitTotal | number: '1.0-0' }} MZN</strong>
+                </p>
+                @if (s.roiStatus === 'loss') {
+                  <p class="tr-roi-card__hint">Faltam <strong>{{ s.amountToBreakEven | number: '1.0-0' }} MZN</strong> para recuperar o investimento.</p>
+                } @else if (s.roiStatus === 'profit') {
+                  <p class="tr-roi-card__hint">Lucro acima do investido: <strong>{{ s.profitAboveInvestment | number: '1.0-0' }} MZN</strong></p>
+                }
+              </div>
+              <button type="button" class="tr-btn tr-btn--ghost tr-btn--sm" (click)="setTab('investments')">Ver investimentos</button>
+            </article>
+
+            <div class="tr-grid tr-grid--2">
+              <section class="tr-card">
+                <header class="tr-card__head">
+                  <div>
+                    <h2>Distribuição do saldo</h2>
+                    <p>{{ s.allocationPercentTotal }}% alocado · {{ s.availableAfterReserve | number: '1.0-0' }} MZN disponível</p>
+                  </div>
+                  <button type="button" class="tr-btn tr-btn--ghost tr-btn--sm" (click)="setTab('allocations')">Editar</button>
+                </header>
+                <ul class="tr-buckets">
+                  @for (b of s.allocationBuckets; track b.key) {
+                    <li class="tr-bucket" [attr.data-accent]="bucketAccent(b.key)">
+                      <div class="tr-bucket__row">
+                        <span>{{ bucketLabel(b.key) }} · {{ b.percent }}%</span>
+                        <strong>{{ b.allocatedAmount | number: '1.0-0' }} MZN</strong>
+                      </div>
+                      <div class="tr-bucket__track">
+                        <span class="tr-bucket__fill" [style.width.%]="bucketSpentPct(b.allocatedAmount, b.spentThisMonth)"></span>
+                      </div>
+                      <span class="tr-bucket__meta">
+                        Gasto {{ b.spentThisMonth | number: '1.0-0' }} · Livre {{ b.remainingInBucket | number: '1.0-0' }} MZN
+                      </span>
+                    </li>
+                  }
+                </ul>
+              </section>
+
+              <section class="tr-card tr-card--accent">
+                <header class="tr-card__head">
+                  <div>
+                    <h2>Salários</h2>
+                    <p>{{ s.payrollHeadcount }} colaboradores</p>
+                  </div>
+                  <span class="tr-metric__icon tr-metric__icon--inline"><app-icon name="user" /></span>
+                </header>
+                <dl class="tr-stat-list">
+                  <div><dt>Sugestão / pessoa</dt><dd>{{ s.payrollPerPersonSuggested | number: '1.0-0' }} MZN</dd></div>
+                  <div><dt>Pago este mês</dt><dd>{{ s.salaryExpensesThisMonth | number: '1.0-0' }} MZN</dd></div>
+                  <div><dt>Total histórico</dt><dd>{{ s.salaryExpensesTotal | number: '1.0-0' }} MZN</dd></div>
+                </dl>
+                <button type="button" class="tr-btn tr-btn--primary tr-btn--block" (click)="setTab('payroll')">
+                  <app-icon name="add" />
+                  Registar pagamento
+                </button>
+              </section>
+            </div>
+
+            <section class="tr-card">
+              <header class="tr-card__head">
+                <div>
+                  <h2>Resumo mensal</h2>
+                  <p>Licenças − despesas · Melhor mês: {{ formatMonth(s.bestMonth) }}</p>
+                </div>
+              </header>
+              <div class="tr-table-shell">
+                <table class="tr-table">
+                  <thead>
+                    <tr>
+                      <th>Mês</th>
+                      <th class="col-num">Licenças</th>
+                      <th class="col-num">Despesas</th>
+                      <th class="col-num">Lucro</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of s.monthlyRows; track row.month) {
+                      <tr [class.tr-table__row--highlight]="row.month === s.bestMonth">
+                        <td>
+                          {{ formatMonth(row.month) }}
+                          @if (row.month === s.bestMonth) {
+                            <span class="tr-badge tr-badge--gold">Melhor</span>
+                          }
+                        </td>
+                        <td class="col-num">{{ row.licenseRevenue | number: '1.0-0' }}</td>
+                        <td class="col-num">{{ row.expenses | number: '1.0-0' }}</td>
+                        <td class="col-num" [ngClass]="profitClass(row.netProfit)">
+                          <strong>{{ row.netProfit | number: '1.0-0' }}</strong>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          }
+
+          @if (activeTab() === 'billing') {
+            <section class="tr-card">
+              <header class="tr-card__head">
+                <div>
+                  <h2>Faturamento de licenças</h2>
+                  <p>Pagamentos confirmados por período</p>
+                </div>
+              </header>
+
+              <div class="tr-toolbar">
+                <div class="tr-toolbar__filters">
+                  <label class="tr-field tr-field--inline">
+                    <span><app-icon name="calendar" /> Ano</span>
+                    <select
+                      [ngModel]="billingYear()"
+                      name="billingYear"
+                      (ngModelChange)="billingYear.set($event); onBillingFilterChange()">
+                      @for (y of billingYears(); track y) {
+                        <option [ngValue]="y">{{ y }}</option>
+                      }
+                    </select>
+                  </label>
+                  <label class="tr-field tr-field--inline">
+                    <span><app-icon name="filter" /> Mês</span>
+                    <select
+                      [ngModel]="billingMonth()"
+                      name="billingMonth"
+                      (ngModelChange)="billingMonth.set($event); onBillingFilterChange()">
+                      @for (m of monthOptions; track m.label) {
+                        <option [ngValue]="m.value">{{ m.label }}</option>
+                      }
+                    </select>
+                  </label>
+                </div>
+                <label class="tr-search">
+                  <app-icon name="list" />
+                  <input
+                    type="search"
+                    [ngModel]="billingSearch()"
+                    (ngModelChange)="billingSearch.set($event)"
+                    name="billingSearch"
+                    placeholder="Pesquisar factura, cliente, e-Mola…"
+                    aria-label="Pesquisar faturamento" />
+                </label>
+              </div>
+
+              @if (billingPeriods().length > 0) {
+                <div class="tr-chips">
+                  @for (p of billingPeriods(); track p.period) {
+                    <button
+                      type="button"
+                      class="tr-chip tr-chip--action"
+                      (click)="billingMonth.set(+p.period.split('-')[1]); onBillingFilterChange()">
+                      {{ formatMonth(p.period) }} · {{ p.totalAmount | number: '1.0-0' }} MZN ({{ p.invoiceCount }})
+                    </button>
+                  }
+                </div>
+              }
+
+              @if (filteredBilling().length === 0) {
+                <div class="tr-empty">
+                  <app-icon name="receipt" />
+                  <p>Sem facturas neste período.</p>
+                </div>
+              } @else {
+                <div class="tr-table-shell">
+                  <table class="tr-table">
+                    <thead>
+                      <tr>
+                        <th>Factura</th>
+                        <th>Data</th>
+                        <th>Cliente</th>
+                        <th>Ref. e-Mola</th>
+                        <th class="col-num">Valor</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (b of filteredBilling(); track b.id) {
+                        <tr>
+                          <td><code class="tr-invoice">{{ b.invoiceNumber }}</code></td>
+                          <td>{{ formatDateTime(b.paidAt) }}</td>
+                          <td class="cell-title">
+                            {{ b.customerName }}
+                            <small>{{ b.customerPhone }}</small>
+                          </td>
+                          <td class="cell-mono">{{ b.paymentReference }}</td>
+                          <td class="col-num"><strong>{{ b.amount | number: '1.0-0' }} MZN</strong></td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </section>
+          }
+
+          @if (activeTab() === 'investments') {
+            <div class="tr-split">
+              <aside class="tr-card tr-card--form">
+                <header class="tr-card__head tr-card__head--compact">
+                  <h2>Registar investimento</h2>
+                </header>
+                <p class="tr-hint">Capital injectado no sistema. Usado para calcular lucro vs. prejuízo.</p>
+                <form class="tr-form" (ngSubmit)="submitInvestment()">
+                  <label class="tr-field">
+                    <span>Valor (MZN)</span>
+                    <input type="number" [(ngModel)]="investmentForm.amount" name="invAmount" min="0.01" step="0.01" required />
+                  </label>
+                  <label class="tr-field">
+                    <span>Data</span>
+                    <input type="date" [(ngModel)]="investmentForm.investedAt" name="invDate" required />
+                  </label>
+                  <label class="tr-field">
+                    <span>Notas</span>
+                    <textarea [(ngModel)]="investmentForm.notes" name="invNotes" rows="2"></textarea>
+                  </label>
+                  <button type="submit" class="tr-btn tr-btn--primary tr-btn--block" [disabled]="saving()">
+                    <app-icon name="add" />
+                    {{ saving() ? 'A guardar…' : 'Adicionar investimento' }}
+                  </button>
+                </form>
+                <p class="tr-footnote">Total investido: <strong>{{ s.totalInvested | number: '1.0-0' }} MZN</strong></p>
+              </aside>
+
+              <section class="tr-card">
+                <header class="tr-card__head">
+                  <div>
+                    <h2>Histórico</h2>
+                    <p>{{ investments().length }} registo(s)</p>
+                  </div>
+                </header>
+                <label class="tr-search tr-search--compact">
+                  <app-icon name="list" />
+                  <input
+                    type="search"
+                    [ngModel]="investmentSearch()"
+                    (ngModelChange)="investmentSearch.set($event)"
+                    name="investmentSearch"
+                    placeholder="Pesquisar…"
+                    aria-label="Pesquisar investimentos" />
+                </label>
+                @if (filteredInvestments().length === 0) {
+                  <div class="tr-empty tr-empty--sm"><p>Nenhum investimento.</p></div>
+                } @else {
+                  <div class="tr-table-shell">
+                    <table class="tr-table">
+                      <thead>
+                        <tr>
+                          <th>Data</th>
+                          <th>Notas</th>
+                          <th class="col-num">Valor</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (inv of filteredInvestments(); track inv.id) {
+                          <tr>
+                            <td>{{ formatDate(inv.investedAt) }}</td>
+                            <td>{{ inv.notes || '—' }}</td>
+                            <td class="col-num">{{ inv.amount | number: '1.0-0' }} MZN</td>
+                            <td class="col-actions">
+                              <button type="button" class="tr-btn tr-btn--danger tr-btn--xs" (click)="deleteInvestment(inv.id)">Eliminar</button>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                }
+              </section>
+            </div>
+          }
+
+          @if (activeTab() === 'allocations') {
+            <section class="tr-card">
+              <header class="tr-card__head">
+                <div>
+                  <h2>Alocações da conta</h2>
+                  <p>Distribua o saldo por manutenção, fixas, reserva, salários e ferramentas</p>
+                </div>
+                <span class="tr-badge" [class.tr-badge--danger]="allocationPercentSum() > 100">
+                  Soma: {{ allocationPercentSum() }}%
+                </span>
+              </header>
+
+              <form class="tr-form tr-form--alloc" (ngSubmit)="saveSettings()">
+                <label class="tr-field tr-field--highlight">
+                  <span><app-icon name="wallet" /> Saldo actual na conta (MZN)</span>
+                  <input type="number" [(ngModel)]="settingsForm.accountBalance" name="accountBalance" min="0" step="0.01" required />
+                </label>
+                <div class="tr-form__grid">
+                  <label class="tr-field"><span>Manutenção %</span><input type="number" [(ngModel)]="settingsForm.maintenancePercent" name="maintPct" min="0" max="100" /></label>
+                  <label class="tr-field"><span>Despesas fixas %</span><input type="number" [(ngModel)]="settingsForm.fixedExpensesPercent" name="fixedPct" min="0" max="100" /></label>
+                  <label class="tr-field"><span>Reserva %</span><input type="number" [(ngModel)]="settingsForm.reservePercent" name="reservePct" min="0" max="100" /></label>
+                  <label class="tr-field"><span>Salários %</span><input type="number" [(ngModel)]="settingsForm.payrollPercent" name="payrollPct" min="0" max="100" /></label>
+                  <label class="tr-field"><span>Ferramentas %</span><input type="number" [(ngModel)]="settingsForm.toolsPercent" name="toolsPct" min="0" max="100" /></label>
+                  <label class="tr-field"><span>Colaboradores</span><input type="number" [(ngModel)]="settingsForm.payrollHeadcount" name="headcount" min="1" max="50" /></label>
+                </div>
+                <button type="submit" class="tr-btn tr-btn--primary" [disabled]="saving() || allocationPercentSum() > 100">
+                  Guardar alocações
+                </button>
+              </form>
+
+              <div class="tr-preview-grid">
+                @for (b of s.allocationBuckets; track b.key) {
+                  <article class="tr-preview-card" [attr.data-accent]="bucketAccent(b.key)">
+                    <span class="tr-preview-card__pct">{{ b.percent }}%</span>
+                    <strong>{{ bucketLabel(b.key) }}</strong>
+                    <span>{{ b.allocatedAmount | number: '1.0-0' }} MZN</span>
+                  </article>
+                }
+              </div>
+            </section>
+          }
+
+          @if (activeTab() === 'suggestions') {
+            <section class="tr-card">
+              <header class="tr-card__head">
+                <div>
+                  <h2>Sugestões automáticas</h2>
+                  <p>Análise de lucro, investimento e peso dos salários</p>
+                </div>
+                <button type="button" class="tr-btn tr-btn--ghost" (click)="loadSuggestions(true)">
+                  <app-icon name="undo" />
+                  Actualizar análise
+                </button>
+              </header>
+
+              @if (suggestions().length === 0) {
+                <div class="tr-empty">
+                  <app-icon name="check-circle" />
+                  <p>Sem sugestões pendentes. Tudo equilibrado.</p>
+                </div>
+              } @else {
+                @for (sg of suggestions(); track sg.id) {
+                  <article class="tr-suggestion">
+                    <header class="tr-suggestion__head">
+                      <app-icon name="alert-circle" />
+                      <div>
+                        <h3>{{ sg.title }}</h3>
+                        <p>{{ sg.message }}</p>
+                      </div>
+                    </header>
+                    <div class="tr-suggestion__grid">
+                      @for (key of ['maintenance', 'fixed', 'reserve', 'payroll', 'tools']; track key) {
+                        <label class="tr-field tr-field--compact">
+                          <span>{{ bucketLabel(key) }} %</span>
+                          <input
+                            type="number"
+                            [ngModel]="getSuggestionAlloc(sg, key)"
+                            (ngModelChange)="setSuggestionAlloc(sg, key, $event)"
+                            [name]="'sg-' + sg.id + '-' + key"
+                            min="0"
+                            max="100" />
+                        </label>
+                      }
+                    </div>
+                    <div class="tr-suggestion__actions">
+                      <button type="button" class="tr-btn tr-btn--primary tr-btn--sm" (click)="approveSuggestion(sg)">
+                        <app-icon name="check-circle" /> Aprovar
+                      </button>
+                      <button type="button" class="tr-btn tr-btn--danger tr-btn--sm" (click)="rejectSuggestion(sg.id)">Rejeitar</button>
+                    </div>
+                  </article>
+                }
+              }
+            </section>
+          }
+
+          @if (activeTab() === 'expenses') {
+            <div class="tr-split">
+              <aside class="tr-card tr-card--form">
+                <header class="tr-card__head tr-card__head--compact"><h2>Nova despesa</h2></header>
+                <form class="tr-form" (ngSubmit)="submitExpense()">
+                  <label class="tr-field">
+                    <span>Descrição</span>
+                    <input type="text" [(ngModel)]="expenseForm.title" name="title" required placeholder="Ex.: Hosting VPS" />
+                  </label>
+                  <div class="tr-form__row">
+                    <label class="tr-field">
+                      <span>Categoria</span>
+                      <select [(ngModel)]="expenseForm.category" name="category">
+                        @for (c of categories; track c.id) {
+                          <option [value]="c.id">{{ c.label }}</option>
+                        }
+                      </select>
+                    </label>
+                    <label class="tr-field">
+                      <span>Valor (MZN)</span>
+                      <input type="number" [(ngModel)]="expenseForm.amount" name="amount" min="0" step="0.01" required />
+                    </label>
+                  </div>
+                  <label class="tr-field">
+                    <span>Data</span>
+                    <input type="date" [(ngModel)]="expenseForm.expenseDate" name="expenseDate" required />
+                  </label>
+                  <button type="submit" class="tr-btn tr-btn--primary tr-btn--block" [disabled]="saving()">Adicionar despesa</button>
+                </form>
+              </aside>
+
+              <section class="tr-card">
+                <header class="tr-card__head">
+                  <div><h2>Histórico</h2><p>{{ filteredExpenses().length }} de {{ expenses().length }}</p></div>
+                </header>
+                <label class="tr-search tr-search--compact">
+                  <app-icon name="list" />
+                  <input
+                    type="search"
+                    [ngModel]="expenseSearch()"
+                    (ngModelChange)="expenseSearch.set($event)"
+                    name="expenseSearch"
+                    placeholder="Pesquisar descrição ou categoria…"
+                    aria-label="Pesquisar despesas" />
+                </label>
+                @if (filteredExpenses().length === 0) {
+                  <div class="tr-empty tr-empty--sm"><p>Nenhuma despesa.</p></div>
+                } @else {
+                  <div class="tr-table-shell">
+                    <table class="tr-table">
+                      <thead>
+                        <tr>
+                          <th>Data</th>
+                          <th>Descrição</th>
+                          <th>Categoria</th>
+                          <th class="col-num">Valor</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (e of filteredExpenses(); track e.id) {
+                          <tr>
+                            <td>{{ formatDate(e.expenseDate) }}</td>
+                            <td class="cell-title">{{ e.title }}</td>
+                            <td><span class="tr-tag">{{ categoryLabel(e.category) }}</span></td>
+                            <td class="col-num">{{ e.amount | number: '1.0-0' }} MZN</td>
+                            <td class="col-actions">
+                              <button type="button" class="tr-btn tr-btn--danger tr-btn--xs" (click)="deleteExpense(e.id)">Eliminar</button>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                }
+              </section>
+            </div>
+          }
+
+          @if (activeTab() === 'payroll') {
+            <div class="tr-split">
+              <aside class="tr-card tr-card--form">
+                <header class="tr-card__head tr-card__head--compact"><h2>Pagamento de salário</h2></header>
+                <p class="tr-hint">{{ s.payrollHeadcount }} colaborador(es) · Sugestão {{ s.payrollPerPersonSuggested | number: '1.0-0' }} MZN/pessoa</p>
+                <form class="tr-form" (ngSubmit)="submitPayroll()">
+                  <label class="tr-field">
+                    <span>Colaborador</span>
+                    <input type="text" [(ngModel)]="payrollForm.employeeName" name="employeeName" required placeholder="Nome completo" />
+                  </label>
+                  <div class="tr-form__row">
+                    <label class="tr-field">
+                      <span>Valor (MZN)</span>
+                      <input type="number" [(ngModel)]="payrollForm.amount" name="payAmount" min="0" step="0.01" required />
+                    </label>
+                    <label class="tr-field">
+                      <span>Data</span>
+                      <input type="date" [(ngModel)]="payrollForm.expenseDate" name="payDate" required />
+                    </label>
+                  </div>
+                  <label class="tr-field">
+                    <span>Notas <em class="tr-optional">(opcional)</em></span>
+                    <textarea [(ngModel)]="payrollForm.notes" name="payNotes" rows="2"></textarea>
+                  </label>
+                  <button type="submit" class="tr-btn tr-btn--indigo tr-btn--block" [disabled]="saving()">
+                    <app-icon name="add" /> Registar pagamento
+                  </button>
+                </form>
+              </aside>
+
+              <section class="tr-card">
+                <header class="tr-card__head">
+                  <div><h2>Histórico de salários</h2><p>{{ filteredPayroll().length }} pagamento(s)</p></div>
+                </header>
+                <label class="tr-search tr-search--compact">
+                  <app-icon name="list" />
+                  <input
+                    type="search"
+                    [ngModel]="payrollSearch()"
+                    (ngModelChange)="payrollSearch.set($event)"
+                    name="payrollSearch"
+                    placeholder="Pesquisar colaborador…"
+                    aria-label="Pesquisar salários" />
+                </label>
+                @if (filteredPayroll().length === 0) {
+                  <div class="tr-empty tr-empty--sm"><p>Nenhum pagamento.</p></div>
+                } @else {
+                  <div class="tr-table-shell">
+                    <table class="tr-table">
+                      <thead>
+                        <tr>
+                          <th>Data</th>
+                          <th>Descrição</th>
+                          <th class="col-num">Valor</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (e of filteredPayroll(); track e.id) {
+                          <tr>
+                            <td>{{ formatDate(e.expenseDate) }}</td>
+                            <td class="cell-title">{{ e.title }}</td>
+                            <td class="col-num">{{ e.amount | number: '1.0-0' }} MZN</td>
+                            <td class="col-actions">
+                              <button type="button" class="tr-btn tr-btn--danger tr-btn--xs" (click)="deleteExpense(e.id)">Eliminar</button>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                }
+              </section>
+            </div>
+          }
+        }
+      </main>
+    </div>
+  }
+</div>

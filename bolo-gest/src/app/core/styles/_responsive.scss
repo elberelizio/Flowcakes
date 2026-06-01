@@ -13,8 +13,9 @@
     width: v.$sidebar-width;
     min-width: v.$sidebar-width;
   }
-  .sidebar.collapsed .brand-text,
+  .sidebar.collapsed .brand-name,
   .sidebar.collapsed .brand-tagline,
+  .sidebar.collapsed .brand-role,
   .sidebar.collapsed .nav-label {
     opacity: 1;
     width: auto;
@@ -51,11 +52,25 @@
   .navbar {
     padding-left: 1rem;
   }
-  .navbar-user-name {
-    max-width: 100px;
+  .navbar-user-meta {
+    display: none;
+  }
+
+  .navbar-user-chevron {
+    display: none;
+  }
+
+  .navbar-user-btn {
+    padding: 0.25rem;
+    border-radius: 9999px;
   }
   .navbar-datetime {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
+    padding: 0.35rem 0.55rem;
+
+    time {
+      font-size: 0.7rem;
+    }
   }
   .sidebar-overlay {
     display: block;

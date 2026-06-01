@@ -4,9 +4,9 @@
   <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden hero-bg">
     <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-float"></div>
     <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-orange-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-float" style="animation-delay: 2s"></div>
-    <div class="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12 relative z-10" data-landing-reveal>
       <div class="grid lg:grid-cols-2 gap-12 items-center">
-        <div class="space-y-8 opacity-0 animate-fade-in-up" style="animation-delay: 0.1s">
+        <div class="space-y-8" data-landing-reveal-child data-reveal-delay="1">
           <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-brand-200 shadow-sm">
             <span class="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
             <span class="text-sm font-medium text-brand-800">Novidade: Integração com iFood 🚀</span>
@@ -42,7 +42,7 @@
             <p>Junte-se a <strong>+2.500</strong> confeiteiras</p>
           </div>
         </div>
-        <div class="relative lg:h-[600px] flex items-center justify-center opacity-0 animate-fade-in-up" style="animation-delay: 0.3s">
+        <div class="relative lg:h-[600px] flex items-center justify-center" data-landing-reveal-child data-reveal-delay="2">
           <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 transform rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
             <div class="bg-brand-600 p-4 flex justify-between items-center">
               <div class="flex gap-2">
@@ -133,39 +133,39 @@
   </section>
 
   <section id="features" class="py-20 bg-white">
-    <div class="max-w-7xl mx-auto px-6 lg:px-12">
-      <div class="text-center max-w-3xl mx-auto mb-16">
+    <div class="w-full px-6 lg:px-12" data-landing-reveal>
+      <div class="text-center max-w-3xl mx-auto mb-16" data-landing-reveal-child data-reveal-delay="1">
         <h2 class="text-brand-600 font-semibold tracking-wide uppercase text-sm mb-2">Funcionalidades</h2>
         <h3 class="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4">Tudo que você precisa para <span class="text-brand-600">crescer</span></h3>
         <p class="text-gray-600">Deixe a planilha de lado. Gerencie seu negócio de confeitaria com ferramentas pensadas especificamente para o seu dia a dia.</p>
       </div>
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div class="group p-8 rounded-2xl bg-brand-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-brand-100">
+      <div class="grid md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-6">
+        <div class="group p-8 rounded-2xl bg-brand-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-brand-100" data-landing-reveal-child data-reveal-delay="2">
           <div class="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand-600 text-2xl mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-box-open"></i></div>
           <h4 class="text-xl font-bold text-gray-900 mb-3">Controle de Estoque</h4>
           <p class="text-gray-600 text-sm leading-relaxed">Saiba exatamente quanto de farinha, chocolate e ovos você tem. Alertas automáticos quando os ingredientes estão acabando.</p>
         </div>
-        <div class="group p-8 rounded-2xl bg-brand-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-brand-100">
+        <div class="group p-8 rounded-2xl bg-brand-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-brand-100" data-landing-reveal-child data-reveal-delay="3">
           <div class="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand-600 text-2xl mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-calendar-check"></i></div>
           <h4 class="text-xl font-bold text-gray-900 mb-3">Agenda de Pedidos</h4>
           <p class="text-gray-600 text-sm leading-relaxed">Visualize seus pedidos em uma timeline intuitiva. Nunca mais perca uma data de entrega ou se confunda com encomendas.</p>
         </div>
-        <div class="group p-8 rounded-2xl bg-brand-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-brand-100">
+        <div class="group p-8 rounded-2xl bg-brand-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-brand-100" data-landing-reveal-child data-reveal-delay="4">
           <div class="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand-600 text-2xl mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-file-invoice-dollar"></i></div>
           <h4 class="text-xl font-bold text-gray-900 mb-3">Orçamentos Inteligentes</h4>
           <p class="text-gray-600 text-sm leading-relaxed">Calcule o preço ideal dos seus doces com base no custo real dos ingredientes e na sua mão de obra.</p>
         </div>
-        <div class="group p-8 rounded-2xl bg-brand-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-brand-100">
+        <div class="group p-8 rounded-2xl bg-brand-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-brand-100" data-landing-reveal-child data-reveal-delay="5">
           <div class="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand-600 text-2xl mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-users"></i></div>
           <h4 class="text-xl font-bold text-gray-900 mb-3">Cadastro de Clientes</h4>
           <p class="text-gray-600 text-sm leading-relaxed">Mantenha um histórico de compras e preferências de cada cliente. Crie relacionamentos duradouros.</p>
         </div>
-        <div class="group p-8 rounded-2xl bg-brand-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-brand-100">
+        <div class="group p-8 rounded-2xl bg-brand-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-brand-100" data-landing-reveal-child data-reveal-delay="6">
           <div class="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand-600 text-2xl mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-chart-pie"></i></div>
           <h4 class="text-xl font-bold text-gray-900 mb-3">Relatórios Financeiros</h4>
           <p class="text-gray-600 text-sm leading-relaxed">Saiba exatamente quanto você lucra por bolo. Relatórios de vendas, despesas e lucratividade em poucos cliques.</p>
         </div>
-        <div class="group p-8 rounded-2xl bg-brand-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-brand-100">
+        <div class="group p-8 rounded-2xl bg-brand-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-brand-100" data-landing-reveal-child data-reveal-delay="7">
           <div class="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand-600 text-2xl mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-mobile-screen"></i></div>
           <h4 class="text-xl font-bold text-gray-900 mb-3">Acesso Mobile</h4>
           <p class="text-gray-600 text-sm leading-relaxed">Acesse seu sistema na cozinha, no mercado ou na entrega. Tudo sincronizado na nuvem em tempo real.</p>
@@ -179,45 +179,191 @@
       <div class="absolute top-10 left-10 w-64 h-64 bg-white rounded-full filter blur-3xl"></div>
       <div class="absolute bottom-10 right-10 w-96 h-96 bg-brand-500 rounded-full filter blur-3xl"></div>
     </div>
-    <div class="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
-      <div class="grid lg:grid-cols-2 gap-16 items-center">
-        <div>
-          <h2 class="text-3xl md:text-4xl font-serif font-bold mb-6">Pare de vender no escuro. Comece a lucrar em MZN.</h2>
+    <div class="w-full relative z-10" data-landing-reveal>
+      <div class="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.8fr)] gap-10 lg:gap-14 items-center">
+        <div class="px-6 lg:pl-12 lg:pr-4" data-landing-reveal-child data-reveal-delay="1">
+          <h2 class="text-3xl md:text-4xl font-serif font-bold mb-6">Haaa djo! Transforme talento em vendas reais com controlo total do seu negocio.</h2>
           <p class="text-brand-200 mb-8 text-lg">
-            Confeiteiras que começaram ontem já organizam preços, lucros e pedidos com confiança. Se elas conseguem, você também consegue — e com o ChefControl fica muito mais fácil.
+            Milhares de confeiteiras ja usam o ChefControl para organizar pedidos, calcular lucros e crescer com confianca. Enquanto outras ainda vendem no improviso, voce pode vender com estrategia.
           </p>
           <ul class="space-y-4">
-            <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-brand-400"></i><span>Defina preços em MZN com lucro real, sem adivinhação</span></li>
-            <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-brand-400"></i><span>Descubra rapidamente quanto cada bolo precisa render</span></li>
-            <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-brand-400"></i><span>Converta organização em mais vendas e crescimento</span></li>
+            <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-brand-400"></i><span>Saiba quanto realmente lucra em cada pedido, sem adivinhacao</span></li>
+            <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-brand-400"></i><span>Ganhe tempo com pedidos, stock e clientes organizados num so lugar</span></li>
+            <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-brand-400"></i><span>Venda com mais seguranca e faca o seu negocio crescer todos os meses</span></li>
           </ul>
-        </div>
-        <figure class="relative overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10 aspect-[4/3] lg:min-h-[400px] bg-brand-950">
-          <img
-            src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=1200&q=80"
-            alt="Profissional de pastelaria e confeitaria em laboratório de cozinha"
-            class="h-full w-full object-cover object-center"
-            loading="lazy"
-            width="1200"
-            height="800"
-          />
-          <figcaption
-            class="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-950 via-brand-950/70 to-transparent px-5 pt-20 pb-5 text-center text-xs text-brand-100/95 sm:text-sm"
+          <a
+            [routerLink]="['/']"
+            fragment="pricing"
+            class="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-bold text-brand-900 shadow-lg hover:bg-brand-50 transition-all duration-300"
           >
-            *Em MZN, no ChefControl o cálculo de custos, tempo e margem é automático e ligado aos seus pedidos — sem folhas à parte.
-          </figcaption>
+            Quero comecar agora <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        </div>
+        <figure
+          class="hero-slider relative overflow-hidden shadow-2xl ring-1 ring-white/10 h-[420px] sm:h-[520px] lg:h-[680px] bg-brand-950 w-full"
+          data-landing-reveal-child
+          data-reveal-delay="2"
+          aria-roledescription="carousel"
+          aria-label="Imagens do ChefControl"
+        >
+          <div class="hero-slider__track">
+            @for (slide of heroSlides; track slide.src; let i = $index) {
+              <img
+                [src]="slide.src"
+                [alt]="slide.alt"
+                class="hero-slider__slide"
+                [class.hero-slider__slide--active]="i === heroSlideIndex"
+                [attr.loading]="i === 0 ? 'eager' : 'lazy'"
+                width="1200"
+                height="800"
+              />
+            }
+          </div>
+          <div class="hero-slider__shade" aria-hidden="true"></div>
+
+          <button
+            type="button"
+            class="hero-slider__nav hero-slider__nav--prev"
+            (click)="prevHeroSlide()"
+            aria-label="Imagem anterior"
+          >
+            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+          </button>
+          <button
+            type="button"
+            class="hero-slider__nav hero-slider__nav--next"
+            (click)="nextHeroSlide()"
+            aria-label="Imagem seguinte"
+          >
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          </button>
+
+          <div class="hero-slider__dots" role="tablist" aria-label="Seleccionar imagem">
+            @for (slide of heroSlides; track slide.src; let i = $index) {
+              <button
+                type="button"
+                role="tab"
+                class="hero-slider__dot"
+                [class.hero-slider__dot--active]="i === heroSlideIndex"
+                [attr.aria-selected]="i === heroSlideIndex"
+                [attr.aria-label]="'Imagem ' + (i + 1)"
+                (click)="goToHeroSlide(i)"
+              ></button>
+            }
+          </div>
         </figure>
       </div>
     </div>
   </section>
 
+  <section id="pricing" class="relative py-16 lg:py-20 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-brand-50/40">
+    <div class="pointer-events-none absolute inset-0 opacity-[0.35]" aria-hidden="true">
+      <div class="absolute top-20 right-[10%] h-72 w-72 rounded-full bg-brand-200/60 blur-3xl"></div>
+      <div class="absolute bottom-10 left-[5%] h-64 w-64 rounded-full bg-teal-100/80 blur-3xl"></div>
+    </div>
+    <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-12" data-landing-reveal>
+      <div class="text-center max-w-2xl mx-auto mb-10 lg:mb-12" data-landing-reveal-child data-reveal-delay="1">
+        <p class="text-brand-600 text-xs font-bold uppercase tracking-[0.2em] mb-3">Precos em MZN</p>
+        <h2 class="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4">Escolha o plano ideal e comece hoje</h2>
+        <p class="text-gray-600 text-lg leading-relaxed">Comece gratis por 14 dias e evolua para o Pro para desbloquear todo o potencial do seu negocio.</p>
+        <p class="mt-3 text-sm font-semibold text-brand-700">Sem complicacao. Sem fidelizacao. Cancele quando quiser.</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6 lg:gap-7 max-w-4xl mx-auto items-stretch">
+        <article
+          class="group relative flex flex-col h-full rounded-3xl border-2 border-rose-300/80 bg-gradient-to-b from-white via-rose-50/40 to-rose-100/40 p-7 shadow-lg shadow-rose-900/5 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
+          data-landing-reveal-child
+          data-reveal-delay="2"
+        >
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-rose-600 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-white shadow-md">
+            Plano inicial
+          </div>
+          <div class="mb-4 mt-1 flex h-10 w-10 items-center justify-center rounded-xl bg-rose-600 text-white shadow-md shadow-rose-600/30">
+            <i class="fa-solid fa-gift text-base" aria-hidden="true"></i>
+          </div>
+          <h3 class="text-lg font-bold text-gray-900">Teste gratis</h3>
+          <p class="mt-1 text-sm text-gray-500">Perfeito para comecar</p>
+          <div class="mt-4 border-b border-rose-200/80 pb-4">
+            <p class="text-2xl font-bold tracking-tight text-gray-900">Gratis</p>
+            <p class="mt-1 text-xs font-semibold uppercase tracking-wide text-rose-700">14 dias · sem pagar</p>
+          </div>
+          <ul class="mt-5 flex-1 space-y-2.5">
+            <li class="flex gap-2.5 text-sm text-gray-600 leading-snug">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
+              Acesso às funcionalidades do plano Pro durante o teste
+            </li>
+            <li class="flex gap-2.5 text-sm text-gray-600 leading-snug">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
+              Pedidos, stock e calculadora de preços em MZN
+            </li>
+            <li class="flex gap-2.5 text-sm text-gray-600 leading-snug">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
+              Relatórios e cadastro de clientes
+            </li>
+          </ul>
+          <a
+            routerLink="/register"
+            class="mt-6 block w-full rounded-xl border-2 border-rose-300 bg-white py-3 text-center text-sm font-bold text-rose-700 hover:border-rose-500 hover:bg-rose-50 transition-colors"
+          >
+            Comecar teste
+          </a>
+        </article>
+
+        <article
+          class="relative z-[1] flex flex-col h-full rounded-3xl border-2 border-emerald-400/80 bg-gradient-to-b from-white via-emerald-50/40 to-emerald-100/40 p-7 shadow-xl shadow-emerald-900/10 transition-transform duration-300 hover:shadow-emerald-900/20 hover:-translate-y-0.5"
+          data-landing-reveal-child
+          data-reveal-delay="3"
+        >
+          <div
+            class="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-white shadow-lg"
+          >
+            Mais popular
+          </div>
+          <div class="mb-4 mt-1 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-600/30">
+            <i class="fa-solid fa-bolt text-base" aria-hidden="true"></i>
+          </div>
+          <h3 class="text-lg font-bold text-gray-900">Pro</h3>
+          <p class="mt-1 text-sm text-gray-500">Para quem quer crescer a serio</p>
+          <div class="mt-4 flex items-baseline gap-1 border-b border-emerald-200/80 pb-4">
+            <span class="text-xs font-semibold uppercase tracking-wide text-emerald-700">MZN</span>
+            <span class="text-3xl font-bold tracking-tight text-gray-900">500</span>
+            <span class="text-sm font-medium text-gray-500">/mes</span>
+          </div>
+          <ul class="mt-5 flex-1 space-y-2.5">
+            <li class="flex gap-2.5 text-sm text-gray-700 leading-snug">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
+              Pedidos ilimitados
+            </li>
+            <li class="flex gap-2.5 text-sm text-gray-700 leading-snug">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
+              Estoque completo
+            </li>
+            <li class="flex gap-2.5 text-sm text-gray-700 leading-snug">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
+              Relatórios financeiros
+            </li>
+            <li class="flex gap-2.5 text-sm text-gray-700 leading-snug">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
+              Cadastro de clientes
+            </li>
+          </ul>
+          <a
+            routerLink="/register"
+            class="mt-6 block w-full rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 py-3 text-center text-sm font-bold text-white shadow-lg shadow-emerald-600/25 hover:from-emerald-700 hover:to-teal-700 transition-all"
+          >
+            Assinar plano Pro
+          </a>
+        </article>
+      </div>
+    </div>
+  </section>
+
   <section id="testimonials" class="py-20 bg-brand-50">
-    <div class="max-w-7xl mx-auto px-6 lg:px-12">
-      <div class="text-center mb-16">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12" data-landing-reveal>
+      <div class="text-center mb-16" data-landing-reveal-child data-reveal-delay="1">
         <h2 class="text-3xl md:text-4xl font-serif font-bold text-gray-900">O que as confeiteiras dizem</h2>
       </div>
       <div class="grid md:grid-cols-3 gap-8">
-        <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+        <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow" data-landing-reveal-child data-reveal-delay="2">
           <div class="flex text-yellow-400 mb-4">
             <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
           </div>
@@ -230,7 +376,7 @@
             </div>
           </div>
         </div>
-        <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+        <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow" data-landing-reveal-child data-reveal-delay="3">
           <div class="flex text-yellow-400 mb-4">
             <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
           </div>
@@ -243,7 +389,7 @@
             </div>
           </div>
         </div>
-        <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+        <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow" data-landing-reveal-child data-reveal-delay="4">
           <div class="flex text-yellow-400 mb-4">
             <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
           </div>
@@ -260,179 +406,199 @@
     </div>
   </section>
 
-  <section id="pricing" class="relative py-20 lg:py-24 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-brand-50/40">
-    <div class="pointer-events-none absolute inset-0 opacity-[0.35]" aria-hidden="true">
-      <div class="absolute top-20 right-[10%] h-72 w-72 rounded-full bg-brand-200/60 blur-3xl"></div>
-      <div class="absolute bottom-10 left-[5%] h-64 w-64 rounded-full bg-teal-100/80 blur-3xl"></div>
-    </div>
-    <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-12">
-      <div class="text-center max-w-2xl mx-auto mb-14 lg:mb-16">
-        <p class="text-brand-600 text-xs font-bold uppercase tracking-[0.2em] mb-3">Preços em MZN</p>
-        <h2 class="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4">Planos simples e transparentes</h2>
-        <p class="text-gray-600 text-lg leading-relaxed">14 dias de teste grátis; depois continue com o plano Pro por MZN 500/mês.</p>
-      </div>
-      <div class="grid md:grid-cols-2 gap-6 lg:gap-8 max-w-4xl mx-auto items-stretch">
-        <article
-          class="group flex flex-col h-full rounded-3xl border border-slate-200/90 bg-white/90 backdrop-blur-sm p-8 shadow-sm hover:shadow-xl hover:border-brand-200/80 hover:-translate-y-0.5 transition-all duration-300"
-        >
-          <div class="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 group-hover:bg-brand-50 group-hover:text-brand-700 transition-colors">
-            <i class="fa-solid fa-gift text-lg" aria-hidden="true"></i>
-          </div>
-          <h3 class="text-xl font-bold text-gray-900">Teste grátis</h3>
-          <p class="mt-1 text-sm text-gray-500">Experimente o ChefControl</p>
-          <div class="mt-6 border-b border-slate-100 pb-6">
-            <p class="text-3xl font-bold tracking-tight text-gray-900">Grátis</p>
-            <p class="mt-1 text-sm font-medium text-brand-700">14 dias · sem pagar</p>
-          </div>
-          <ul class="mt-8 flex-1 space-y-3.5">
-            <li class="flex gap-3 text-sm text-gray-600 leading-snug">
-              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
-              Acesso às funcionalidades do plano Pro durante o teste
-            </li>
-            <li class="flex gap-3 text-sm text-gray-600 leading-snug">
-              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
-              Pedidos, stock e calculadora de preços em MZN
-            </li>
-            <li class="flex gap-3 text-sm text-gray-600 leading-snug">
-              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
-              Relatórios e cadastro de clientes
-            </li>
-          </ul>
-          <a
-            routerLink="/register"
-            class="mt-8 block w-full rounded-xl border-2 border-slate-200 bg-white py-3.5 text-center text-sm font-bold text-gray-800 hover:border-brand-300 hover:bg-brand-50/50 transition-colors"
-          >
-            Começar teste
-          </a>
-        </article>
+  <section id="mensagem-equipa" class="team-message-section relative py-20 overflow-hidden">
+    <div class="team-message-bg team-message-bg--one" aria-hidden="true"></div>
+    <div class="team-message-bg team-message-bg--two" aria-hidden="true"></div>
+    <div class="team-message-bg team-message-bg--three" aria-hidden="true"></div>
 
-        <article
-          class="relative z-[1] flex flex-col h-full rounded-3xl border-2 border-brand-400/50 bg-gradient-to-b from-white via-white to-brand-50/90 p-8 shadow-2xl shadow-brand-900/10 ring-1 ring-brand-200/60 md:scale-[1.02] md:-my-1 transition-transform duration-300 hover:shadow-brand-900/15"
-        >
-          <div
-            class="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-gradient-to-r from-brand-600 to-teal-500 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white shadow-lg"
+    <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-12" data-landing-reveal>
+      <div class="text-center max-w-3xl mx-auto mb-14" data-landing-reveal-child data-reveal-delay="1">
+        <p class="text-brand-600 font-semibold tracking-wide uppercase text-sm mb-2">Mensagem da equipa ChefControl</p>
+        <h2 class="text-3xl md:text-4xl font-serif font-bold text-gray-900">Ajude-nos a evoluir o sistema</h2>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+        <figure class="relative overflow-hidden rounded-3xl shadow-2xl ring-1 ring-brand-200/70 bg-brand-50 min-h-[360px]" data-landing-reveal-child data-reveal-delay="2">
+          <div class="pointer-events-none absolute inset-0 bg-gradient-to-tr from-brand-900/10 via-transparent to-brand-400/10"></div>
+          <img
+            src="/gft.png"
+            alt="Mensagem da equipa ChefControl"
+            class="h-full w-full object-cover object-center min-h-[360px]"
+            loading="lazy"
+            width="1200"
+            height="900"
+          />
+        </figure>
+
+        <div class="rounded-3xl border border-brand-100/90 bg-white/95 backdrop-blur-sm shadow-xl p-6 sm:p-8 lg:p-10" data-landing-reveal-child data-reveal-delay="3">
+          <p class="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-brand-700 font-semibold uppercase tracking-wide text-xs mb-4">
+            <i class="fa-solid fa-heart text-brand-600" aria-hidden="true"></i>
+            Mensagem da equipa
+          </p>
+          <h2 class="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4 leading-tight">Nos ajude a crescer</h2>
+          <p class="text-gray-600 leading-relaxed mb-7">
+            A sua sugestão ajuda-nos a priorizar melhorias reais no ChefControl para as próximas versões.
+          </p>
+
+          <label for="team-suggestion-name" class="block text-sm font-semibold text-gray-700 mb-2">Seu nome</label>
+          <input
+            id="team-suggestion-name"
+            #teamSuggestionName
+            type="text"
+            maxlength="120"
+            placeholder="Ex.: Maria Fernandes"
+            class="w-full rounded-2xl border border-brand-200 bg-white px-4 py-3 text-gray-800 placeholder:text-gray-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30 focus:outline-none transition"
+          />
+
+          <label for="team-suggestion" class="mt-4 block text-sm font-semibold text-gray-700 mb-2">A sua sugestão</label>
+          <textarea
+            id="team-suggestion"
+            #teamSuggestion
+            rows="8"
+            [attr.maxlength]="maxSuggestionChars"
+            (input)="handleSuggestionInput(teamSuggestion)"
+            placeholder="Ex.: Gostaria de relatórios semanais automáticos por WhatsApp..."
+            class="w-full min-h-[220px] rounded-2xl border border-brand-200 bg-white px-4 py-3.5 text-gray-800 placeholder:text-gray-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30 focus:outline-none transition"
+          ></textarea>
+          <div class="mt-2 flex items-center justify-between text-xs">
+            <span
+              class="font-medium"
+              [class.text-gray-500]="suggestionCharCount < maxSuggestionChars"
+              [class.text-amber-600]="suggestionCharCount >= maxSuggestionChars"
+            >
+              {{ suggestionCharCount >= maxSuggestionChars ? 'Limite de caracteres atingido.' : 'Escreva uma sugestão curta e direta.' }}
+            </span>
+            <span class="font-semibold text-brand-700">{{ suggestionCharCount }}/{{ maxSuggestionChars }}</span>
+          </div>
+
+          <button
+            type="button"
+            (click)="sendTeamSuggestion(teamSuggestionName.value, teamSuggestion.value, teamSuggestion, teamSuggestionName)"
+            [disabled]="suggestionSending"
+            class="mt-6 mx-auto flex w-full max-w-sm items-center justify-center gap-2 rounded-full bg-brand-600 text-white px-8 py-3.5 text-base font-semibold border-0 outline-none ring-0 hover:bg-brand-700 hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none focus:outline-none focus:ring-0 transition-all duration-300"
           >
-            Mais popular
-          </div>
-          <div class="mb-6 mt-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-600 text-white shadow-md shadow-brand-600/30">
-            <i class="fa-solid fa-bolt text-lg" aria-hidden="true"></i>
-          </div>
-          <h3 class="text-xl font-bold text-gray-900">Pro</h3>
-          <p class="mt-1 text-sm text-gray-500">Para confeiteiras ativas</p>
-          <div class="mt-6 flex items-baseline gap-1 border-b border-brand-100 pb-6">
-            <span class="text-sm font-semibold text-brand-700">MZN</span>
-            <span class="text-4xl font-bold tracking-tight text-gray-900">500</span>
-            <span class="text-base font-medium text-gray-500">/mês</span>
-          </div>
-          <ul class="mt-8 flex-1 space-y-3.5">
-            <li class="flex gap-3 text-sm text-gray-700 leading-snug">
-              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
-              Pedidos ilimitados
-            </li>
-            <li class="flex gap-3 text-sm text-gray-700 leading-snug">
-              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
-              Estoque completo
-            </li>
-            <li class="flex gap-3 text-sm text-gray-700 leading-snug">
-              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
-              Relatórios financeiros
-            </li>
-            <li class="flex gap-3 text-sm text-gray-700 leading-snug">
-              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white"><i class="fa-solid fa-check text-[10px]" aria-hidden="true"></i></span>
-              Cadastro de clientes
-            </li>
-          </ul>
-          <a
-            routerLink="/register"
-            class="mt-8 block w-full rounded-xl bg-gradient-to-r from-brand-600 to-teal-600 py-3.5 text-center text-sm font-bold text-white shadow-lg shadow-brand-600/25 hover:from-brand-700 hover:to-teal-700 transition-all"
-          >
-            Comprar agora
-          </a>
-        </article>
+            {{ suggestionSending ? 'Enviando...' : 'Enviar sugestão' }} <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
       </div>
     </div>
+
+    @if (suggestionPopup.open) {
+      <div class="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/45 px-4" role="dialog" aria-modal="true">
+        <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl border border-slate-200 p-6 text-center animate-bounce-in">
+          <div
+            class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-4xl animate-pop"
+            [class.bg-emerald-100]="suggestionPopup.type === 'success'"
+            [class.text-emerald-700]="suggestionPopup.type === 'success'"
+            [class.bg-rose-100]="suggestionPopup.type === 'error'"
+            [class.text-rose-700]="suggestionPopup.type === 'error'"
+          >
+            <i class="fa-solid" [class.fa-party-horn]="suggestionPopup.type === 'success'" [class.fa-circle-exclamation]="suggestionPopup.type === 'error'"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-900 mb-2">
+            {{ suggestionPopup.type === 'success' ? '🎉 Sugestão enviada!' : 'Não foi possível enviar' }}
+          </h3>
+          <p class="text-sm text-gray-600 mb-2">{{ suggestionPopup.message }}</p>
+          <p *ngIf="suggestionPopup.type === 'success'" class="text-xs text-gray-500 mb-5">Este popup será fechado automaticamente em 10 segundos</p>
+          <button
+            type="button"
+            (click)="closeSuggestionPopup()"
+            class="inline-flex items-center justify-center rounded-full bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors"
+          >
+            Fechar
+          </button>
+        </div>
+      </div>
+    }
   </section>
 
-  <footer class="landing-footer relative overflow-hidden border-t border-brand-700/40 bg-gradient-to-b from-brand-900 via-brand-950 to-slate-950 text-brand-200/95">
-    <div class="pointer-events-none absolute inset-0 opacity-[0.07]" aria-hidden="true">
-      <div class="absolute -top-24 right-0 h-64 w-64 rounded-full bg-brand-400 blur-3xl"></div>
-      <div class="absolute bottom-0 left-1/4 h-48 w-96 rounded-full bg-teal-600 blur-3xl"></div>
-    </div>
-    <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pt-14 pb-10 lg:pt-16 lg:pb-14">
-      <div class="grid gap-12 lg:gap-10 lg:grid-cols-12">
-        <div class="lg:col-span-5 space-y-5">
-          <div class="flex items-center gap-3">
-            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-800/80 ring-1 ring-brand-500/25 shadow-lg">
-              <i class="fa-solid fa-whisk text-brand-300 text-xl" aria-hidden="true"></i>
+  <footer class="landing-footer relative border-t border-slate-800 bg-slate-950 text-slate-300">
+    <div class="relative z-10 w-full px-6 lg:px-12 xl:px-16 pt-12 pb-10 lg:pt-14 lg:pb-12" data-landing-reveal>
+      <div class="grid gap-10 sm:gap-12 lg:grid-cols-12 lg:gap-x-10 xl:gap-x-14" data-landing-reveal-child data-reveal-delay="1">
+        <div class="lg:col-span-4 xl:col-span-4 space-y-5">
+          <a routerLink="/" class="flex items-center gap-3 group">
+            <span
+              class="flex h-11 shrink-0 items-center justify-center rounded-xl bg-white px-2.5 py-1 ring-1 ring-slate-600/60 shadow-md"
+            >
+              <img src="/logotipo.png" alt="ChefControl" class="h-8 w-auto max-h-8 object-contain object-center" width="120" height="32" />
             </span>
-            <span class="text-2xl font-serif font-bold text-white tracking-tight">ChefControl</span>
-          </div>
-          <p class="text-sm leading-relaxed text-brand-100/80 max-w-sm">
+            <span class="text-xl font-serif font-bold text-white tracking-tight sm:text-2xl">ChefControl</span>
+          </a>
+          <p class="max-w-md text-sm leading-relaxed text-slate-400">
             Sistema de gestão completo para confeiteiras e pequenas empresas do ramo da confeitaria — pedidos, stock e lucro em MZN.
           </p>
-          <div class="flex flex-wrap gap-3 pt-1">
+          <div class="flex flex-wrap gap-3">
             <a
               routerLink="/register"
-              class="inline-flex items-center justify-center rounded-full bg-brand-500 px-5 py-2.5 text-sm font-semibold text-brand-950 shadow-md hover:bg-brand-400 hover:shadow-lg transition-all duration-300"
+              class="inline-flex items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 shadow-md hover:bg-slate-100 transition-all duration-300"
             >
               Começar grátis
             </a>
             <a
               routerLink="/contacto"
-              class="inline-flex items-center justify-center rounded-full border border-brand-500/50 bg-brand-900/40 px-5 py-2.5 text-sm font-semibold text-white hover:border-brand-400 hover:bg-brand-800/50 transition-all duration-300"
+              class="inline-flex items-center justify-center rounded-full border border-slate-600 bg-slate-900/80 px-5 py-2.5 text-sm font-semibold text-white hover:border-slate-500 hover:bg-slate-800 transition-all duration-300"
             >
               Contacto
             </a>
           </div>
         </div>
-        <div class="lg:col-span-3">
-          <h4 class="text-xs font-bold uppercase tracking-[0.2em] text-brand-400/90 mb-5">Produto</h4>
-          <ul class="space-y-3 text-sm">
-            <li>
-              <a [routerLink]="['/']" fragment="features" class="inline-flex text-brand-100/90 hover:text-white transition-colors">Funcionalidades</a>
-            </li>
-            <li>
-              <a [routerLink]="['/']" fragment="pricing" class="inline-flex text-brand-100/90 hover:text-white transition-colors">Preços</a>
-            </li>
-            <li>
-              <a [routerLink]="['/']" fragment="testimonials" class="inline-flex text-brand-100/90 hover:text-white transition-colors">Depoimentos</a>
-            </li>
-            <li>
-              <a routerLink="/contacto" class="inline-flex text-brand-100/90 hover:text-white transition-colors">Suporte e contacto</a>
-            </li>
-            <li>
-              <a routerLink="/loja/contato" class="inline-flex text-brand-100/90 hover:text-white transition-colors">Encomendar na loja</a>
-            </li>
-          </ul>
+
+        <div class="grid grid-cols-2 gap-8 sm:gap-10 lg:col-span-5 xl:col-span-4 lg:grid-cols-2">
+          <div>
+            <h4 class="mb-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Produto</h4>
+            <ul class="space-y-2.5 text-sm">
+              <li>
+                <a [routerLink]="['/']" fragment="features" class="text-slate-400 transition-colors hover:text-white">Funcionalidades</a>
+              </li>
+              <li>
+                <a [routerLink]="['/']" fragment="pricing" class="text-slate-400 transition-colors hover:text-white">Preços</a>
+              </li>
+              <li>
+                <a [routerLink]="['/']" fragment="testimonials" class="text-slate-400 transition-colors hover:text-white">Depoimentos</a>
+              </li>
+              <li>
+                <a routerLink="/contacto" class="text-slate-400 transition-colors hover:text-white">Suporte e contacto</a>
+              </li>
+              <li>
+                <a routerLink="/loja/contato" class="text-slate-400 transition-colors hover:text-white">Encomendar na loja</a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="mb-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Conta</h4>
+            <ul class="space-y-2.5 text-sm">
+              <li>
+                <a routerLink="/login" class="text-slate-400 transition-colors hover:text-white">Entrar</a>
+              </li>
+              <li>
+                <a routerLink="/register" class="text-slate-400 transition-colors hover:text-white">Criar conta</a>
+              </li>
+            </ul>
+          </div>
         </div>
-        <div class="lg:col-span-2">
-          <h4 class="text-xs font-bold uppercase tracking-[0.2em] text-brand-400/90 mb-5">Conta</h4>
-          <ul class="space-y-3 text-sm">
-            <li>
-              <a routerLink="/login" class="inline-flex text-brand-100/90 hover:text-white transition-colors">Entrar</a>
-            </li>
-            <li>
-              <a routerLink="/register" class="inline-flex text-brand-100/90 hover:text-white transition-colors">Criar conta</a>
-            </li>
-          </ul>
-        </div>
-        <div class="lg:col-span-2 rounded-2xl border border-brand-600/25 bg-brand-950/50 p-5 backdrop-blur-sm">
-          <p class="text-xs font-bold uppercase tracking-wider text-brand-400 mb-2">Dúvidas?</p>
-          <p class="text-sm text-brand-100/85 leading-snug mb-4">Reclamações, sugestões ou ajuda com o software.</p>
+
+        <div
+          class="rounded-2xl border border-slate-700/80 bg-slate-900/80 p-5 backdrop-blur-sm sm:p-6 lg:col-span-3 xl:col-span-4"
+        >
+          <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Dúvidas?</p>
+          <p class="mt-2 text-sm leading-snug text-slate-400">Reclamações, sugestões ou ajuda com o software.</p>
           <a
             routerLink="/contacto"
-            class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 py-2.5 text-sm font-semibold text-white ring-1 ring-white/10 hover:bg-white/15 transition-colors"
+            class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-600 bg-slate-800/80 py-2.5 text-sm font-semibold text-white hover:border-slate-500 hover:bg-slate-800 transition-colors"
           >
-            <i class="fa-solid fa-paper-plane text-brand-300" aria-hidden="true"></i>
+            <i class="fa-solid fa-paper-plane text-slate-400" aria-hidden="true"></i>
             Página de contacto
           </a>
         </div>
       </div>
     </div>
-    <div class="relative z-10 border-t border-white/10 bg-black/15">
-      <div class="max-w-7xl mx-auto px-6 lg:px-12 py-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs text-brand-300/70">
+
+    <div class="relative z-10 border-t border-slate-800 bg-slate-950">
+      <div
+        class="flex w-full flex-col gap-3 px-6 py-5 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between lg:px-12 xl:px-16"
+      >
         <p class="m-0">© {{ currentYear }} ChefControl. Todos os direitos reservados.</p>
-        <p class="m-0 text-brand-400/60">Gestão para confeitaria · Valores em MZN</p>
+        <p class="m-0 text-slate-500">Gestão para confeitaria · Valores em MZN</p>
       </div>
     </div>
   </footer>

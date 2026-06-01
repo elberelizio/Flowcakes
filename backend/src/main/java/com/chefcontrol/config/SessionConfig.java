@@ -44,6 +44,14 @@ public class SessionConfig implements Filter {
         return info == null ? null : info.getUserId();
     }
 
+    /** IDs de utilizadores com sessão activa. */
+    public static java.util.List<UUID> getActiveUserIds() {
+        return sessions.values().stream()
+            .map(SessionInfo::getUserId)
+            .distinct()
+            .toList();
+    }
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;

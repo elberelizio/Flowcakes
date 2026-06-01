@@ -2,6 +2,10 @@ package com.chefcontrol.controller;
 
 import com.chefcontrol.config.CurrentUserId;
 import com.chefcontrol.dto.AccessLogDto;
+import com.chefcontrol.dto.AccessLogUsersPageDto;
+import com.chefcontrol.dto.BlockedAccountRowDto;
+import com.chefcontrol.dto.SecurityEventDto;
+import jakarta.servlet.http.HttpServletRequest;
 import com.chefcontrol.dto.AdminConfirmPaymentRequest;
 import com.chefcontrol.dto.AdminOrderResponse;
 import com.chefcontrol.dto.ExtendLicenseRequest;
@@ -9,6 +13,7 @@ import com.chefcontrol.dto.AdminStatsResponse;
 import com.chefcontrol.dto.AdminUserDetailDto;
 import com.chefcontrol.dto.AdminUpdateUserRequest;
 import com.chefcontrol.dto.AdminUserRow;
+import com.chefcontrol.dto.AdminRankingRowDto;
 import com.chefcontrol.dto.RevenueByMonthDto;
 import com.chefcontrol.dto.SystemNotificationDto;
 import com.chefcontrol.dto.SystemNotificationRequest;
@@ -16,9 +21,25 @@ import com.chefcontrol.dto.LicenseExpiringUserDto;
 import com.chefcontrol.dto.SimulatedPaymentPendingDto;
 import com.chefcontrol.dto.UserFeedbackDto;
 import com.chefcontrol.service.AdminService;
+import com.chefcontrol.service.LandingSuggestionService;
 import com.chefcontrol.service.LicenseService;
 import com.chefcontrol.service.SystemNotificationService;
+import com.chefcontrol.service.TreasuryService;
 import com.chefcontrol.service.UserFeedbackService;
+import com.chefcontrol.dto.AdminAlertsDto;
+import com.chefcontrol.dto.AdminLoginSummaryDto;
+import com.chefcontrol.dto.OperationalExpenseDto;
+import com.chefcontrol.dto.OperationalExpenseRequest;
+import com.chefcontrol.dto.TreasuryBillingEntryDto;
+import com.chefcontrol.dto.TreasuryBillingPeriodDto;
+import com.chefcontrol.dto.TreasuryCashReserveRequest;
+import com.chefcontrol.dto.TreasuryInvestmentDto;
+import com.chefcontrol.dto.TreasuryInvestmentRequest;
+import com.chefcontrol.dto.TreasurySettingsRequest;
+import com.chefcontrol.dto.TreasurySuggestionApproveRequest;
+import com.chefcontrol.dto.TreasurySuggestionDto;
+import com.chefcontrol.dto.TreasurySummaryDto;
+import com.chefcontrol.dto.LandingSuggestionDto;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,12 +56,23 @@ public class AdminController {
     private final LicenseService licenseService;
     private final SystemNotificationService notificationService;
     private final UserFeedbackService feedbackService;
+    private final LandingSuggestionService landingSuggestionService;
+    private final TreasuryService treasuryService;
 
-    public AdminController(AdminService adminService, LicenseService licenseService, SystemNotificationService notificationService, UserFeedbackService feedbackService) {
+    public AdminController(
+        AdminService adminService,
+        LicenseService licenseService,
+        SystemNotificationService notificationService,
+        UserFeedbackService feedbackService,
+        LandingSuggestionService landingSuggestionService,
+        TreasuryService treasuryService
+    ) {
         this.adminService = adminService;
         this.licenseService = licenseService;
         this.notificationService = notificationService;
         this.feedbackService = feedbackService;
+        this.landingSuggestionService = landingSuggestionService;
+        this.treasuryService = treasuryService;
     }
 
     @GetMapping("/stats")
@@ -128,8 +160,35 @@ public class AdminController {
     }
 
     @PostMapping("/users/{targetUserId}/unblock")
-    public ResponseEntity<AdminUserRow> unblockUser(@CurrentUserId UUID adminUserId, @PathVariable UUID targetUserId) {
-        return ResponseEntity.ok(adminService.unblockUser(adminUserId, targetUserId));
+    public ResponseEntity<AdminUserRow> unblockUser(
+            @CurrentUserId UUID adminUserId,
+            @PathVariable UUID targetUserId,
+            HttpServletRequest request) {
+        return ResponseEntity.ok(adminService.unblockUser(
+                adminUserId,
+                targetUserId,
+                clientIp(request),
+                request.getHeader("User-Agent")));
+    }
+
+    @GetMapping("/security-events")
+    public ResponseEntity<List<SecurityEventDto>> securityEvents(
+            @CurrentUserId UUID userId,
+            @RequestParam(defaultValue = "200") int limit) {
+        return ResponseEntity.ok(adminService.getSecurityEvents(userId, limit));
+    }
+
+    @GetMapping("/blocked-accounts")
+    public ResponseEntity<List<BlockedAccountRowDto>> blockedAccounts(@CurrentUserId UUID userId) {
+        return ResponseEntity.ok(adminService.getBlockedAccounts(userId));
+    }
+
+    private static String clientIp(HttpServletRequest request) {
+        String xff = request.getHeader("X-Forwarded-For");
+        if (xff != null && !xff.isEmpty()) {
+            return xff.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 
     @GetMapping("/revenue-by-month")
@@ -137,19 +196,47 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getRevenueByMonth(userId));
     }
 
+    @GetMapping("/license-revenue-by-month")
+    public ResponseEntity<List<RevenueByMonthDto>> licenseRevenueByMonth(@CurrentUserId UUID userId) {
+        return ResponseEntity.ok(adminService.getLicenseRevenueByMonth(userId));
+    }
+
+    @GetMapping("/ranking")
+    public ResponseEntity<List<AdminRankingRowDto>> ranking(
+            @CurrentUserId UUID userId,
+            @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(adminService.getRanking(userId, limit));
+    }
+
     @GetMapping("/access-logs")
     public ResponseEntity<List<AccessLogDto>> accessLogs(@CurrentUserId UUID userId, @RequestParam(defaultValue = "100") int limit) {
         return ResponseEntity.ok(adminService.getAccessLogs(userId, limit));
     }
 
+    @GetMapping("/access-logs/users")
+    public ResponseEntity<AccessLogUsersPageDto> accessLogUsers(
+            @CurrentUserId UUID userId,
+            @RequestParam(defaultValue = "") String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size) {
+        return ResponseEntity.ok(adminService.getAccessLogUsersPage(userId, search, page, size));
+    }
+
+    /** Avisos publicados para utilizadores (manutenção, mensagens gerais). */
     @GetMapping("/notifications")
     public ResponseEntity<List<SystemNotificationDto>> notifications(@CurrentUserId UUID userId) {
-        return ResponseEntity.ok(notificationService.listForAdmin(userId));
+        return ResponseEntity.ok(notificationService.listBroadcastsForAdmin(userId));
+    }
+
+    /** Alertas internos: pagamentos simulados, operações automáticas. */
+    @GetMapping("/notifications/operations")
+    public ResponseEntity<List<SystemNotificationDto>> operationNotifications(@CurrentUserId UUID userId) {
+        return ResponseEntity.ok(notificationService.listOperationAlertsForAdmin(userId));
     }
 
     @PostMapping("/notifications")
-    public ResponseEntity<SystemNotificationDto> createNotification(@CurrentUserId UUID userId, @Valid @RequestBody SystemNotificationRequest body) {
-        return ResponseEntity.ok(notificationService.create(userId, body.getTitle(), body.getMessage(), body.getType()));
+    public ResponseEntity<SystemNotificationDto> createNotification(@CurrentUserId UUID userId, @RequestBody SystemNotificationRequest body) {
+        return ResponseEntity.ok(notificationService.create(userId, body));
     }
 
     @PatchMapping("/notifications/{id}/deactivate")
@@ -166,5 +253,129 @@ public class AdminController {
     @GetMapping("/feedback/average")
     public ResponseEntity<Double> feedbackAverage(@CurrentUserId UUID userId) {
         return ResponseEntity.ok(feedbackService.getAverageRating(userId));
+    }
+
+    @GetMapping("/landing-suggestions")
+    public ResponseEntity<List<LandingSuggestionDto>> landingSuggestions(@CurrentUserId UUID userId) {
+        return ResponseEntity.ok(landingSuggestionService.listForAdmin(userId));
+    }
+
+    @GetMapping("/login-summary")
+    public ResponseEntity<AdminLoginSummaryDto> loginSummary(@CurrentUserId UUID userId) {
+        return ResponseEntity.ok(treasuryService.getLoginSummary(userId));
+    }
+
+    @GetMapping("/alerts")
+    public ResponseEntity<AdminAlertsDto> alerts(@CurrentUserId UUID userId) {
+        return ResponseEntity.ok(treasuryService.getAlerts(userId));
+    }
+
+    @GetMapping("/treasury/summary")
+    public ResponseEntity<TreasurySummaryDto> treasurySummary(@CurrentUserId UUID userId) {
+        return ResponseEntity.ok(treasuryService.getSummary(userId));
+    }
+
+    @GetMapping("/treasury/billing")
+    public ResponseEntity<List<TreasuryBillingEntryDto>> treasuryBilling(
+            @CurrentUserId UUID userId,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month) {
+        return ResponseEntity.ok(treasuryService.listBilling(userId, year, month));
+    }
+
+    @GetMapping("/treasury/billing/periods")
+    public ResponseEntity<List<TreasuryBillingPeriodDto>> treasuryBillingPeriods(
+            @CurrentUserId UUID userId,
+            @RequestParam(required = false) Integer year) {
+        return ResponseEntity.ok(treasuryService.listBillingPeriods(userId, year));
+    }
+
+    @PutMapping("/treasury/settings")
+    public ResponseEntity<Map<String, Boolean>> updateTreasurySettings(
+            @CurrentUserId UUID userId,
+            @Valid @RequestBody TreasurySettingsRequest body) {
+        treasuryService.updateSettings(userId, body);
+        return ResponseEntity.ok(Map.of("ok", true));
+    }
+
+    @GetMapping("/treasury/investments")
+    public ResponseEntity<List<TreasuryInvestmentDto>> treasuryInvestments(@CurrentUserId UUID userId) {
+        return ResponseEntity.ok(treasuryService.listInvestments(userId));
+    }
+
+    @PostMapping("/treasury/investments")
+    public ResponseEntity<TreasuryInvestmentDto> createTreasuryInvestment(
+            @CurrentUserId UUID userId,
+            @Valid @RequestBody TreasuryInvestmentRequest body) {
+        return ResponseEntity.ok(treasuryService.createInvestment(userId, body));
+    }
+
+    @DeleteMapping("/treasury/investments/{investmentId}")
+    public ResponseEntity<Void> deleteTreasuryInvestment(
+            @CurrentUserId UUID userId,
+            @PathVariable UUID investmentId) {
+        treasuryService.deleteInvestment(userId, investmentId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/treasury/suggestions")
+    public ResponseEntity<List<TreasurySuggestionDto>> treasurySuggestions(
+            @CurrentUserId UUID userId,
+            @RequestParam(defaultValue = "false") boolean refresh) {
+        return ResponseEntity.ok(treasuryService.listSuggestions(userId, refresh));
+    }
+
+    @PostMapping("/treasury/suggestions/{suggestionId}/approve")
+    public ResponseEntity<Map<String, Boolean>> approveTreasurySuggestion(
+            @CurrentUserId UUID userId,
+            @PathVariable UUID suggestionId,
+            @RequestBody(required = false) TreasurySuggestionApproveRequest body) {
+        treasuryService.approveSuggestion(userId, suggestionId,
+            body != null ? body.getAllocations() : null);
+        return ResponseEntity.ok(Map.of("ok", true));
+    }
+
+    @PostMapping("/treasury/suggestions/{suggestionId}/reject")
+    public ResponseEntity<Map<String, Boolean>> rejectTreasurySuggestion(
+            @CurrentUserId UUID userId,
+            @PathVariable UUID suggestionId) {
+        treasuryService.rejectSuggestion(userId, suggestionId);
+        return ResponseEntity.ok(Map.of("ok", true));
+    }
+
+    @PutMapping("/treasury/cash-reserve")
+    public ResponseEntity<Map<String, Boolean>> updateTreasuryCashReserve(
+            @CurrentUserId UUID userId,
+            @Valid @RequestBody TreasuryCashReserveRequest body) {
+        treasuryService.updateCashReserve(userId, body);
+        return ResponseEntity.ok(Map.of("ok", true));
+    }
+
+    @GetMapping("/treasury/expenses")
+    public ResponseEntity<List<OperationalExpenseDto>> treasuryExpenses(
+            @CurrentUserId UUID userId,
+            @RequestParam(required = false) String category) {
+        return ResponseEntity.ok(treasuryService.listExpenses(userId, category));
+    }
+
+    @PostMapping("/treasury/expenses")
+    public ResponseEntity<OperationalExpenseDto> createTreasuryExpense(
+            @CurrentUserId UUID userId,
+            @Valid @RequestBody OperationalExpenseRequest body) {
+        return ResponseEntity.ok(treasuryService.createExpense(userId, body));
+    }
+
+    @DeleteMapping("/treasury/expenses/{expenseId}")
+    public ResponseEntity<Void> deleteTreasuryExpense(
+            @CurrentUserId UUID userId,
+            @PathVariable UUID expenseId) {
+        treasuryService.deleteExpense(userId, expenseId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/treasury/maintenance-done")
+    public ResponseEntity<Map<String, Boolean>> recordMaintenance(@CurrentUserId UUID userId) {
+        treasuryService.recordMaintenance(userId);
+        return ResponseEntity.ok(Map.of("ok", true));
     }
 }

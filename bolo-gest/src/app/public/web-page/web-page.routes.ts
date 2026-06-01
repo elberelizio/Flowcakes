@@ -10,4 +10,14 @@ export const webPageRoutes: Routes = [
     path: 'contacto',
     loadComponent: () => import('./contact/contact-page.component').then((m) => m.ContactPageComponent),
   },
+  {
+    path: 'termos',
+    data: { legalType: 'terms' },
+    loadComponent: () => import('./legal/legal-document-page.component').then((m) => m.LegalDocumentPageComponent),
+  },
+  {
+    path: 'privacidade',
+    data: { legalType: 'privacy' },
+    loadComponent: () => import('./legal/legal-document-page.component').then((m) => m.LegalDocumentPageComponent),
+  },
 ];

@@ -8,14 +8,13 @@ import {
   effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Chart, registerables } from 'chart.js';
+import { Chart, registerables, type TooltipItem } from 'chart.js';
 import type { AdminStats, RevenueByMonthDto } from '../models';
 
 Chart.register(...registerables);
 
-/**
- * Secção de gráficos do painel admin: receita por mês, distribuição de licenças, actividade hoje.
- */
+const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
 @Component({
   selector: 'app-admin-charts-section',
   standalone: true,
@@ -24,151 +23,154 @@ Chart.register(...registerables);
   styleUrl: './admin-charts-section.component.scss',
 })
 export class AdminChartsSectionComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('chartRevenueMonth') chartRevenueMonthRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('chartRevenueCompare') chartRevenueCompareRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('chartLicenses') chartLicensesRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('chartActivity') chartActivityRef!: ElementRef<HTMLCanvasElement>;
 
-  revenueByMonth = input.required<RevenueByMonthDto[]>();
+  ordersRevenueByMonth = input.required<RevenueByMonthDto[]>();
+  licenseRevenueByMonth = input.required<RevenueByMonthDto[]>();
   adminStats = input<AdminStats | null>(null);
 
-  private chartRevenueMonth: Chart<'bar'> | null = null;
-  private chartLicenses: Chart<'doughnut'> | null = null;
-  private chartActivity: Chart<'bar'> | null = null;
+  private chartRevenueCompare: Chart | null = null;
+  private chartLicenses: Chart | null = null;
 
   constructor() {
     effect(() => {
-      this.revenueByMonth();
+      this.ordersRevenueByMonth();
+      this.licenseRevenueByMonth();
       this.adminStats();
-      setTimeout(() => {
-        this.buildRevenueMonthChart();
-        this.buildLicensesChart();
-        this.buildActivityChart();
-      }, 100);
+      setTimeout(() => this.rebuildAll(), 80);
     });
   }
 
   ngAfterViewInit(): void {
-    this.buildRevenueMonthChart();
+    this.rebuildAll();
   }
 
   ngOnDestroy(): void {
-    this.chartRevenueMonth?.destroy();
+    this.chartRevenueCompare?.destroy();
     this.chartLicenses?.destroy();
-    this.chartActivity?.destroy();
   }
 
-  private buildRevenueMonthChart(): void {
-    const data = this.revenueByMonth();
-    if (!data.length || !this.chartRevenueMonthRef?.nativeElement) return;
-    const prev = this.chartRevenueMonth;
-    if (prev) prev.destroy();
-    this.chartRevenueMonth = null;
-    const reversed = [...data].reverse();
-    const labels = reversed.map((d) => this.formatMonthLabel(d.month));
-    const values = reversed.map((d) => d.revenue);
-    this.chartRevenueMonth = new Chart(this.chartRevenueMonthRef.nativeElement, {
-      type: 'bar',
+  private rebuildAll(): void {
+    this.buildRevenueCompareChart();
+    this.buildLicensesChart();
+  }
+
+  private buildRevenueCompareChart(): void {
+    const canvas = this.chartRevenueCompareRef?.nativeElement;
+    if (!canvas) return;
+    this.chartRevenueCompare?.destroy();
+
+    const orders = [...this.ordersRevenueByMonth()].reverse().slice(-12);
+    const licenses = [...this.licenseRevenueByMonth()].reverse().slice(-12);
+    const monthSet = new Set([...orders.map((d) => d.month), ...licenses.map((d) => d.month)]);
+    const labels = [...monthSet].sort().map((m) => this.formatMonthLabel(m));
+    const orderMap = new Map(orders.map((d) => [d.month, d.revenue]));
+    const licMap = new Map(licenses.map((d) => [d.month, d.revenue]));
+    const sortedMonths = [...monthSet].sort();
+
+    this.chartRevenueCompare = new Chart(canvas, {
+      type: 'line',
       data: {
         labels,
         datasets: [
           {
-            label: 'Receita (MZN)',
-            data: values,
-            backgroundColor: 'rgba(13, 148, 136, 0.75)',
-            borderColor: 'rgb(13, 148, 136)',
-            borderWidth: 1,
+            label: 'Licenças (MZN)',
+            data: sortedMonths.map((m) => licMap.get(m) ?? 0),
+            borderColor: '#14b8a6',
+            backgroundColor: 'rgba(20, 184, 166, 0.12)',
+            fill: true,
+            tension: 0.35,
+            pointRadius: 3,
+          },
+          {
+            label: 'Lucro encomendas (MZN)',
+            data: sortedMonths.map((m) => orderMap.get(m) ?? 0),
+            borderColor: '#818cf8',
+            backgroundColor: 'rgba(129, 140, 248, 0.1)',
+            fill: true,
+            tension: 0.35,
+            pointRadius: 3,
           },
         ],
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => `${Number(ctx.raw).toFixed(2)} MZN`,
-            },
-          },
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { callback: (v) => (typeof v === 'number' ? v.toFixed(0) + ' MZN' : v) },
-          },
-        },
-      },
+      options: this.lineOptions(),
     });
   }
 
   private buildLicensesChart(): void {
+    const canvas = this.chartLicensesRef?.nativeElement;
     const stats = this.adminStats();
-    if (!stats || !this.chartLicensesRef?.nativeElement) return;
+    if (!canvas || !stats) return;
     const paid = stats.licensesPaid ?? 0;
     const trial = stats.licensesTrial ?? 0;
     const pending = stats.licensesPending ?? 0;
-    const prev = this.chartLicenses;
-    if (prev) prev.destroy();
-    this.chartLicenses = null;
     if (paid === 0 && trial === 0 && pending === 0) return;
-    this.chartLicenses = new Chart(this.chartLicensesRef.nativeElement, {
+
+    this.chartLicenses?.destroy();
+    this.chartLicenses = new Chart(canvas, {
       type: 'doughnut',
       data: {
         labels: ['Pagas', 'Teste', 'Pendentes'],
         datasets: [
           {
             data: [paid, trial, pending],
-            backgroundColor: ['#059669', '#6366f1', '#d97706'],
-            borderColor: ['#059669', '#6366f1', '#d97706'],
-            borderWidth: 1,
+            backgroundColor: ['#14b8a6', '#818cf8', '#fbbf24'],
+            borderWidth: 0,
           },
         ],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } },
+        cutout: '58%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: '#64748b', font: { size: 10 }, boxWidth: 10, padding: 8 },
+          },
+        },
       },
     });
   }
 
-  private buildActivityChart(): void {
-    const stats = this.adminStats();
-    if (!this.chartActivityRef?.nativeElement) return;
-    const logins = stats?.loginsToday ?? 0;
-    const unique = stats?.uniqueUsersToday ?? 0;
-    const prev = this.chartActivity;
-    if (prev) prev.destroy();
-    this.chartActivity = null;
-    this.chartActivity = new Chart(this.chartActivityRef.nativeElement, {
-      type: 'bar',
-      data: {
-        labels: ['Logins hoje', 'Utilizadores únicos'],
-        datasets: [
-          {
-            label: 'Quantidade',
-            data: [logins, unique],
-            backgroundColor: ['rgba(99, 102, 241, 0.7)', 'rgba(13, 148, 136, 0.7)'],
-            borderColor: ['rgb(99, 102, 241)', 'rgb(13, 148, 136)'],
-            borderWidth: 1,
+  private lineOptions(): object {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'top',
+          align: 'end',
+          labels: { color: '#64748b', usePointStyle: true, boxWidth: 8, padding: 12, font: { size: 10 } },
+        },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.92)',
+          callbacks: {
+            label: (ctx: TooltipItem<'line'>) =>
+              `${ctx.dataset.label}: ${Number(ctx.raw).toFixed(0)} MZN`,
           },
-        ],
+        },
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        indexAxis: 'y',
-        plugins: { legend: { display: false } },
-        scales: { x: { beginAtZero: true } },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#64748b', font: { size: 10 } },
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(148, 163, 184, 0.1)' },
+          ticks: { color: '#64748b', font: { size: 10 } },
+        },
       },
-    });
+    };
   }
 
   private formatMonthLabel(ym: string): string {
     if (!ym || ym.length < 7) return ym;
     const [, m] = ym.split('-');
-    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
     const i = parseInt(m, 10) - 1;
-    return months[i] ?? m;
+    return MONTHS[i] ?? m;
   }
 }

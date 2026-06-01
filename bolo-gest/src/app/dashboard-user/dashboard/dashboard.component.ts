@@ -9,26 +9,25 @@ import {
   inject,
   OnInit,
   signal,
+  afterNextRender,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { Chart, ChartConfiguration, registerables, Plugin } from 'chart.js';
+import { Chart, ChartConfiguration } from 'chart.js/auto';
 import { OrdersService } from '../../services/orders.service';
 import { ReminderService } from '../../services/reminder.service';
 import { AuthService } from '../../services/auth.service';
-import { orderDisplayName, orderDisplaySize } from '../../models/order.model';
+import { Order, orderDisplayName, orderDisplaySize } from '../../models/order.model';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { NotificationService } from '../../services/notification.service';
 import { UserSettingsService } from '../../services/user-settings.service';
 import { WithdrawalService } from '../../services/withdrawal.service';
-import { StoreSettingsService } from '../../services/store-settings.service';
+import { LoginPopupOrchestratorService } from '../../services/login-popup-orchestrator.service';
 import {
   getHolidayOnDate,
   getUpcomingHolidays,
   formatHolidayDate,
 } from '../../core/data/mozambique-holidays';
-
-Chart.register(...registerables);
 
 const SUGESTIVE_MESSAGES = [
   'Organize o seu dia e aproveite cada encomenda.',
@@ -36,82 +35,20 @@ const SUGESTIVE_MESSAGES = [
   'Bom trabalho! Consulte os filtros para analisar por período.',
   'Mantenha os lembretes em dia para não faltar material.',
   'O Chef Control está aqui para simplificar o seu negócio.',
-  'Revise os lucros e despesas para tomar melhores decisões.',
 ];
 const DASHBOARD_VISITED_KEY = 'chefcontrol_dashboard_visited';
 const LOGIN_SUMMARY_DISMISSED_KEY = 'chefcontrol_login_summary_dismissed';
 
-// Plugin customizado para mostrar números suaves ao longo das linhas
-const dataLabelsPlugin: Plugin<'line'> = {
-  id: 'dataLabels',
-  afterDatasetsDraw(chart) {
-    const ctx = chart.ctx;
-    
-    ctx.save();
-    ctx.font = '10px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    // Mostrar apenas alguns valores para não poluir (a cada 4-5 dias)
-    const step = Math.max(1, Math.floor(chart.data.labels!.length / 10));
-    
-    chart.data.datasets.forEach((dataset, datasetIndex) => {
-      const meta = chart.getDatasetMeta(datasetIndex);
-      const color = dataset.borderColor as string;
-      
-      meta.data.forEach((point: any, index: number) => {
-        // Mostrar apenas alguns valores para manter limpo
-        if (index % step !== 0 && index !== meta.data.length - 1) return;
-        
-        const value = dataset.data[index] as number;
-        if (value === null || value === undefined || value === 0) return;
-        
-        const x = point.x;
-        const y = point.y - 12; // Posicionar acima do ponto
-        
-        // Formatar valor de forma compacta
-        let label = '';
-        if (value >= 1000) {
-          label = (value / 1000).toFixed(1) + 'k';
-        } else {
-          label = value.toFixed(0);
-        }
-        
-        const textWidth = ctx.measureText(label).width;
-        const padding = 3;
-        const radius = 6;
-        
-        // Desenhar fundo suave para legibilidade
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        ctx.strokeStyle = color + '30';
-        ctx.lineWidth = 0.5;
-        
-        // Desenhar retângulo arredondado (compatível com todos browsers)
-        ctx.beginPath();
-        ctx.moveTo(x - textWidth / 2 - padding + radius, y - 7);
-        ctx.lineTo(x + textWidth / 2 + padding - radius, y - 7);
-        ctx.quadraticCurveTo(x + textWidth / 2 + padding, y - 7, x + textWidth / 2 + padding, y - 7 + radius);
-        ctx.lineTo(x + textWidth / 2 + padding, y + 7 - radius);
-        ctx.quadraticCurveTo(x + textWidth / 2 + padding, y + 7, x + textWidth / 2 + padding - radius, y + 7);
-        ctx.lineTo(x - textWidth / 2 - padding + radius, y + 7);
-        ctx.quadraticCurveTo(x - textWidth / 2 - padding, y + 7, x - textWidth / 2 - padding, y + 7 - radius);
-        ctx.lineTo(x - textWidth / 2 - padding, y - 7 + radius);
-        ctx.quadraticCurveTo(x - textWidth / 2 - padding, y - 7, x - textWidth / 2 - padding + radius, y - 7);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        
-        // Desenhar texto com cor suave
-        ctx.fillStyle = color;
-        ctx.globalAlpha = 0.85;
-        ctx.fillText(label, x, y);
-        ctx.globalAlpha = 1;
-      });
-    });
-    
-    ctx.restore();
-  },
-};
+type ChartGranularity = 'day' | 'month' | 'year';
+
+interface ProfitExpensePoint {
+  date: string;
+  label: string;
+  profit: number;
+  expense: number;
+  debt: number;
+  tooltipTitle: string;
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -130,10 +67,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private router = inject(Router);
   private userSettings = inject(UserSettingsService);
   private withdrawalService = inject(WithdrawalService);
-  private storeSettings = inject(StoreSettingsService);
-
-  meuSiteUrl = signal<string | null>(null);
-
+  private loginChain = inject(LoginPopupOrchestratorService);
   today = new Date();
   isAdmin = false;
 
@@ -208,7 +142,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Alerta de datas inválidas (data fim &lt; data início) */
   filterDateError = signal<string>('');
 
-  /** Intervalo efectivo para os gráficos. Se datas inválidas (fim < início), usa últimos 30 dias. */
+  /** Intervalo efectivo para os gráficos. Prioridade: datas → ano+mês → só ano → últimos 30 dias. */
   filterDateRange = computed((): { from: string; to: string } => {
     const from = this.filterDateFrom().trim();
     const to = this.filterDateTo().trim();
@@ -223,50 +157,240 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       const lastDay = new Date(y, m, 0).getDate();
       return { from: start, to: `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}` };
     }
+    if (y != null) {
+      return { from: `${y}-01-01`, to: `${y}-12-31` };
+    }
     return this.getDefaultRange();
   });
 
+  /** Modo activo do filtro (define período e granularidade do gráfico). */
+  filterMode = computed((): 'range' | 'yearMonth' | 'yearOnly' | 'default' => {
+    const from = this.filterDateFrom().trim();
+    const to = this.filterDateTo().trim();
+    if (from && to) return 'range';
+    const y = this.filterYear();
+    const m = this.filterMonth();
+    if (y != null && m != null) return 'yearMonth';
+    if (y != null) return 'yearOnly';
+    return 'default';
+  });
+
+  /** Agregação do eixo X: dia, mês ou ano conforme o filtro e a extensão do período. */
+  chartGranularity = computed((): ChartGranularity => {
+    const mode = this.filterMode();
+    if (mode === 'yearMonth' || mode === 'default') return 'day';
+    if (mode === 'yearOnly') return 'month';
+    const { from, to } = this.filterDateRange();
+    const days = this.daysBetween(from, to);
+    if (days > 730) return 'year';
+    if (days > 62) return 'month';
+    return 'day';
+  });
+
+  /** Texto sob o título do gráfico (explica período e agrupamento). */
+  chartPeriodLabel = computed(() => {
+    const g = this.chartGranularity();
+    const { from, to } = this.filterDateRange();
+    const mode = this.filterMode();
+    const gran =
+      g === 'day' ? 'Por dia' : g === 'month' ? 'Por mês' : 'Por ano';
+
+    if (mode === 'range') {
+      return `${gran} · ${this.formatDatePt(from)} a ${this.formatDatePt(to)}`;
+    }
+    if (mode === 'yearMonth') {
+      const m = this.filterMonth();
+      const monthName = this.filterMonths.find((x) => x.value === m)?.label ?? '';
+      return `${gran} · ${monthName} ${this.filterYear()}`;
+    }
+    if (mode === 'yearOnly') {
+      return `${gran} · ${this.filterYear()}`;
+    }
+    return `${gran} · últimos 30 dias`;
+  });
+
   private getDefaultRange(): { from: string; to: string } {
-    const t = new Date();
-    t.setHours(0, 0, 0, 0);
-    const end = new Date(t);
-    end.setDate(end.getDate() - 1);
+    const end = new Date();
+    end.setHours(0, 0, 0, 0);
     const start = new Date(end);
     start.setDate(start.getDate() - 29);
+
+    const keys = this.orders
+      .allOrders()
+      .map((o) => this.orderDateKey(o))
+      .filter(Boolean)
+      .sort();
+    if (keys.length > 0) {
+      const to = keys[keys.length - 1];
+      const fromD = this.parseLocalDate(to);
+      fromD.setDate(fromD.getDate() - 29);
+      const fromByData = this.toLocalDateKey(fromD);
+      const from = fromByData < keys[0] ? keys[0] : fromByData;
+      return { from, to };
+    }
+
     return {
-      from: start.toISOString().slice(0, 10),
-      to: end.toISOString().slice(0, 10),
+      from: this.toLocalDateKey(start),
+      to: this.toLocalDateKey(end),
     };
   }
 
-  /** Utilizador tem filtro activo (datas ou ano/mês preenchidos) */
+  /** Chave YYYY-MM-DD em hora local (evita desvio UTC de toISOString). */
+  private toLocalDateKey(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  private parseLocalDate(isoDate: string): Date {
+    const [y, m, d] = isoDate.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  /** Mesma regra que ordersInRange: entrega, depois data do pedido, depois criação (hora local). */
+  private orderDateKey(o: Order): string {
+    const raw = o.deliveryDate || o.date || o.createdAt || '';
+    if (!raw) return '';
+    if (raw.includes('T')) {
+      const d = new Date(raw);
+      if (!Number.isNaN(d.getTime())) return this.toLocalDateKey(d);
+    }
+    return raw.length >= 10 ? raw.slice(0, 10) : raw;
+  }
+
+  private daysBetween(from: string, to: string): number {
+    const a = this.parseLocalDate(from);
+    const b = this.parseLocalDate(to);
+    return Math.round((b.getTime() - a.getTime()) / 86400000) + 1;
+  }
+
+  private formatDatePt(isoDate: string): string {
+    return this.parseLocalDate(isoDate).toLocaleDateString('pt-MZ', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  }
+
+  private buildChartBuckets(
+    fromD: Date,
+    toD: Date,
+    granularity: ChartGranularity
+  ): { key: string; label: string; tooltipTitle: string }[] {
+    const buckets: { key: string; label: string; tooltipTitle: string }[] = [];
+
+    if (granularity === 'day') {
+      const cur = new Date(fromD);
+      while (cur <= toD) {
+        const key = this.toLocalDateKey(cur);
+        buckets.push({
+          key,
+          label: `${String(cur.getDate()).padStart(2, '0')}/${String(cur.getMonth() + 1).padStart(2, '0')}`,
+          tooltipTitle: cur.toLocaleDateString('pt-MZ', {
+            weekday: 'long',
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+          }),
+        });
+        cur.setDate(cur.getDate() + 1);
+      }
+      return buckets;
+    }
+
+    if (granularity === 'month') {
+      const cur = new Date(fromD.getFullYear(), fromD.getMonth(), 1);
+      const end = new Date(toD.getFullYear(), toD.getMonth(), 1);
+      while (cur <= end) {
+        const key = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}`;
+        buckets.push({
+          key,
+          label: cur.toLocaleDateString('pt-MZ', { month: 'short', year: '2-digit' }),
+          tooltipTitle: cur.toLocaleDateString('pt-MZ', { month: 'long', year: 'numeric' }),
+        });
+        cur.setMonth(cur.getMonth() + 1);
+      }
+      return buckets;
+    }
+
+    for (let y = fromD.getFullYear(); y <= toD.getFullYear(); y++) {
+      const key = String(y);
+      buckets.push({ key, label: key, tooltipTitle: key });
+    }
+    return buckets;
+  }
+
+  private ordersForBucket(
+    orders: Order[],
+    bucketKey: string,
+    granularity: ChartGranularity
+  ): Order[] {
+    return orders.filter((o) => {
+      const dk = this.orderDateKey(o);
+      if (!dk) return false;
+      if (granularity === 'day') return dk === bucketKey;
+      if (granularity === 'month') return dk.startsWith(bucketKey);
+      return dk.startsWith(bucketKey);
+    });
+  }
+
+  private aggregateOrderMetrics(orders: Order[]): {
+    profit: number;
+    expense: number;
+    debt: number;
+  } {
+    const profit = orders.reduce((sum, o) => {
+      let orderProfit = o.profit;
+      if (o.variableExpenses && o.variableExpenses.length > 0) {
+        const varExpensesTotal = o.variableExpenses.reduce((s, e) => s + e.amount, 0);
+        if (o.valuePaid < o.valueCharged && o.valuePaid > 0) {
+          const paymentRatio = o.valuePaid / o.valueCharged;
+          orderProfit = orderProfit - varExpensesTotal * paymentRatio;
+        } else if (o.valuePaid >= o.valueCharged) {
+          orderProfit = orderProfit - varExpensesTotal;
+        }
+      }
+      return sum + Math.max(0, orderProfit);
+    }, 0);
+    const expense = orders.reduce((sum, o) => {
+      const baseExpense = o.costTotal;
+      const varExpenses = o.variableExpenses?.reduce((s, e) => s + e.amount, 0) || 0;
+      return sum + baseExpense + varExpenses;
+    }, 0);
+    const debt = orders.reduce((sum, o) => {
+      if (o.isCancelled || o.orderStatus === 'cancelled') return sum;
+      return sum + Math.max(0, (o.valueCharged ?? 0) - (o.valuePaid ?? 0));
+    }, 0);
+    return { profit, expense, debt };
+  }
+
+  /** Utilizador tem filtro activo (datas, ano+mês ou só ano) */
   hasActiveFilter = computed(() => {
     const from = this.filterDateFrom().trim();
     const to = this.filterDateTo().trim();
     const y = this.filterYear();
-    const m = this.filterMonth();
-    return (from !== '' && to !== '') || (y != null && m != null);
+    return (from !== '' && to !== '') || y != null;
   });
+
+  /** Há valores não-zero no gráfico */
+  chartHasValues = computed(() =>
+    this.profitExpenseData().some((d) => d.profit + d.expense + d.debt > 0)
+  );
 
   /** Período filtrado não tem dados – mostrar mensagem amigável */
   filterHasNoData = computed(() => {
     if (!this.hasActiveFilter()) return false;
-    const data = this.profitExpenseData();
-    const totalPoints = data.reduce((s, d) => s + d.profit + d.expense + d.debt, 0);
-    return data.length === 0 || totalPoints === 0;
+    return !this.chartHasValues();
   });
 
   /** Encomendas no intervalo do filtro (por data de entrega ou criação) */
   ordersInRange = computed(() => {
     const all = this.orders.allOrders();
     const { from, to } = this.filterDateRange();
-    const fromD = new Date(from + 'T00:00:00');
-    const toD = new Date(to + 'T23:59:59');
     return all.filter((o) => {
-      const dateStr = o.deliveryDate || o.createdAt?.split('T')[0] || '';
-      if (!dateStr) return false;
-      const d = new Date(dateStr);
-      return d >= fromD && d <= toD;
+      const key = this.orderDateKey(o);
+      return key >= from && key <= to;
     });
   });
 
@@ -451,6 +575,36 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Card de resumo ao entrar: mostrado após login até o utilizador fechar. Persiste em sessionStorage até logout. */
   loginSummaryDismissed = signal(false);
 
+  /** Só mostra o resumo quando a cadeia pós-login (manutenção/boas-vindas/licença) terminou. */
+  showLoginSummaryPopup = computed(
+    () => !this.loginSummaryDismissed() && this.loginChain.activeStep() === null
+  );
+
+  /** Janela de dias para encomendas por entregar (alinhada às configurações). */
+  deliveryWindowDays = computed(() => Math.max(7, this.userSettings.getReminderDaysBefore()));
+
+  /** Encomendas por entregar, ordenadas pela data de entrega. */
+  loginSummaryDeliveries = computed(() =>
+    [...this.upcomingDeliveries()]
+      .sort((a, b) => (a.deliveryDate || '').localeCompare(b.deliveryDate || ''))
+      .slice(0, 6)
+      .map((order) => ({
+        order,
+        dateLabel: this.formatDeliveryDate(order.deliveryDate || ''),
+        urgency: this.getDeliveryUrgency(order.deliveryDate || ''),
+        daysUntil: this.daysUntilDate(order.deliveryDate || ''),
+        pendingDebt: Math.max(0, (order.valueCharged ?? 0) - (order.valuePaid ?? 0)),
+      }))
+  );
+
+  /** Total de encomendas por entregar na janela. */
+  pendingDeliveryCount = computed(() => this.upcomingDeliveries().length);
+
+  /** Encomendas por entregar com saldo em aberto. */
+  pendingDeliveryWithDebtCount = computed(() =>
+    this.upcomingDeliveries().filter((o) => (o.valueCharged ?? 0) > (o.valuePaid ?? 0)).length
+  );
+
   /** Fecha o popup e grava em sessionStorage para não reaparecer até o próximo login. */
   dismissLoginSummary(): void {
     this.loginSummaryDismissed.set(true);
@@ -465,6 +619,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   formatHolidayDate = formatHolidayDate;
 
   private chartProfitExpense: Chart<'line'> | null = null;
+  private chartRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+  chartRenderError = signal<string | null>(null);
 
   /** Anos e meses para os selects do filtro */
   filterYears = computed(() => {
@@ -484,50 +640,26 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     { value: 10, label: 'Outubro' }, { value: 11, label: 'Novembro' }, { value: 12, label: 'Dezembro' },
   ];
 
-  // Dados para gráfico Lucro vs Despesa vs Dívidas (respeitando filtro)
-  profitExpenseData = computed(() => {
+  // Dados para gráfico Lucro vs Despesa vs Dívidas (agrupados por dia, mês ou ano)
+  profitExpenseData = computed((): ProfitExpensePoint[] => {
     const { from, to } = this.filterDateRange();
-    const fromD = new Date(from + 'T00:00:00');
-    const toD = new Date(to + 'T23:59:59');
-    const result: { date: string; label: string; profit: number; expense: number; debt: number }[] = [];
-    const current = new Date(fromD);
-    while (current <= toD) {
-      const dateString = current.toISOString().slice(0, 10);
-      const orders = this.orders.ordersOfDay(current);
-      const profit = orders.reduce((sum, o) => {
-        let orderProfit = o.profit;
-        if (o.variableExpenses && o.variableExpenses.length > 0) {
-          const varExpensesTotal = o.variableExpenses.reduce((s, e) => s + e.amount, 0);
-          if (o.valuePaid < o.valueCharged && o.valuePaid > 0) {
-            const paymentRatio = o.valuePaid / o.valueCharged;
-            orderProfit = orderProfit - (varExpensesTotal * paymentRatio);
-          } else if (o.valuePaid >= o.valueCharged) {
-            orderProfit = orderProfit - varExpensesTotal;
-          }
-        }
-        return sum + Math.max(0, orderProfit);
-      }, 0);
-      const expense = orders.reduce((sum, o) => {
-        const baseExpense = o.costTotal;
-        const varExpenses = o.variableExpenses?.reduce((s, e) => s + e.amount, 0) || 0;
-        return sum + baseExpense + varExpenses;
-      }, 0);
-      const debt = orders.reduce((sum, o) => {
-        if (o.isCancelled || o.orderStatus === 'cancelled') return sum;
-        return sum + Math.max(0, (o.valueCharged ?? 0) - (o.valuePaid ?? 0));
-      }, 0);
-      const day = current.getDate();
-      const month = current.getMonth() + 1;
-      result.push({
-        date: dateString,
-        label: `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}`,
-        profit,
-        expense,
-        debt,
-      });
-      current.setDate(current.getDate() + 1);
-    }
-    return result;
+    const fromD = this.parseLocalDate(from);
+    const toD = this.parseLocalDate(to);
+    toD.setHours(23, 59, 59, 999);
+    const granularity = this.chartGranularity();
+    const inRange = this.ordersInRange();
+    const buckets = this.buildChartBuckets(fromD, toD, granularity);
+
+    return buckets.map((bucket) => {
+      const bucketOrders = this.ordersForBucket(inRange, bucket.key, granularity);
+      const metrics = this.aggregateOrderMetrics(bucketOrders);
+      return {
+        date: bucket.key,
+        label: bucket.label,
+        tooltipTitle: bucket.tooltipTitle,
+        ...metrics,
+      };
+    });
   });
 
   private alertsShown = false;
@@ -551,7 +683,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Um único botão Aplicar: pode combinar intervalo de datas com ano/mês (prioridade: intervalo se ambos preenchidos). */
   applyFilters(): void {
     if (!this.validateFilterDates()) return;
-    this.updateCharts();
+    this.scheduleChartRefresh();
   }
 
   /** Ao alterar "De": se Até estiver preenchida e for menor que De, mostrar alerta e limpar erro ao corrigir */
@@ -586,19 +718,30 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.filterYear.set(null);
     this.filterMonth.set(null);
     this.filterDateError.set('');
-    this.updateCharts();
+    this.scheduleChartRefresh();
   }
 
   constructor() {
     this.isAdmin = this.auth.isAdmin();
+    if (!this.isAdmin) {
+      afterNextRender(() => this.scheduleChartRefresh());
+    }
     effect(() => {
       this.profitExpenseData();
+      this.chartGranularity();
+      this.filterDateFrom();
+      this.filterDateTo();
+      this.filterYear();
+      this.filterMonth();
       this.filterDateRange();
+      this.orders.allOrders();
       this.clientsCountInRange();
       this.ordersInRange();
       this.totalExpenseInRange();
       this.totalDebtInRange();
-      this.updateCharts();
+      if (!this.isAdmin) {
+        this.scheduleChartRefresh();
+      }
     });
     // Verificar alertas quando as encomendas mudarem
     effect(() => {
@@ -618,12 +761,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Carregar pedidos e lembretes quando o dashboard inicializar (se o utilizador estiver autenticado)
     if (this.auth.isLoggedIn()) {
-      this.orders.loadOrders();
+      void this.orders.loadOrders().then(() => this.scheduleChartRefresh());
       this.reminders.loadReminders();
       this.withdrawalService.loadWithdrawals();
-      this.storeSettings.getMyStoreSettings().then(s => {
-        this.meuSiteUrl.set(s?.storeSlug ? `/loja/${s.storeSlug}` : '/loja');
-      }).catch(() => this.meuSiteUrl.set('/loja'));
       try {
         if (sessionStorage.getItem(DASHBOARD_VISITED_KEY)) {
           this.isFirstVisitThisSession.set(false);
@@ -640,14 +780,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     if (!this.isAdmin) {
-      this.initCharts();
-      // Verificar alertas de entrega (snackbar global já configurado no app)
       setTimeout(() => this.checkDeliveryAlerts(), 500);
     }
   }
 
   private checkDeliveryAlerts(): void {
     if (this.alertsShown) return;
+    if (!this.loginSummaryDismissed()) return;
     const alerts = this.deliveryAlerts();
     alerts.slice(0, 3).forEach((alert) => {
       const productName = this.getProductName(alert.order);
@@ -702,31 +841,64 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return 'normal';
   }
 
-  ngOnDestroy(): void {
-    this.chartProfitExpense?.destroy();
+  private daysUntilDate(dateStr: string): number {
+    if (!dateStr) return 999;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const deliveryDate = new Date(dateStr);
+    deliveryDate.setHours(0, 0, 0, 0);
+    return Math.ceil((deliveryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   }
 
-  private initCharts(): void {
-    if (this.chartProfitExpenseRef?.nativeElement) {
-      this.chartProfitExpense = new Chart(
-        this.chartProfitExpenseRef.nativeElement,
-        this.getProfitExpenseChartConfig()
-      );
+  urgencyLabel(urgency: 'today' | 'soon' | 'normal'): string {
+    if (urgency === 'today') return 'Hoje';
+    if (urgency === 'soon') return 'Urgente';
+    return 'Agendada';
+  }
+
+  ngOnDestroy(): void {
+    if (this.chartRefreshTimer) clearTimeout(this.chartRefreshTimer);
+    this.chartProfitExpense?.destroy();
+    this.chartProfitExpense = null;
+  }
+
+  private scheduleChartRefresh(): void {
+    if (this.isAdmin) return;
+    if (this.chartRefreshTimer) clearTimeout(this.chartRefreshTimer);
+    this.chartRefreshTimer = setTimeout(() => {
+      this.chartRefreshTimer = null;
+      this.renderProfitExpenseChart();
+    }, 80);
+  }
+
+  private renderProfitExpenseChart(): void {
+    const canvas = this.chartProfitExpenseRef?.nativeElement;
+    if (!canvas) return;
+
+    try {
+      const data = this.profitExpenseData();
+      if (this.chartProfitExpense) {
+        this.chartProfitExpense.destroy();
+        this.chartProfitExpense = null;
+      }
+      this.chartProfitExpense = new Chart(canvas, this.buildProfitExpenseChartConfig(data));
+      this.chartRenderError.set(null);
+    } catch (err) {
+      console.error('Erro ao desenhar gráfico do dashboard:', err);
+      this.chartRenderError.set('Não foi possível carregar o gráfico. Recarregue a página.');
     }
   }
 
-  private getProfitExpenseChartConfig(): ChartConfiguration<'line'> {
-    const data = this.profitExpenseData();
+  private buildProfitExpenseChartConfig(
+    data: ProfitExpensePoint[]
+  ): ChartConfiguration<'line'> {
     const labels = data.map((d) => d.label);
     const profitData = data.map((d) => d.profit);
     const expenseData = data.map((d) => d.expense);
     const debtData = data.map((d) => d.debt);
-    
-    // Calcular o valor máximo real dos dados (lucro, despesa e dívidas)
-    const maxProfit = Math.max(...profitData, 0);
-    const maxExpense = Math.max(...expenseData, 0);
-    const maxDebt = Math.max(...debtData, 0);
-    const maxValue = Math.max(maxProfit, maxExpense, maxDebt);
+
+    const allValues = [...profitData, ...expenseData, ...debtData];
+    const maxValue = allValues.length > 0 ? Math.max(0, ...allValues) : 0;
     
     // Arredondar para cima para o próximo múltiplo de 100 ou 1000
     let maxYAxis: number;
@@ -755,9 +927,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       stepSize = Math.ceil(maxYAxis / 5 / 200) * 200;
     }
 
+    const g = this.chartGranularity();
+
     return {
       type: 'line',
-      plugins: [dataLabelsPlugin],
       data: {
         labels,
         datasets: [
@@ -769,8 +942,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             borderWidth: 3,
             tension: 0.4, // Linha suave
             fill: false,
-            pointRadius: 0, // Pontos invisíveis por padrão
-            pointHoverRadius: 5, // Aparece apenas no hover
+            pointRadius: data.length <= 31 ? 3 : 0,
+            pointHoverRadius: 6,
             pointBackgroundColor: '#059669',
             pointBorderColor: '#ffffff',
             pointBorderWidth: 2,
@@ -786,8 +959,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             borderWidth: 3,
             tension: 0.4, // Linha suave
             fill: false,
-            pointRadius: 0, // Pontos invisíveis por padrão
-            pointHoverRadius: 5, // Aparece apenas no hover
+            pointRadius: data.length <= 31 ? 3 : 0,
+            pointHoverRadius: 6,
             pointBackgroundColor: '#dc2626',
             pointBorderColor: '#ffffff',
             pointBorderWidth: 2,
@@ -803,8 +976,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             borderWidth: 3,
             tension: 0.4,
             fill: false,
-            pointRadius: 0,
-            pointHoverRadius: 5,
+            pointRadius: data.length <= 31 ? 3 : 0,
+            pointHoverRadius: 6,
             pointBackgroundColor: '#d97706',
             pointBorderColor: '#ffffff',
             pointBorderWidth: 2,
@@ -831,9 +1004,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
               padding: 15,
               font: {
                 size: 13,
-                weight: 'normal',
               },
-              color: 'var(--text)',
+              color: '#334155',
             },
           },
           tooltip: {
@@ -854,19 +1026,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             displayColors: true,
             callbacks: {
               title: (contexts) => {
-                // Mostrar a data completa no título do tooltip
                 const index = contexts[0].dataIndex;
-                const data = this.profitExpenseData();
-                if (data[index]) {
-                  const date = new Date(data[index].date);
-                  return date.toLocaleDateString('pt-MZ', {
-                    weekday: 'long',
-                    day: '2-digit',
-                    month: 'long',
-                    year: 'numeric',
-                  });
-                }
-                return '';
+                const point = this.profitExpenseData()[index];
+                return point?.tooltipTitle ?? '';
               },
               label: (context) => {
                 const value = Number(context.parsed.y);
@@ -894,10 +1056,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             ticks: {
               maxRotation: 0,
               minRotation: 0,
+              maxTicksLimit: g === 'day' ? 16 : g === 'month' ? 12 : 8,
+              autoSkip: true,
               font: {
                 size: 11,
               },
-              color: 'var(--text-muted)',
+              color: '#64748b',
             },
           },
           y: {
@@ -908,7 +1072,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
               font: {
                 size: 11,
               },
-              color: 'var(--text-muted)',
+              color: '#64748b',
               callback: (value) => {
                 const num = Number(value);
                 if (num >= 1000) {
@@ -937,38 +1101,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           },
         },
         animation: {
-          duration: 1000,
-          easing: 'easeInOutQuart',
+          duration: 600,
         },
       },
     };
-  }
-
-  private updateCharts(): void {
-    if (this.chartProfitExpense && this.chartProfitExpenseRef?.nativeElement) {
-      const data = this.profitExpenseData();
-      this.chartProfitExpense.data.labels = data.map((d) => d.label);
-      this.chartProfitExpense.data.datasets[0].data = data.map((d) => d.profit);
-      this.chartProfitExpense.data.datasets[1].data = data.map((d) => d.expense);
-      this.chartProfitExpense.data.datasets[2].data = data.map((d) => d.debt);
-
-      const profitData = data.map((d) => d.profit);
-      const expenseData = data.map((d) => d.expense);
-      const debtData = data.map((d) => d.debt);
-      const maxProfit = Math.max(...profitData, 0);
-      const maxExpense = Math.max(...expenseData, 0);
-      const maxDebt = Math.max(...debtData, 0);
-      const maxValue = Math.max(maxProfit, maxExpense, maxDebt);
-
-      let maxYAxis: number;
-      if (maxValue === 0) maxYAxis = 1000;
-      else if (maxValue < 100) maxYAxis = 100;
-      else if (maxValue < 1000) maxYAxis = Math.ceil(maxValue / 100) * 100;
-      else maxYAxis = Math.ceil(maxValue / 1000) * 1000;
-
-      const scales = this.chartProfitExpense.options.scales as any;
-      if (scales?.y) scales.y.max = maxYAxis;
-      this.chartProfitExpense.update('active');
-    }
   }
 }
