@@ -1,10 +1,24 @@
 .cfg-hub {
   width: 100%;
-  max-width: 720px;
+  max-width: none;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding-bottom: 1rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1100px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .cfg-hub__header {
-  margin-bottom: 1.25rem;
+  grid-column: 1 / -1;
+  margin-bottom: 0;
   padding: 1.25rem 1.4rem;
   border-radius: 16px;
   background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 55%, #f8fafc 100%);
@@ -44,19 +58,22 @@
 
 .cfg-hub__sub {
   margin: 0;
-  max-width: 36rem;
+  max-width: none;
   font-size: 0.88rem;
   line-height: 1.5;
   color: #64748b;
 }
 
 .cfg-panel {
-  margin-bottom: 1rem;
+  margin-bottom: 0;
   padding: 0.85rem 1rem 1rem;
   border-radius: 14px;
   background: #fff;
   border: 1px solid rgba(148, 163, 184, 0.22);
   box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
 
   &--muted {
     background: #f8fafc;
@@ -78,6 +95,7 @@
   list-style: none;
   margin: 0;
   padding: 0;
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;

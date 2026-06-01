@@ -7,6 +7,7 @@ C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontro
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\AdminConfirmPaymentRequest.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\entity\LicenseTransactionEntity.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\OrderRequest.java
+C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\UserActivityHistoryRowDto.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\RegisterResponse.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\ChangePasswordRequest.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\OrderCloseRequest.java
@@ -27,6 +28,7 @@ C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontro
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\SystemNotificationDto.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\service\ReminderService.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\service\WithdrawalService.java
+C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\UserActivityHistoryPageDto.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\service\LandingSuggestionService.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\repository\UserLicenseRepository.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\ChefControlApplication.java

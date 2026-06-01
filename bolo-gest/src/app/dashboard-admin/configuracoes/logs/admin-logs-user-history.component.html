@@ -65,18 +65,7 @@
       <p>Nenhum registo neste período. Ajusta as datas ou o tipo de atividade.</p>
     </div>
   } @else {
-    <div class="al-toolbar al-toolbar--compact">
-      <label class="al-pagesize">
-        <span>Por página</span>
-        <select [value]="pageSize()" (change)="handlePageSizeChange($event)">
-          <option value="25">25</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-        </select>
-      </label>
-    </div>
-
-    <div class="al-table-panel">
+    <div class="al-table-panel al-table-panel--full">
       <div class="al-table-wrap al-table-wrap--history">
         <table class="al-table al-table--history">
           <thead>
@@ -115,43 +104,62 @@
           </tbody>
         </table>
       </div>
-    </div>
 
-    @if (totalPages() > 1) {
-      <nav class="al-pagination" aria-label="Paginação do histórico">
-        <button
-          type="button"
-          class="al-pagination__nav"
-          (click)="goToPage(currentPage() - 1)"
-          [disabled]="currentPage() === 0"
-        >
-          Anterior
-        </button>
-        <div class="al-pagination__pages">
-          @for (p of pageNumbers(); track $index) {
-            @if (p === -1) {
-              <span class="al-pagination__ellipsis">…</span>
-            } @else {
-              <button
-                type="button"
-                class="al-pagination__page"
-                [class.al-pagination__page--active]="p === currentPage()"
-                (click)="goToPage(p)"
-              >
-                {{ p + 1 }}
-              </button>
-            }
-          }
+      <footer class="al-table-footer" aria-label="Paginação da tabela">
+        <div class="al-table-footer__info">
+          <span>
+            A mostrar <strong>{{ showingRange().from }}</strong>–<strong>{{ showingRange().to }}</strong>
+            de <strong>{{ showingRange().total }}</strong> registos
+          </span>
+          <span class="al-table-footer__page">
+            Página <strong>{{ currentPage() + 1 }}</strong> de <strong>{{ totalPages() || 1 }}</strong>
+          </span>
         </div>
-        <button
-          type="button"
-          class="al-pagination__nav"
-          (click)="goToPage(currentPage() + 1)"
-          [disabled]="currentPage() >= totalPages() - 1"
-        >
-          Seguinte
-        </button>
-      </nav>
-    }
+
+        <label class="al-pagesize al-pagesize--footer">
+          <span>Linhas por página</span>
+          <select [value]="pageSize()" (change)="handlePageSizeChange($event)" aria-label="Linhas por página">
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size">{{ size }}</option>
+            }
+          </select>
+        </label>
+
+        <nav class="al-pagination al-pagination--footer" aria-label="Navegação entre páginas">
+          <button
+            type="button"
+            class="al-pagination__nav"
+            (click)="goToPage(currentPage() - 1)"
+            [disabled]="currentPage() === 0"
+          >
+            Anterior
+          </button>
+          <div class="al-pagination__pages">
+            @for (p of pageNumbers(); track $index) {
+              @if (p === -1) {
+                <span class="al-pagination__ellipsis">…</span>
+              } @else {
+                <button
+                  type="button"
+                  class="al-pagination__page"
+                  [class.al-pagination__page--active]="p === currentPage()"
+                  (click)="goToPage(p)"
+                >
+                  {{ p + 1 }}
+                </button>
+              }
+            }
+          </div>
+          <button
+            type="button"
+            class="al-pagination__nav"
+            (click)="goToPage(currentPage() + 1)"
+            [disabled]="currentPage() >= totalPages() - 1"
+          >
+            Seguinte
+          </button>
+        </nav>
+      </footer>
+    </div>
   }
 </div>

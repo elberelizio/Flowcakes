@@ -59,6 +59,7 @@ export class AdminLogsUserHistoryComponent implements OnInit {
   totalPages = signal(0);
   currentPage = signal(0);
   pageSize = signal(50);
+  readonly pageSizeOptions = [50, 100] as const;
 
   loading = signal(true);
   error = signal('');
@@ -175,6 +176,16 @@ export class AdminLogsUserHistoryComponent implements OnInit {
       this.loadHistory();
     }
   }
+
+  showingRange = computed(() => {
+    const total = this.totalElements();
+    if (total === 0) {
+      return { from: 0, to: 0, total: 0 };
+    }
+    const from = this.currentPage() * this.pageSize() + 1;
+    const to = Math.min((this.currentPage() + 1) * this.pageSize(), total);
+    return { from, to, total };
+  });
 
   pageNumbers = computed(() => {
     const total = this.totalPages();

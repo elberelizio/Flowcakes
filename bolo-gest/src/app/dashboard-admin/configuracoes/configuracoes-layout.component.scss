@@ -1,6 +1,19 @@
 .cfg-layout {
   width: 100%;
   max-width: none;
+  min-width: 0;
+}
+
+.cfg-layout__content {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+
+  > * {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
 }
 
 .cfg-subnav {
