@@ -1,46 +1,46 @@
-<section class="bi-charts" aria-label="Receitas por mês">
-  <header class="bi-charts__head">
-    <div class="bi-charts__intro">
-      <h2 class="bi-charts__title">Receitas por mês</h2>
-      <p class="bi-charts__subtitle">Ondas dos últimos 12 meses — verde = licenças, laranja = lucro em encomendas</p>
+<section class="gn2-charts-panel" aria-label="Receitas por mês">
+  <header class="gn2-charts-panel__head">
+    <div>
+      <h2 class="gn2-charts-panel__title">Receitas por mês</h2>
+      <p class="gn2-charts-panel__subtitle">Ondas dos últimos 12 meses — verde = licenças, laranja = lucro em encomendas</p>
     </div>
   </header>
 
-  <div class="bi-charts__totals">
-    <div class="bi-charts__total bi-charts__total--licenses">
-      <span class="bi-charts__total-swatch" aria-hidden="true"></span>
-      <div class="bi-charts__total-text">
-        <span class="bi-charts__total-label">Licenças (12 meses)</span>
-        <span class="bi-charts__total-value">{{ formatMzn(periodLicenseTotal()) }}</span>
-        <span class="bi-charts__total-hint">Este mês {{ formatMzn(adminStats()?.licenseRevenueThisMonth) }}</span>
+  <div class="gn2-charts-panel__totals">
+    <div class="gn2-charts-panel__total gn2-charts-panel__total--licenses">
+      <span class="gn2-charts-panel__total-swatch" aria-hidden="true"></span>
+      <div>
+        <span class="gn2-charts-panel__total-label">Licenças (12 meses)</span>
+        <span class="gn2-charts-panel__total-value">{{ formatMzn(periodLicenseTotal()) }}</span>
+        <span class="gn2-charts-panel__total-hint">Este mês {{ formatMzn(adminStats()?.licenseRevenueThisMonth) }}</span>
       </div>
     </div>
-    <div class="bi-charts__total bi-charts__total--orders">
-      <span class="bi-charts__total-swatch" aria-hidden="true"></span>
-      <div class="bi-charts__total-text">
-        <span class="bi-charts__total-label">Lucro em encomendas (12 meses)</span>
-        <span class="bi-charts__total-value">{{ formatMzn(periodOrdersTotal()) }}</span>
-        <span class="bi-charts__total-hint">Soma do lucro dos clientes</span>
+    <div class="gn2-charts-panel__total gn2-charts-panel__total--orders">
+      <span class="gn2-charts-panel__total-swatch" aria-hidden="true"></span>
+      <div>
+        <span class="gn2-charts-panel__total-label">Lucro em encomendas (12 meses)</span>
+        <span class="gn2-charts-panel__total-value">{{ formatMzn(periodOrdersTotal()) }}</span>
+        <span class="gn2-charts-panel__total-hint">Soma do lucro dos clientes</span>
       </div>
     </div>
     @if (licenseBreakdown(); as lic) {
-      <div class="bi-charts__total bi-charts__total--status">
-        <span class="bi-charts__total-label">Licenças activas</span>
-        <div class="bi-charts__status-row">
-          <span class="bi-charts__pill bi-charts__pill--paid"><strong>{{ lic.paid }}</strong> pagas</span>
-          <span class="bi-charts__pill bi-charts__pill--trial"><strong>{{ lic.trial }}</strong> teste</span>
-          <span class="bi-charts__pill bi-charts__pill--pending"><strong>{{ lic.pending }}</strong> pendentes</span>
+      <div class="gn2-charts-panel__total">
+        <span class="gn2-charts-panel__total-label">Licenças activas</span>
+        <div class="gn2-charts-panel__status-row">
+          <span class="gn2-charts-panel__pill gn2-charts-panel__pill--paid"><strong>{{ lic.paid }}</strong> pagas</span>
+          <span class="gn2-charts-panel__pill gn2-charts-panel__pill--trial"><strong>{{ lic.trial }}</strong> teste</span>
+          <span class="gn2-charts-panel__pill gn2-charts-panel__pill--pending"><strong>{{ lic.pending }}</strong> pendentes</span>
         </div>
       </div>
     }
   </div>
 
-  <div class="bi-charts__body">
-    <div class="bi-charts__legend" aria-hidden="true">
-      <span class="bi-charts__legend-item bi-charts__legend-item--licenses">Licenças</span>
-      <span class="bi-charts__legend-item bi-charts__legend-item--orders">Lucro encomendas</span>
+  <div class="gn2-charts-panel__body">
+    <div class="gn2-charts-panel__legend" aria-hidden="true">
+      <span class="gn2-charts-panel__legend-item gn2-charts-panel__legend-item--licenses">Licenças</span>
+      <span class="gn2-charts-panel__legend-item gn2-charts-panel__legend-item--orders">Lucro encomendas</span>
     </div>
-    <div class="bi-charts__canvas">
+    <div class="gn2-charts-panel__canvas">
       <canvas #chartRevenueCompare aria-label="Gráfico de ondas: licenças e lucro por mês"></canvas>
     </div>
   </div>

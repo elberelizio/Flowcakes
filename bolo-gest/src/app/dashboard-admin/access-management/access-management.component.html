@@ -1,34 +1,36 @@
-<div class="access-management-page">
-  <header class="page-header">
-    <a routerLink="/admin-settings" class="ga-back">← Configurações</a>
-    <h1>Gestão de acessos</h1>
-    <p class="subtitle">
+<div class="gn2">
+  <header class="gn2-hero gn2-hero--stacked">
+    <div class="gn2-hero__text">
+      <a routerLink="/admin-settings" class="gn2-hero__back">← Configurações</a>
+      <h1 class="gn2__title">Gestão de acessos</h1>
+      <p class="gn2__subtitle">
       Auditoria de tentativas de login, alteração de contacto e contas bloqueadas por segurança.
-    </p>
+      </p>
+    </div>
   </header>
 
-  <nav class="tabs" aria-label="Secções">
-    <button type="button" class="tab" [class.active]="tab() === 'events'" (click)="setTab('events')">
+  <nav class="gn2-tabs" aria-label="Secções">
+    <button type="button" class="gn2-tab" [class.gn2-tab--on]="tab() === 'events'" (click)="setTab('events')">
       Eventos de segurança
     </button>
-    <button type="button" class="tab" [class.active]="tab() === 'blocked'" (click)="setTab('blocked')">
+    <button type="button" class="gn2-tab" [class.gn2-tab--on]="tab() === 'blocked'" (click)="setTab('blocked')">
       Contas bloqueadas
       @if (blocked().length > 0) {
-        <span class="tab-badge">{{ blocked().length }}</span>
+        <span class="gn2-tab__badge">{{ blocked().length }}</span>
       }
     </button>
   </nav>
 
   @if (loading()) {
-    <p class="loading">A carregar…</p>
+    <p class="gn2-inline-loading">A carregar…</p>
   } @else if (error()) {
-    <p class="msg-error">{{ error() }}</p>
+    <p class="gn2-alert">{{ error() }}</p>
   } @else if (tab() === 'events') {
     @if (events().length === 0) {
-      <p class="empty">Nenhum evento registado.</p>
+      <p class="gn2-empty">Nenhum evento registado.</p>
     } @else {
-      <div class="table-wrap">
-        <table class="data-table">
+      <div class="gn2-table-wrap">
+        <table class="gn2-table">
           <thead>
             <tr>
               <th>Data/Hora</th>
@@ -56,10 +58,10 @@
     }
   } @else {
     @if (blocked().length === 0) {
-      <p class="empty">Nenhuma conta bloqueada.</p>
+      <p class="gn2-empty">Nenhuma conta bloqueada.</p>
     } @else {
-      <div class="table-wrap">
-        <table class="data-table">
+      <div class="gn2-table-wrap">
+        <table class="gn2-table">
           <thead>
             <tr>
               <th>Contacto</th>
@@ -82,7 +84,7 @@
                   @if (canUnblock(a)) {
                     <button
                       type="button"
-                      class="btn-unblock"
+                      class="gn2-btn-unblock"
                       [disabled]="actionId() === a.id"
                       (click)="unblock(a)"
                     >

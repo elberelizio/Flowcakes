@@ -1,25 +1,25 @@
-<section class="bi-metrics" aria-label="Métricas principais">
-  <div class="bi-metrics__grid">
+<section class="gn2-kpi-grid" aria-label="Métricas principais">
+  <div class="gn2-kpi-grid__inner">
     @for (m of metrics(); track m.label) {
       @if (m.route) {
-        <a [routerLink]="m.route" class="bi-metrics__card" [attr.data-accent]="m.accent">
-          <span class="bi-metrics__icon" [attr.data-icon]="m.icon" aria-hidden="true"></span>
-          <div class="bi-metrics__body">
-            <span class="bi-metrics__label">{{ m.label }}</span>
-            <span class="bi-metrics__value">{{ m.value }}</span>
+        <a [routerLink]="m.route" class="gn2-kpi-card" [attr.data-accent]="m.accent">
+          <span class="gn2-kpi-card__icon" [attr.data-icon]="m.icon" aria-hidden="true"></span>
+          <div class="gn2-kpi-card__body">
+            <span class="gn2-kpi-card__label">{{ m.label }}</span>
+            <span class="gn2-kpi-card__value">{{ m.value }}</span>
             @if (m.hint) {
-              <span class="bi-metrics__hint">{{ m.hint }}</span>
+              <span class="gn2-kpi-card__hint">{{ m.hint }}</span>
             }
           </div>
         </a>
       } @else {
-        <div class="bi-metrics__card" [attr.data-accent]="m.accent">
-          <span class="bi-metrics__icon" [attr.data-icon]="m.icon" aria-hidden="true"></span>
-          <div class="bi-metrics__body">
-            <span class="bi-metrics__label">{{ m.label }}</span>
-            <span class="bi-metrics__value">{{ m.value }}</span>
+        <div class="gn2-kpi-card" [attr.data-accent]="m.accent">
+          <span class="gn2-kpi-card__icon" [attr.data-icon]="m.icon" aria-hidden="true"></span>
+          <div class="gn2-kpi-card__body">
+            <span class="gn2-kpi-card__label">{{ m.label }}</span>
+            <span class="gn2-kpi-card__value">{{ m.value }}</span>
             @if (m.hint) {
-              <span class="bi-metrics__hint">{{ m.hint }}</span>
+              <span class="gn2-kpi-card__hint">{{ m.hint }}</span>
             }
           </div>
         </div>

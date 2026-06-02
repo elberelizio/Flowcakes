@@ -1,9 +1,11 @@
+@use '../../core/styles/gn2-admin-page';
+
 .licenses-page {
   width: 100%;
   max-width: none;
 }
 
-/* —— Cabeçalho —— */
+/* â€”â€” CabeÃ§alho â€”â€” */
 .licenses-header {
   margin-bottom: 1.25rem;
   padding: 1.25rem 1.4rem;
@@ -42,7 +44,7 @@
   color: #64748b;
 }
 
-/* —— Estados de carregamento —— */
+/* â€”â€” Estados de carregamento â€”â€” */
 .licenses-state {
   display: flex;
   flex-direction: column;
@@ -73,7 +75,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* —— KPIs —— */
+/* â€”â€” KPIs â€”â€” */
 .licenses-kpis {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -135,7 +137,7 @@
   &--admin .licenses-kpi__value { color: #4338ca; }
 }
 
-/* —— Painel da tabela —— */
+/* â€”â€” Painel da tabela â€”â€” */
 .licenses-panel {
   border-radius: 16px;
   background: #fff;
@@ -168,7 +170,7 @@
   color: #64748b;
 }
 
-/* —— Tabs —— */
+/* â€”â€” Tabs â€”â€” */
 .licenses-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -234,7 +236,7 @@
   text-align: center;
 }
 
-/* —— Tabela —— */
+/* â€”â€” Tabela â€”â€” */
 .licenses-table-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -352,7 +354,7 @@ tbody tr.row-blocked:hover .col-sticky {
   .col-hide-md { display: none; }
 }
 
-/* —— Pills de estado —— */
+/* â€”â€” Pills de estado â€”â€” */
 .status-pill {
   display: inline-block;
   padding: 0.2rem 0.55rem;
@@ -384,7 +386,7 @@ tbody tr.row-blocked:hover .col-sticky {
   }
 }
 
-/* —— Acções por linha —— */
+/* â€”â€” AcÃ§Ãµes por linha â€”â€” */
 .row-actions {
   display: flex;
   flex-wrap: wrap;
@@ -437,7 +439,7 @@ tbody tr.row-blocked:hover .col-sticky {
   }
 }
 
-/* —— Modais —— */
+/* â€”â€” Modais â€”â€” */
 .lic-overlay {
   position: fixed;
   inset: 0;
@@ -664,3 +666,5 @@ tbody tr.row-blocked:hover .col-sticky {
   padding-top: 1rem;
   border-top: 1px solid rgba(148, 163, 184, 0.15);
 }
+
+

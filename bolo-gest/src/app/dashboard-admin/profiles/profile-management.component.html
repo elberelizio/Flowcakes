@@ -1,10 +1,10 @@
-<div class="profiles-page">
-  <header class="page-header">
+<div class="gn2">
+  <header class="gn2-hero gn2-hero--stacked">
     <div class="header-main">
-      <h1>Gestão de perfis</h1>
-      <p class="subtitle">Lista geral de todos os utilizadores e administradores registados no sistema.</p>
+      <h1 class="gn2__title">Gestão de perfis</h1>
+      <p class="gn2__subtitle">Lista geral de todos os utilizadores e administradores registados no sistema.</p>
     </div>
-    <a routerLink="/admin-dashboard" class="btn btn-back">Voltar ao painel</a>
+    <a routerLink="/admin-dashboard" class="gn2-btn gn2-btn-back">Voltar ao painel</a>
   </header>
 
   <div class="filters-section">
@@ -51,21 +51,21 @@
         <label>Registo até</label>
         <input type="date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)" />
       </div>
-      <button type="button" class="btn btn-outline btn-clear" (click)="clearFilters()">Limpar filtros</button>
+      <button type="button" class="gn2-btn gn2-btn--outline gn2-btn-clear" (click)="clearFilters()">Limpar filtros</button>
     </div>
   </div>
 
   @if (error()) {
     <div class="alert alert-error">{{ error() }}</div>
   } @else if (loading()) {
-    <div class="loading-state">
-      <span class="loading-spinner"></span>
+    <div class="gn2-inline-loading">
+      <span class="gn2-spinner" aria-hidden="true"></span>
       <p>A carregar...</p>
     </div>
   } @else {
     <p class="results-info">{{ filteredList().length }} {{ filteredList().length === 1 ? 'utilizador' : 'utilizadores' }} encontrado(s)</p>
-    <div class="table-wrap">
-      <table class="data-table">
+    <div class="gn2-table-wrap">
+      <table class="gn2-table">
         <thead>
           <tr>
             <th>Utilizador</th>
@@ -79,7 +79,7 @@
         </thead>
         <tbody>
           @if (filteredList().length === 0) {
-            <tr class="empty-row">
+            <tr class="gn2-empty-row">
               <td colspan="7">Nenhum utilizador encontrado.</td>
             </tr>
           } @else {
@@ -113,7 +113,7 @@
                   </span>
                 </td>
                 <td class="actions-cell">
-                  <button type="button" class="btn btn-sm btn-outline" (click)="showProfile(p)">Ver perfil</button>
+                  <button type="button" class="gn2-btn gn2-btn-sm gn2-btn gn2-btn--outline" (click)="showProfile(p)">Ver perfil</button>
                 </td>
               </tr>
             }
@@ -126,7 +126,7 @@
   @if (openProfile(); as profile) {
     <div class="overlay" (click)="closeProfile()">
       <div class="profile-panel" (click)="$event.stopPropagation()">
-        <button type="button" class="close-btn" (click)="closeProfile()" aria-label="Fechar">×</button>
+        <button type="button" class="close-gn2-btn" (click)="closeProfile()" aria-label="Fechar">×</button>
         <h2 class="panel-title">{{ profile.name }}</h2>
         <p class="panel-meta">{{ profile.phone }} · {{ profile.email || '—' }}</p>
 
@@ -160,7 +160,7 @@
               @if (profile.blocked) {
                 <button
                   type="button"
-                  class="btn btn-success"
+                  class="gn2-btn gn2-btn-success"
                   [disabled]="actionLoadingId() === profile.id"
                   (click)="unblockUser(profile)"
                 >
@@ -169,7 +169,7 @@
               } @else {
                 <button
                   type="button"
-                  class="btn btn-warn"
+                  class="gn2-btn gn2-btn-warn"
                   [disabled]="actionLoadingId() === profile.id"
                   (click)="blockUser(profile)"
                 >

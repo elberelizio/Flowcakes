@@ -1,66 +1,66 @@
-<div class="tr-page">
-  <header class="tr-hero">
-    <div class="tr-hero__top">
-      <a routerLink="/admin-dashboard" class="tr-hero__back">
+<div class="gn2">
+  <header class="gn2-hero gn2-hero--stacked">
+    <div class="gn2-hero__top">
+      <a routerLink="/admin-dashboard" class="gn2-hero__back">
         <app-icon name="chevron-left" />
         Painel
       </a>
       @if (summary(); as s) {
-        <div class="tr-hero__chips">
-          <span class="tr-chip">
+        <div class="gn2-hero__chips">
+          <span class="gn2-hero__chip">
             <app-icon name="wallet" />
             {{ s.accountBalance | number: '1.0-0' }} MZN
           </span>
-          <span class="tr-chip" [ngClass]="roiClass(s.roiStatus)">
+          <span class="gn2-hero__chip" [ngClass]="roiClass(s.roiStatus)">
             <app-icon name="chart" />
             {{ roiLabel(s.roiStatus) }}
           </span>
         </div>
       }
     </div>
-    <div class="tr-hero__main">
-      <p class="tr-hero__eyebrow">Finanças da plataforma</p>
-      <h1>Tesouraria</h1>
-      <p class="tr-hero__sub">Conta, investimentos, faturamento, alocações, despesas e lucro — num só lugar.</p>
+    <div class="gn2-hero__text">
+      <p class="gn2-hero__eyebrow">Finanças da plataforma</p>
+      <h1 class="gn2__title">Tesouraria</h1>
+      <p class="gn2__subtitle">Conta, investimentos, faturamento, alocações, despesas e lucro — num só lugar.</p>
     </div>
   </header>
 
   @if (error()) {
-    <div class="tr-alert" role="alert">
+    <div class="gn2-alert" role="alert">
       <app-icon name="alert-circle" />
       <span>{{ error() }}</span>
     </div>
   }
 
   @if (loading()) {
-    <div class="tr-loading">
-      <span class="tr-loading__spinner" aria-hidden="true"></span>
+    <div class="gn2-empty">
+      <span class="gn2-spinner" aria-hidden="true"></span>
       <p>A carregar tesouraria…</p>
     </div>
   } @else {
-    <div class="tr-layout">
-      <nav class="tr-nav" aria-label="Secções da tesouraria">
+    <div class="gn2-layout">
+      <nav class="gn2-side-nav" aria-label="Secções da tesouraria">
         @for (t of tabs; track t.id) {
           <button
             type="button"
-            class="tr-nav__item"
-            [class.tr-nav__item--active]="activeTab() === t.id"
+            class="gn2-side-nav__item"
+            [class.gn2-side-nav__item--on]="activeTab() === t.id"
             (click)="setTab(t.id)">
-            <span class="tr-nav__icon" aria-hidden="true">
+            <span class="gn2-side-nav__icon" aria-hidden="true">
               <app-icon [name]="t.icon" />
             </span>
-            <span class="tr-nav__text">
+            <span class="gn2-side-nav__text">
               <strong>{{ t.label }}</strong>
               <small>{{ t.description }}</small>
             </span>
             @if (t.id === 'suggestions' && (summary()?.pendingSuggestionsCount ?? 0) > 0) {
-              <span class="tr-nav__badge">{{ summary()!.pendingSuggestionsCount }}</span>
+              <span class="gn2-side-nav__badge">{{ summary()!.pendingSuggestionsCount }}</span>
             }
           </button>
         }
       </nav>
 
-      <main class="tr-main">
+      <main class="gn2-main">
         @if (summary(); as s) {
           @if (needsSetup()) {
             <aside class="tr-setup-banner">
@@ -72,40 +72,40 @@
                 <p>Defina o saldo da conta em Alocações e registe o investimento inicial (ex.: 5 000 MZN).</p>
               </div>
               <div class="tr-setup-banner__actions">
-                <button type="button" class="tr-btn tr-btn--primary" (click)="setTab('allocations')">Alocações</button>
-                <button type="button" class="tr-btn tr-btn--ghost" (click)="setTab('investments')">Investimentos</button>
+                <button type="button" class="gn2-btn gn2-btn--primary" (click)="setTab('allocations')">Alocações</button>
+                <button type="button" class="gn2-btn gn2-btn--ghost" (click)="setTab('investments')">Investimentos</button>
               </div>
             </aside>
           }
 
           @if (activeTab() === 'overview') {
-            <section class="tr-metrics" aria-label="Indicadores principais">
-              <article class="tr-metric" data-accent="blue">
-                <span class="tr-metric__icon"><app-icon name="wallet" /></span>
+            <section class="gn2-metrics" aria-label="Indicadores principais">
+              <article class="gn2-metric" data-accent="blue">
+                <span class="gn2-metric__icon"><app-icon name="wallet" /></span>
                 <div>
-                  <span class="tr-metric__label">Saldo na conta</span>
-                  <strong class="tr-metric__value">{{ s.accountBalance | number: '1.0-0' }} <small>MZN</small></strong>
+                  <span class="gn2-metric__label">Saldo na conta</span>
+                  <strong class="gn2-metric__value">{{ s.accountBalance | number: '1.0-0' }} <small>MZN</small></strong>
                 </div>
               </article>
-              <article class="tr-metric" data-accent="green">
-                <span class="tr-metric__icon"><app-icon name="receipt" /></span>
+              <article class="gn2-metric" data-accent="green">
+                <span class="gn2-metric__icon"><app-icon name="receipt" /></span>
                 <div>
-                  <span class="tr-metric__label">Receita (mês)</span>
-                  <strong class="tr-metric__value">{{ s.licenseRevenueThisMonth | number: '1.0-0' }} <small>MZN</small></strong>
+                  <span class="gn2-metric__label">Receita (mês)</span>
+                  <strong class="gn2-metric__value">{{ s.licenseRevenueThisMonth | number: '1.0-0' }} <small>MZN</small></strong>
                 </div>
               </article>
-              <article class="tr-metric" data-accent="amber">
-                <span class="tr-metric__icon"><app-icon name="file-text" /></span>
+              <article class="gn2-metric" data-accent="amber">
+                <span class="gn2-metric__icon"><app-icon name="file-text" /></span>
                 <div>
-                  <span class="tr-metric__label">Despesas (mês)</span>
-                  <strong class="tr-metric__value">{{ s.expensesThisMonth | number: '1.0-0' }} <small>MZN</small></strong>
+                  <span class="gn2-metric__label">Despesas (mês)</span>
+                  <strong class="gn2-metric__value">{{ s.expensesThisMonth | number: '1.0-0' }} <small>MZN</small></strong>
                 </div>
               </article>
-              <article class="tr-metric" data-accent="teal" [attr.data-trend]="profitClass(s.netProfitThisMonth)">
-                <span class="tr-metric__icon"><app-icon name="chart" /></span>
+              <article class="gn2-metric" data-accent="teal" [attr.data-trend]="profitClass(s.netProfitThisMonth)">
+                <span class="gn2-metric__icon"><app-icon name="chart" /></span>
                 <div>
-                  <span class="tr-metric__label">Lucro (mês)</span>
-                  <strong class="tr-metric__value" [ngClass]="profitClass(s.netProfitThisMonth)">
+                  <span class="gn2-metric__label">Lucro (mês)</span>
+                  <strong class="gn2-metric__value" [ngClass]="profitClass(s.netProfitThisMonth)">
                     {{ s.netProfitThisMonth | number: '1.0-0' }} <small>MZN</small>
                   </strong>
                 </div>
@@ -129,17 +129,17 @@
                   <p class="tr-roi-card__hint">Lucro acima do investido: <strong>{{ s.profitAboveInvestment | number: '1.0-0' }} MZN</strong></p>
                 }
               </div>
-              <button type="button" class="tr-btn tr-btn--ghost tr-btn--sm" (click)="setTab('investments')">Ver investimentos</button>
+              <button type="button" class="gn2-btn gn2-btn--ghost gn2-btn--sm" (click)="setTab('investments')">Ver investimentos</button>
             </article>
 
             <div class="tr-grid tr-grid--2">
-              <section class="tr-card">
-                <header class="tr-card__head">
+              <section class="gn2-card">
+                <header class="gn2-card__head">
                   <div>
                     <h2>Distribuição do saldo</h2>
                     <p>{{ s.allocationPercentTotal }}% alocado · {{ s.availableAfterReserve | number: '1.0-0' }} MZN disponível</p>
                   </div>
-                  <button type="button" class="tr-btn tr-btn--ghost tr-btn--sm" (click)="setTab('allocations')">Editar</button>
+                  <button type="button" class="gn2-btn gn2-btn--ghost gn2-btn--sm" (click)="setTab('allocations')">Editar</button>
                 </header>
                 <ul class="tr-buckets">
                   @for (b of s.allocationBuckets; track b.key) {
@@ -159,35 +159,35 @@
                 </ul>
               </section>
 
-              <section class="tr-card tr-card--accent">
-                <header class="tr-card__head">
+              <section class="gn2-card gn2-card--accent">
+                <header class="gn2-card__head">
                   <div>
                     <h2>Salários</h2>
                     <p>{{ s.payrollHeadcount }} colaboradores</p>
                   </div>
-                  <span class="tr-metric__icon tr-metric__icon--inline"><app-icon name="user" /></span>
+                  <span class="gn2-metric__icon gn2-metric__icon--inline"><app-icon name="user" /></span>
                 </header>
                 <dl class="tr-stat-list">
                   <div><dt>Sugestão / pessoa</dt><dd>{{ s.payrollPerPersonSuggested | number: '1.0-0' }} MZN</dd></div>
                   <div><dt>Pago este mês</dt><dd>{{ s.salaryExpensesThisMonth | number: '1.0-0' }} MZN</dd></div>
                   <div><dt>Total histórico</dt><dd>{{ s.salaryExpensesTotal | number: '1.0-0' }} MZN</dd></div>
                 </dl>
-                <button type="button" class="tr-btn tr-btn--primary tr-btn--block" (click)="setTab('payroll')">
+                <button type="button" class="gn2-btn gn2-btn--primary gn2-btn--block" (click)="setTab('payroll')">
                   <app-icon name="add" />
                   Registar pagamento
                 </button>
               </section>
             </div>
 
-            <section class="tr-card">
-              <header class="tr-card__head">
+            <section class="gn2-card">
+              <header class="gn2-card__head">
                 <div>
                   <h2>Resumo mensal</h2>
                   <p>Licenças − despesas · Melhor mês: {{ formatMonth(s.bestMonth) }}</p>
                 </div>
               </header>
-              <div class="tr-table-shell">
-                <table class="tr-table">
+              <div class="gn2-table-wrap">
+                <table class="gn2-table">
                   <thead>
                     <tr>
                       <th>Mês</th>
@@ -198,7 +198,7 @@
                   </thead>
                   <tbody>
                     @for (row of s.monthlyRows; track row.month) {
-                      <tr [class.tr-table__row--highlight]="row.month === s.bestMonth">
+                      <tr [class.gn2-table__row--highlight]="row.month === s.bestMonth">
                         <td>
                           {{ formatMonth(row.month) }}
                           @if (row.month === s.bestMonth) {
@@ -219,17 +219,17 @@
           }
 
           @if (activeTab() === 'billing') {
-            <section class="tr-card">
-              <header class="tr-card__head">
+            <section class="gn2-card">
+              <header class="gn2-card__head">
                 <div>
                   <h2>Faturamento de licenças</h2>
                   <p>Pagamentos confirmados por período</p>
                 </div>
               </header>
 
-              <div class="tr-toolbar">
-                <div class="tr-toolbar__filters">
-                  <label class="tr-field tr-field--inline">
+              <div class="gn2-toolbar">
+                <div class="gn2-toolbar__filters">
+                  <label class="gn2-field gn2-field">
                     <span><app-icon name="calendar" /> Ano</span>
                     <select
                       [ngModel]="billingYear()"
@@ -240,7 +240,7 @@
                       }
                     </select>
                   </label>
-                  <label class="tr-field tr-field--inline">
+                  <label class="gn2-field gn2-field">
                     <span><app-icon name="filter" /> Mês</span>
                     <select
                       [ngModel]="billingMonth()"
@@ -252,7 +252,7 @@
                     </select>
                   </label>
                 </div>
-                <label class="tr-search">
+                <label class="gn2-search">
                   <app-icon name="list" />
                   <input
                     type="search"
@@ -265,11 +265,11 @@
               </div>
 
               @if (billingPeriods().length > 0) {
-                <div class="tr-chips">
+                <div class="gn2-hero__chips">
                   @for (p of billingPeriods(); track p.period) {
                     <button
                       type="button"
-                      class="tr-chip tr-chip--action"
+                      class="gn2-hero__chip gn2-hero__chip--action"
                       (click)="billingMonth.set(+p.period.split('-')[1]); onBillingFilterChange()">
                       {{ formatMonth(p.period) }} · {{ p.totalAmount | number: '1.0-0' }} MZN ({{ p.invoiceCount }})
                     </button>
@@ -278,13 +278,13 @@
               }
 
               @if (filteredBilling().length === 0) {
-                <div class="tr-empty">
+                <div class="gn2-empty">
                   <app-icon name="receipt" />
                   <p>Sem facturas neste período.</p>
                 </div>
               } @else {
-                <div class="tr-table-shell">
-                  <table class="tr-table">
+                <div class="gn2-table-wrap">
+                  <table class="gn2-table">
                     <thead>
                       <tr>
                         <th>Factura</th>
@@ -316,25 +316,25 @@
 
           @if (activeTab() === 'investments') {
             <div class="tr-split">
-              <aside class="tr-card tr-card--form">
-                <header class="tr-card__head tr-card__head--compact">
+              <aside class="gn2-card gn2-card--form">
+                <header class="gn2-card__head gn2-card__head--compact-form-form">
                   <h2>Registar investimento</h2>
                 </header>
                 <p class="tr-hint">Capital injectado no sistema. Usado para calcular lucro vs. prejuízo.</p>
-                <form class="tr-form" (ngSubmit)="submitInvestment()">
-                  <label class="tr-field">
+                <form class="gn2-form" (ngSubmit)="submitInvestment()">
+                  <label class="gn2-field">
                     <span>Valor (MZN)</span>
                     <input type="number" [(ngModel)]="investmentForm.amount" name="invAmount" min="0.01" step="0.01" required />
                   </label>
-                  <label class="tr-field">
+                  <label class="gn2-field">
                     <span>Data</span>
                     <input type="date" [(ngModel)]="investmentForm.investedAt" name="invDate" required />
                   </label>
-                  <label class="tr-field">
+                  <label class="gn2-field">
                     <span>Notas</span>
                     <textarea [(ngModel)]="investmentForm.notes" name="invNotes" rows="2"></textarea>
                   </label>
-                  <button type="submit" class="tr-btn tr-btn--primary tr-btn--block" [disabled]="saving()">
+                  <button type="submit" class="gn2-btn gn2-btn--primary gn2-btn--block" [disabled]="saving()">
                     <app-icon name="add" />
                     {{ saving() ? 'A guardar…' : 'Adicionar investimento' }}
                   </button>
@@ -342,14 +342,14 @@
                 <p class="tr-footnote">Total investido: <strong>{{ s.totalInvested | number: '1.0-0' }} MZN</strong></p>
               </aside>
 
-              <section class="tr-card">
-                <header class="tr-card__head">
+              <section class="gn2-card">
+                <header class="gn2-card__head">
                   <div>
                     <h2>Histórico</h2>
                     <p>{{ investments().length }} registo(s)</p>
                   </div>
                 </header>
-                <label class="tr-search tr-search--compact">
+                <label class="gn2-search gn2-search">
                   <app-icon name="list" />
                   <input
                     type="search"
@@ -360,10 +360,10 @@
                     aria-label="Pesquisar investimentos" />
                 </label>
                 @if (filteredInvestments().length === 0) {
-                  <div class="tr-empty tr-empty--sm"><p>Nenhum investimento.</p></div>
+                  <div class="gn2-empty gn2-empty--sm"><p>Nenhum investimento.</p></div>
                 } @else {
-                  <div class="tr-table-shell">
-                    <table class="tr-table">
+                  <div class="gn2-table-wrap">
+                    <table class="gn2-table">
                       <thead>
                         <tr>
                           <th>Data</th>
@@ -379,7 +379,7 @@
                             <td>{{ inv.notes || '—' }}</td>
                             <td class="col-num">{{ inv.amount | number: '1.0-0' }} MZN</td>
                             <td class="col-actions">
-                              <button type="button" class="tr-btn tr-btn--danger tr-btn--xs" (click)="deleteInvestment(inv.id)">Eliminar</button>
+                              <button type="button" class="gn2-btn gn2-btn--danger gn2-btn--xs" (click)="deleteInvestment(inv.id)">Eliminar</button>
                             </td>
                           </tr>
                         }
@@ -392,8 +392,8 @@
           }
 
           @if (activeTab() === 'allocations') {
-            <section class="tr-card">
-              <header class="tr-card__head">
+            <section class="gn2-card">
+              <header class="gn2-card__head">
                 <div>
                   <h2>Alocações da conta</h2>
                   <p>Distribua o saldo por manutenção, fixas, reserva, salários e ferramentas</p>
@@ -403,20 +403,20 @@
                 </span>
               </header>
 
-              <form class="tr-form tr-form--alloc" (ngSubmit)="saveSettings()">
-                <label class="tr-field tr-field--highlight">
+              <form class="gn2-form gn2-form" (ngSubmit)="saveSettings()">
+                <label class="gn2-field gn2-field">
                   <span><app-icon name="wallet" /> Saldo actual na conta (MZN)</span>
                   <input type="number" [(ngModel)]="settingsForm.accountBalance" name="accountBalance" min="0" step="0.01" required />
                 </label>
-                <div class="tr-form__grid">
-                  <label class="tr-field"><span>Manutenção %</span><input type="number" [(ngModel)]="settingsForm.maintenancePercent" name="maintPct" min="0" max="100" /></label>
-                  <label class="tr-field"><span>Despesas fixas %</span><input type="number" [(ngModel)]="settingsForm.fixedExpensesPercent" name="fixedPct" min="0" max="100" /></label>
-                  <label class="tr-field"><span>Reserva %</span><input type="number" [(ngModel)]="settingsForm.reservePercent" name="reservePct" min="0" max="100" /></label>
-                  <label class="tr-field"><span>Salários %</span><input type="number" [(ngModel)]="settingsForm.payrollPercent" name="payrollPct" min="0" max="100" /></label>
-                  <label class="tr-field"><span>Ferramentas %</span><input type="number" [(ngModel)]="settingsForm.toolsPercent" name="toolsPct" min="0" max="100" /></label>
-                  <label class="tr-field"><span>Colaboradores</span><input type="number" [(ngModel)]="settingsForm.payrollHeadcount" name="headcount" min="1" max="50" /></label>
+                <div class="gn2-fields">
+                  <label class="gn2-field"><span>Manutenção %</span><input type="number" [(ngModel)]="settingsForm.maintenancePercent" name="maintPct" min="0" max="100" /></label>
+                  <label class="gn2-field"><span>Despesas fixas %</span><input type="number" [(ngModel)]="settingsForm.fixedExpensesPercent" name="fixedPct" min="0" max="100" /></label>
+                  <label class="gn2-field"><span>Reserva %</span><input type="number" [(ngModel)]="settingsForm.reservePercent" name="reservePct" min="0" max="100" /></label>
+                  <label class="gn2-field"><span>Salários %</span><input type="number" [(ngModel)]="settingsForm.payrollPercent" name="payrollPct" min="0" max="100" /></label>
+                  <label class="gn2-field"><span>Ferramentas %</span><input type="number" [(ngModel)]="settingsForm.toolsPercent" name="toolsPct" min="0" max="100" /></label>
+                  <label class="gn2-field"><span>Colaboradores</span><input type="number" [(ngModel)]="settingsForm.payrollHeadcount" name="headcount" min="1" max="50" /></label>
                 </div>
-                <button type="submit" class="tr-btn tr-btn--primary" [disabled]="saving() || allocationPercentSum() > 100">
+                <button type="submit" class="gn2-btn gn2-btn--primary" [disabled]="saving() || allocationPercentSum() > 100">
                   Guardar alocações
                 </button>
               </form>
@@ -434,20 +434,20 @@
           }
 
           @if (activeTab() === 'suggestions') {
-            <section class="tr-card">
-              <header class="tr-card__head">
+            <section class="gn2-card">
+              <header class="gn2-card__head">
                 <div>
                   <h2>Sugestões automáticas</h2>
                   <p>Análise de lucro, investimento e peso dos salários</p>
                 </div>
-                <button type="button" class="tr-btn tr-btn--ghost" (click)="loadSuggestions(true)">
+                <button type="button" class="gn2-btn gn2-btn--ghost" (click)="loadSuggestions(true)">
                   <app-icon name="undo" />
                   Actualizar análise
                 </button>
               </header>
 
               @if (suggestions().length === 0) {
-                <div class="tr-empty">
+                <div class="gn2-empty">
                   <app-icon name="check-circle" />
                   <p>Sem sugestões pendentes. Tudo equilibrado.</p>
                 </div>
@@ -463,7 +463,7 @@
                     </header>
                     <div class="tr-suggestion__grid">
                       @for (key of ['maintenance', 'fixed', 'reserve', 'payroll', 'tools']; track key) {
-                        <label class="tr-field tr-field--compact">
+                        <label class="gn2-field gn2-field">
                           <span>{{ bucketLabel(key) }} %</span>
                           <input
                             type="number"
@@ -476,10 +476,10 @@
                       }
                     </div>
                     <div class="tr-suggestion__actions">
-                      <button type="button" class="tr-btn tr-btn--primary tr-btn--sm" (click)="approveSuggestion(sg)">
+                      <button type="button" class="gn2-btn gn2-btn--primary gn2-btn--sm" (click)="approveSuggestion(sg)">
                         <app-icon name="check-circle" /> Aprovar
                       </button>
-                      <button type="button" class="tr-btn tr-btn--danger tr-btn--sm" (click)="rejectSuggestion(sg.id)">Rejeitar</button>
+                      <button type="button" class="gn2-btn gn2-btn--danger gn2-btn--sm" (click)="rejectSuggestion(sg.id)">Rejeitar</button>
                     </div>
                   </article>
                 }
@@ -489,15 +489,15 @@
 
           @if (activeTab() === 'expenses') {
             <div class="tr-split">
-              <aside class="tr-card tr-card--form">
-                <header class="tr-card__head tr-card__head--compact"><h2>Nova despesa</h2></header>
-                <form class="tr-form" (ngSubmit)="submitExpense()">
-                  <label class="tr-field">
+              <aside class="gn2-card gn2-card--form">
+                <header class="gn2-card__head gn2-card__head--compact-form-form"><h2>Nova despesa</h2></header>
+                <form class="gn2-form" (ngSubmit)="submitExpense()">
+                  <label class="gn2-field">
                     <span>Descrição</span>
                     <input type="text" [(ngModel)]="expenseForm.title" name="title" required placeholder="Ex.: Hosting VPS" />
                   </label>
-                  <div class="tr-form__row">
-                    <label class="tr-field">
+                  <div class="gn2-fields">
+                    <label class="gn2-field">
                       <span>Categoria</span>
                       <select [(ngModel)]="expenseForm.category" name="category">
                         @for (c of categories; track c.id) {
@@ -505,24 +505,24 @@
                         }
                       </select>
                     </label>
-                    <label class="tr-field">
+                    <label class="gn2-field">
                       <span>Valor (MZN)</span>
                       <input type="number" [(ngModel)]="expenseForm.amount" name="amount" min="0" step="0.01" required />
                     </label>
                   </div>
-                  <label class="tr-field">
+                  <label class="gn2-field">
                     <span>Data</span>
                     <input type="date" [(ngModel)]="expenseForm.expenseDate" name="expenseDate" required />
                   </label>
-                  <button type="submit" class="tr-btn tr-btn--primary tr-btn--block" [disabled]="saving()">Adicionar despesa</button>
+                  <button type="submit" class="gn2-btn gn2-btn--primary gn2-btn--block" [disabled]="saving()">Adicionar despesa</button>
                 </form>
               </aside>
 
-              <section class="tr-card">
-                <header class="tr-card__head">
+              <section class="gn2-card">
+                <header class="gn2-card__head">
                   <div><h2>Histórico</h2><p>{{ filteredExpenses().length }} de {{ expenses().length }}</p></div>
                 </header>
-                <label class="tr-search tr-search--compact">
+                <label class="gn2-search gn2-search">
                   <app-icon name="list" />
                   <input
                     type="search"
@@ -533,10 +533,10 @@
                     aria-label="Pesquisar despesas" />
                 </label>
                 @if (filteredExpenses().length === 0) {
-                  <div class="tr-empty tr-empty--sm"><p>Nenhuma despesa.</p></div>
+                  <div class="gn2-empty gn2-empty--sm"><p>Nenhuma despesa.</p></div>
                 } @else {
-                  <div class="tr-table-shell">
-                    <table class="tr-table">
+                  <div class="gn2-table-wrap">
+                    <table class="gn2-table">
                       <thead>
                         <tr>
                           <th>Data</th>
@@ -554,7 +554,7 @@
                             <td><span class="tr-tag">{{ categoryLabel(e.category) }}</span></td>
                             <td class="col-num">{{ e.amount | number: '1.0-0' }} MZN</td>
                             <td class="col-actions">
-                              <button type="button" class="tr-btn tr-btn--danger tr-btn--xs" (click)="deleteExpense(e.id)">Eliminar</button>
+                              <button type="button" class="gn2-btn gn2-btn--danger gn2-btn--xs" (click)="deleteExpense(e.id)">Eliminar</button>
                             </td>
                           </tr>
                         }
@@ -568,39 +568,39 @@
 
           @if (activeTab() === 'payroll') {
             <div class="tr-split">
-              <aside class="tr-card tr-card--form">
-                <header class="tr-card__head tr-card__head--compact"><h2>Pagamento de salário</h2></header>
+              <aside class="gn2-card gn2-card--form">
+                <header class="gn2-card__head gn2-card__head--compact-form-form"><h2>Pagamento de salário</h2></header>
                 <p class="tr-hint">{{ s.payrollHeadcount }} colaborador(es) · Sugestão {{ s.payrollPerPersonSuggested | number: '1.0-0' }} MZN/pessoa</p>
-                <form class="tr-form" (ngSubmit)="submitPayroll()">
-                  <label class="tr-field">
+                <form class="gn2-form" (ngSubmit)="submitPayroll()">
+                  <label class="gn2-field">
                     <span>Colaborador</span>
                     <input type="text" [(ngModel)]="payrollForm.employeeName" name="employeeName" required placeholder="Nome completo" />
                   </label>
-                  <div class="tr-form__row">
-                    <label class="tr-field">
+                  <div class="gn2-fields">
+                    <label class="gn2-field">
                       <span>Valor (MZN)</span>
                       <input type="number" [(ngModel)]="payrollForm.amount" name="payAmount" min="0" step="0.01" required />
                     </label>
-                    <label class="tr-field">
+                    <label class="gn2-field">
                       <span>Data</span>
                       <input type="date" [(ngModel)]="payrollForm.expenseDate" name="payDate" required />
                     </label>
                   </div>
-                  <label class="tr-field">
+                  <label class="gn2-field">
                     <span>Notas <em class="tr-optional">(opcional)</em></span>
                     <textarea [(ngModel)]="payrollForm.notes" name="payNotes" rows="2"></textarea>
                   </label>
-                  <button type="submit" class="tr-btn tr-btn--indigo tr-btn--block" [disabled]="saving()">
+                  <button type="submit" class="gn2-btn gn2-btn--indigo gn2-btn--block" [disabled]="saving()">
                     <app-icon name="add" /> Registar pagamento
                   </button>
                 </form>
               </aside>
 
-              <section class="tr-card">
-                <header class="tr-card__head">
+              <section class="gn2-card">
+                <header class="gn2-card__head">
                   <div><h2>Histórico de salários</h2><p>{{ filteredPayroll().length }} pagamento(s)</p></div>
                 </header>
-                <label class="tr-search tr-search--compact">
+                <label class="gn2-search gn2-search">
                   <app-icon name="list" />
                   <input
                     type="search"
@@ -611,10 +611,10 @@
                     aria-label="Pesquisar salários" />
                 </label>
                 @if (filteredPayroll().length === 0) {
-                  <div class="tr-empty tr-empty--sm"><p>Nenhum pagamento.</p></div>
+                  <div class="gn2-empty gn2-empty--sm"><p>Nenhum pagamento.</p></div>
                 } @else {
-                  <div class="tr-table-shell">
-                    <table class="tr-table">
+                  <div class="gn2-table-wrap">
+                    <table class="gn2-table">
                       <thead>
                         <tr>
                           <th>Data</th>
@@ -630,7 +630,7 @@
                             <td class="cell-title">{{ e.title }}</td>
                             <td class="col-num">{{ e.amount | number: '1.0-0' }} MZN</td>
                             <td class="col-actions">
-                              <button type="button" class="tr-btn tr-btn--danger tr-btn--xs" (click)="deleteExpense(e.id)">Eliminar</button>
+                              <button type="button" class="gn2-btn gn2-btn--danger gn2-btn--xs" (click)="deleteExpense(e.id)">Eliminar</button>
                             </td>
                           </tr>
                         }

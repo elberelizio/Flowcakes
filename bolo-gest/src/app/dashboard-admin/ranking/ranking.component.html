@@ -1,61 +1,61 @@
-<div class="rk-page">
-  <header class="rk-hero">
-    <div class="rk-hero__top">
-      <a routerLink="/admin-dashboard" class="rk-hero__back">
+<div class="gn2">
+  <header class="gn2-hero gn2-hero--stacked">
+    <div class="gn2-hero__top">
+      <a routerLink="/admin-dashboard" class="gn2-hero__back">
         <app-icon name="chevron-left" />
         Painel
       </a>
       @if (!loading() && ranking().length > 0 && leader(); as l) {
-        <span class="rk-chip">
+        <span class="gn2-hero__chip">
           <app-icon name="chart" />
           Líder: {{ l.fullName || l.phone }}
         </span>
       }
     </div>
-    <div class="rk-hero__main">
-      <p class="rk-hero__eyebrow">Desempenho</p>
-      <h1>Ranking</h1>
-      <p class="rk-hero__sub">Classificação dos utilizadores por número de encomendas e receita gerada na plataforma.</p>
+    <div class="gn2-hero__text">
+      <p class="gn2-hero__eyebrow">Desempenho</p>
+      <h1 class="gn2__title">Ranking</h1>
+      <p class="gn2__subtitle">Classificação dos utilizadores por número de encomendas e receita gerada na plataforma.</p>
     </div>
   </header>
 
   @if (error()) {
-    <div class="rk-alert" role="alert">
+    <div class="gn2-alert" role="alert">
       <app-icon name="alert-circle" />
       <span>{{ error() }}</span>
     </div>
   } @else if (loading()) {
-    <div class="rk-loading">
-      <span class="rk-spinner" aria-hidden="true"></span>
+    <div class="gn2-empty">
+      <span class="gn2-spinner" aria-hidden="true"></span>
       <p>A carregar ranking…</p>
     </div>
   } @else if (ranking().length === 0) {
-    <div class="rk-empty">
+    <div class="gn2-empty">
       <app-icon name="chart" />
-      <p class="rk-empty__title">Nenhum dado de ranking disponível</p>
-      <p class="rk-empty__desc">O ranking será preenchido quando houver encomendas registadas.</p>
+      <p class="gn2-empty__title">Nenhum dado de ranking disponível</p>
+      <p class="gn2-empty__desc">O ranking será preenchido quando houver encomendas registadas.</p>
     </div>
   } @else {
-    <section class="rk-metrics" aria-label="Resumo">
-      <article class="rk-metric" data-accent="blue">
-        <span class="rk-metric__icon"><app-icon name="user" /></span>
+    <section class="gn2-metrics" aria-label="Resumo">
+      <article class="gn2-metric" data-accent="blue">
+        <span class="gn2-metric__icon"><app-icon name="user" /></span>
         <div>
-          <span class="rk-metric__label">Utilizadores</span>
-          <strong class="rk-metric__value">{{ ranking().length }}</strong>
+          <span class="gn2-metric__label">Utilizadores</span>
+          <strong class="gn2-metric__value">{{ ranking().length }}</strong>
         </div>
       </article>
-      <article class="rk-metric" data-accent="green">
-        <span class="rk-metric__icon"><app-icon name="list" /></span>
+      <article class="gn2-metric" data-accent="green">
+        <span class="gn2-metric__icon"><app-icon name="list" /></span>
         <div>
-          <span class="rk-metric__label">Total encomendas</span>
-          <strong class="rk-metric__value">{{ totalOrders() }}</strong>
+          <span class="gn2-metric__label">Total encomendas</span>
+          <strong class="gn2-metric__value">{{ totalOrders() }}</strong>
         </div>
       </article>
-      <article class="rk-metric" data-accent="green">
-        <span class="rk-metric__icon"><app-icon name="receipt" /></span>
+      <article class="gn2-metric" data-accent="green">
+        <span class="gn2-metric__icon"><app-icon name="receipt" /></span>
         <div>
-          <span class="rk-metric__label">Receita total</span>
-          <strong class="rk-metric__value rk-metric__value--green">{{ totalRevenue() | number: '1.0-0' }} <small>MZN</small></strong>
+          <span class="gn2-metric__label">Receita total</span>
+          <strong class="gn2-metric__value">{{ totalRevenue() | number: '1.0-0' }} <small>MZN</small></strong>
         </div>
       </article>
       @if (leader(); as l) {
@@ -117,13 +117,13 @@
       </section>
     }
 
-    <section class="rk-card">
-      <header class="rk-card__head">
+    <section class="gn2-card">
+      <header class="gn2-card__head">
         <div>
           <h2>Classificação completa</h2>
           <p>{{ ranking().length }} utilizador(es) · {{ filteredRanking().length }} visível(is)</p>
         </div>
-        <label class="rk-search">
+        <label class="gn2-search">
           <app-icon name="list" />
           <input
             type="search"
@@ -136,12 +136,12 @@
       </header>
 
       @if (filteredRanking().length === 0) {
-        <div class="rk-empty rk-empty--sm">
+        <div class="gn2-empty gn2-empty--sm">
           <p>Nenhum resultado para «{{ searchQuery() }}».</p>
         </div>
       } @else {
-        <div class="rk-table-shell">
-          <table class="rk-table">
+        <div class="gn2-table-wrap">
+          <table class="gn2-table rk-table">
             <thead>
               <tr>
                 <th class="col-rank">#</th>

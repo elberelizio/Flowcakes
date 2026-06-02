@@ -1,16 +1,16 @@
-<div class="admin-orders-page">
-  <header class="orders-header">
-    <div class="orders-header__main">
-      <a routerLink="/admin-dashboard" class="orders-back">← Painel</a>
-      <p class="orders-header__eyebrow">Administração</p>
-      <h1>Encomendas</h1>
-      <p class="orders-header__sub">Todas as encomendas dos utilizadores do sistema.</p>
+<div class="gn2">
+  <header class="gn2-hero gn2-hero--stacked">
+    <div class="gn2-hero__text">
+      <a routerLink="/admin-dashboard" class="gn2-hero__back">← Painel</a>
+      <p class="gn2-hero__eyebrow">Administração</p>
+      <h1 class="gn2__title">Encomendas</h1>
+      <p class="gn2__subtitle">Todas as encomendas dos utilizadores do sistema.</p>
     </div>
     @if (!loading && !error && orders.length > 0) {
-      <div class="orders-header__meta">
-        <span class="orders-header__pill">{{ orders.length }} encomenda(s) no total</span>
+      <div class="gn2-hero__chips">
+        <span class="gn2-hero__chip">{{ orders.length }} encomenda(s) no total</span>
         @if (hasActiveFilters()) {
-          <span class="orders-header__pill orders-header__pill--active">
+          <span class="gn2-hero__chip gn2-hero__chip--warn">
             {{ filteredOrders().length }} com filtros activos
           </span>
         }
@@ -19,44 +19,44 @@
   </header>
 
   @if (loading) {
-    <div class="orders-state" role="status">
-      <span class="orders-spinner" aria-hidden="true"></span>
+    <div class="gn2-empty" role="status">
+      <span class="gn2-spinner" aria-hidden="true"></span>
       <p>A carregar encomendas…</p>
     </div>
   } @else if (error) {
-    <p class="orders-alert" role="alert">{{ error }}</p>
+    <p class="gn2-alert" role="alert">{{ error }}</p>
   } @else if (orders.length === 0) {
-    <div class="orders-state orders-state--empty">
+    <div class="gn2-empty gn2-empty">
       <p>Nenhuma encomenda registada.</p>
     </div>
   } @else {
-    <section class="orders-kpis" aria-label="Resumo">
-      <article class="orders-kpi orders-kpi--sales">
-        <span class="orders-kpi__label">Maior nº vendas</span>
-        <strong class="orders-kpi__value orders-kpi__value--text" [title]="stats().userWithMostSales">
+    <section class="gn2-metrics" aria-label="Resumo">
+      <article class="gn2-metric gn2-metric--sales">
+        <span class="gn2-metric__label">Maior nº vendas</span>
+        <strong class="gn2-metric__value gn2-metric__value--text" [title]="stats().userWithMostSales">
           {{ stats().userWithMostSales }}
         </strong>
-        <span class="orders-kpi__meta">{{ stats().totalVendasUser }} vendas</span>
+        <span class="gn2-metric__meta">{{ stats().totalVendasUser }} vendas</span>
       </article>
-      <article class="orders-kpi orders-kpi--expense">
-        <span class="orders-kpi__label">Total despesas</span>
-        <strong class="orders-kpi__value">
+      <article class="gn2-metric gn2-metric--expense">
+        <span class="gn2-metric__label">Total despesas</span>
+        <strong class="gn2-metric__value">
           {{ stats().totalDespesas | number:'1.0-0' }} <small>MZN</small>
         </strong>
       </article>
-      <article class="orders-kpi orders-kpi--product">
-        <span class="orders-kpi__label">Produto mais vendido</span>
-        <strong class="orders-kpi__value orders-kpi__value--text" [title]="stats().productMostSold">
+      <article class="gn2-metric gn2-metric--product">
+        <span class="gn2-metric__label">Produto mais vendido</span>
+        <strong class="gn2-metric__value gn2-metric__value--text" [title]="stats().productMostSold">
           {{ stats().productMostSold }}
         </strong>
-        <span class="orders-kpi__meta">{{ stats().productMostSoldCount }} un.</span>
+        <span class="gn2-metric__meta">{{ stats().productMostSoldCount }} un.</span>
       </article>
-      <article class="orders-kpi orders-kpi--month">
-        <span class="orders-kpi__label">Utilizador do mês</span>
-        <strong class="orders-kpi__value orders-kpi__value--text" [title]="stats().userOfMonth">
+      <article class="gn2-metric gn2-metric--month">
+        <span class="gn2-metric__label">Utilizador do mês</span>
+        <strong class="gn2-metric__value gn2-metric__value--text" [title]="stats().userOfMonth">
           {{ stats().userOfMonth }}
         </strong>
-        <span class="orders-kpi__meta">{{ stats().userOfMonthCount }} vendas este mês</span>
+        <span class="gn2-metric__meta">{{ stats().userOfMonthCount }} vendas este mês</span>
       </article>
     </section>
 
@@ -132,9 +132,9 @@
       </div>
 
       @if (filteredOrders().length === 0) {
-        <p class="orders-empty-filter">Nenhuma encomenda corresponde aos filtros seleccionados.</p>
+        <p class="gn2-empty">Nenhuma encomenda corresponde aos filtros seleccionados.</p>
       } @else {
-        <div class="orders-table-wrap">
+        <div class="gn2-table-wrap">
           <table class="orders-table">
             <thead>
               <tr>

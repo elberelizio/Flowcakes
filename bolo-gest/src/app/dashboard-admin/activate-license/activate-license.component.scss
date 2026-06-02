@@ -1,3 +1,5 @@
+@use '../../core/styles/gn2-admin-page';
+
 .activate-license-page {
   min-height: 100vh;
   display: flex;
@@ -84,3 +86,5 @@
   margin: 0 0 1rem;
   line-height: 1.45;
 }
+
+

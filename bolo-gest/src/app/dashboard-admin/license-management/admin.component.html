@@ -1,43 +1,43 @@
-<div class="licenses-page">
-  <header class="licenses-header">
-    <div class="licenses-header__main">
-      <a routerLink="/admin-dashboard" class="licenses-back">← Painel</a>
-      <h1>Gestão de licenças</h1>
-      <p>Licenças activas, contas bloqueadas e prazos. Estenda validade ou bloqueie/desbloqueie utilizadores.</p>
+<div class="gn2">
+  <header class="gn2-hero gn2-hero--stacked">
+    <div class="gn2-hero__text">
+      <a routerLink="/admin-dashboard" class="gn2-hero__back">← Painel</a>
+      <h1 class="gn2__title">Gestão de licenças</h1>
+      <p class="gn2__subtitle">Licenças activas, contas bloqueadas e prazos. Estenda validade ou bloqueie/desbloqueie utilizadores.</p>
     </div>
   </header>
 
   @if (loading) {
-    <div class="licenses-state">
-      <span class="licenses-spinner" aria-hidden="true"></span>
+    <div class="gn2-empty">
+      <span class="gn2-spinner" aria-hidden="true"></span>
       <p>A carregar dados…</p>
     </div>
   } @else if (error) {
-    <div class="licenses-state licenses-state--error">
+    <div class="gn2-empty gn2-empty gn2-empty--err">
       <p>{{ error }}</p>
     </div>
   } @else {
-    <section class="licenses-kpis" aria-label="Resumo">
-      <article class="licenses-kpi">
-        <span class="licenses-kpi__label">Utilizadores registados</span>
-        <strong class="licenses-kpi__value">{{ stats?.totalUsers ?? 0 }}</strong>
+    <section class="gn2-metrics" aria-label="Resumo">
+      <article class="gn2-metric">
+        <span class="gn2-metric__label">Utilizadores registados</span>
+        <strong class="gn2-metric__value">{{ stats?.totalUsers ?? 0 }}</strong>
       </article>
-      <article class="licenses-kpi licenses-kpi--active">
-        <span class="licenses-kpi__label">Licenças activas</span>
-        <strong class="licenses-kpi__value">{{ activeLicensesCount() }}</strong>
+      <article class="gn2-metric gn2-metric--active">
+        <span class="gn2-metric__label">Licenças activas</span>
+        <strong class="gn2-metric__value">{{ activeLicensesCount() }}</strong>
         <small>{{ stats?.licensesPaid ?? 0 }} pagas · {{ stats?.licensesTrial ?? 0 }} teste</small>
       </article>
-      <article class="licenses-kpi licenses-kpi--expired">
-        <span class="licenses-kpi__label">Expiradas</span>
-        <strong class="licenses-kpi__value">{{ expiredCount() }}</strong>
+      <article class="gn2-metric gn2-metric--expired">
+        <span class="gn2-metric__label">Expiradas</span>
+        <strong class="gn2-metric__value">{{ expiredCount() }}</strong>
       </article>
-      <article class="licenses-kpi licenses-kpi--expiring">
-        <span class="licenses-kpi__label">A expirar (10 dias)</span>
-        <strong class="licenses-kpi__value">{{ expiringLicenses().length }}</strong>
+      <article class="gn2-metric gn2-metric--expiring">
+        <span class="gn2-metric__label">A expirar (10 dias)</span>
+        <strong class="gn2-metric__value">{{ expiringLicenses().length }}</strong>
       </article>
-      <article class="licenses-kpi licenses-kpi--admin">
-        <span class="licenses-kpi__label">Administradores</span>
-        <strong class="licenses-kpi__value">{{ adminUsers().length }}</strong>
+      <article class="gn2-metric gn2-metric--admin">
+        <span class="gn2-metric__label">Administradores</span>
+        <strong class="gn2-metric__value">{{ adminUsers().length }}</strong>
       </article>
     </section>
 
@@ -53,24 +53,24 @@
             }
           </p>
         </div>
-        <nav class="licenses-tabs" aria-label="Filtrar por estado">
-          <button type="button" class="licenses-tab" [class.active]="filterTab() === 'activas'" (click)="setFilter('activas')">
+        <nav class="gn2-tabs" aria-label="Filtrar por estado">
+          <button type="button" class="licenses-tab" [class.gn2-tab--on]="filterTab() === 'activas'" (click)="setFilter('activas')">
             Activas
             <span class="licenses-tab__count">{{ activeLicensesCount() }}</span>
           </button>
-          <button type="button" class="licenses-tab" [class.active]="filterTab() === 'expiradas'" (click)="setFilter('expiradas')">
+          <button type="button" class="licenses-tab" [class.gn2-tab--on]="filterTab() === 'expiradas'" (click)="setFilter('expiradas')">
             Expiradas
             @if (expiredCount() > 0) {
               <span class="licenses-tab__count">{{ expiredCount() }}</span>
             }
           </button>
-          <button type="button" class="licenses-tab licenses-tab--warn" [class.active]="filterTab() === 'expiring'" (click)="setFilter('expiring')">
+          <button type="button" class="licenses-tab licenses-tab--warn" [class.gn2-tab--on]="filterTab() === 'expiring'" (click)="setFilter('expiring')">
             A expirar
             @if (expiringLicenses().length > 0) {
               <span class="licenses-tab__badge">{{ expiringLicenses().length }}</span>
             }
           </button>
-          <button type="button" class="licenses-tab" [class.active]="filterTab() === 'admins'" (click)="setFilter('admins')">
+          <button type="button" class="licenses-tab" [class.gn2-tab--on]="filterTab() === 'admins'" (click)="setFilter('admins')">
             Admins
             <span class="licenses-tab__count">{{ adminUsers().length }}</span>
           </button>
@@ -78,7 +78,7 @@
       </div>
 
       @if (filterTab() === 'expiring') {
-        <div class="licenses-table-wrap">
+        <div class="gn2-table-wrap">
           @if (expiringLoading()) {
             <p class="licenses-table-empty">A carregar licenças a expirar…</p>
           } @else if (expiringLicenses().length === 0) {
@@ -111,7 +111,7 @@
           }
         </div>
       } @else {
-        <div class="licenses-table-wrap">
+        <div class="gn2-table-wrap">
           @if (filteredUsers().length === 0) {
             <p class="licenses-table-empty">
               @if (filterTab() === 'expiradas') {
@@ -219,7 +219,7 @@
     <div class="lic-modal" (click)="$event.stopPropagation()">
       <button type="button" class="lic-modal__close" (click)="closeExtendModal()" aria-label="Fechar">×</button>
       <h3 class="lic-modal__title">Estender prazo da licença</h3>
-      <p class="lic-modal__subtitle">{{ extendUser.fullName || extendUser.phone }}</p>
+      <p class="lic-modal__gn2__subtitle">{{ extendUser.fullName || extendUser.phone }}</p>
       <div class="lic-modal__field">
         <label for="extendMonths">Adicionar (meses)</label>
         <select id="extendMonths" [(ngModel)]="extendMonths">
@@ -232,8 +232,8 @@
         <p class="lic-modal__error">{{ extendError }}</p>
       }
       <div class="lic-modal__actions">
-        <button type="button" class="lic-btn lic-btn--ghost" (click)="closeExtendModal()">Cancelar</button>
-        <button type="button" class="lic-btn lic-btn--primary" [disabled]="extendingUserId === extendUser.id" (click)="submitExtendLicense()">
+        <button type="button" class="lic-gn2-btn lic-gn2-btn--ghost" (click)="closeExtendModal()">Cancelar</button>
+        <button type="button" class="lic-gn2-btn lic-gn2-btn--primary" [disabled]="extendingUserId === extendUser.id" (click)="submitExtendLicense()">
           {{ extendingUserId === extendUser.id ? 'A processar…' : 'Estender prazo' }}
         </button>
       </div>
@@ -299,9 +299,9 @@
           </dl>
           <div class="lic-detail__inline-actions">
             @if (d.blocked) {
-              <button type="button" class="lic-btn lic-btn--ok" (click)="unblockUserById(d.id)">Desbloquear</button>
+              <button type="button" class="lic-gn2-btn lic-gn2-btn--ok" (click)="unblockUserById(d.id)">Desbloquear</button>
             } @else {
-              <button type="button" class="lic-btn lic-btn--danger" (click)="blockUserById(d.id)">Bloquear conta</button>
+              <button type="button" class="lic-gn2-btn lic-gn2-btn--danger" (click)="blockUserById(d.id)">Bloquear conta</button>
             }
           </div>
         </section>
@@ -325,9 +325,9 @@
         </section>
 
         <footer class="lic-detail__footer">
-          <button type="button" class="lic-btn lic-btn--primary" (click)="openExtendModalFromDetail()">Estender prazo</button>
+          <button type="button" class="lic-gn2-btn lic-gn2-btn--primary" (click)="openExtendModalFromDetail()">Estender prazo</button>
           @if (d.licenseActivationToken) {
-            <button type="button" class="lic-btn lic-btn--ghost" (click)="copyActivationLink(d)">Copiar link de ativação</button>
+            <button type="button" class="lic-gn2-btn lic-gn2-btn--ghost" (click)="copyActivationLink(d)">Copiar link de ativação</button>
           }
         </footer>
       }

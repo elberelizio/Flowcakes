@@ -1,3 +1,5 @@
+@use '../../../core/styles/gn2-admin-page';
+
 @use '../../dashboard/fx-theme' as fx;
 
 .al-page {
@@ -668,3 +670,5 @@ a.al-btn {
   font-size: 0.72rem;
   color: #94a3b8;
 }
+
+

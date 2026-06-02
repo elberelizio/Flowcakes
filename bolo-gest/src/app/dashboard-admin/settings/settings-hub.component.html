@@ -1,15 +1,19 @@
-<div class="cfg-hub">
-  <header class="cfg-hub__header">
-    <a routerLink="/admin-dashboard" class="cfg-hub__back">← Painel</a>
-    <p class="cfg-hub__eyebrow">Sistema</p>
-    <h1>Configurações</h1>
-    <p class="cfg-hub__sub">
-      Auditoria, segurança e preferências da plataforma. Funções menos usadas no dia-a-dia, para manter o menu lateral simples.
-    </p>
+<div class="gn2">
+  <header class="gn2-hero gn2-hero--stacked">
+    <div class="gn2-hero__text">
+      <a routerLink="/admin-dashboard" class="gn2-hero__back">← Painel</a>
+      <p class="gn2-hero__eyebrow">Sistema</p>
+      <h1 class="gn2__title">Configurações</h1>
+      <p class="gn2__subtitle">
+        Auditoria, segurança e preferências da plataforma. Funções menos usadas no dia-a-dia, para manter o menu lateral simples.
+      </p>
+    </div>
   </header>
 
-  <section class="cfg-panel" aria-labelledby="cfg-sec-seguranca">
-    <h2 id="cfg-sec-seguranca" class="cfg-panel__title">Segurança e auditoria</h2>
+  <section class="gn2-card cfg-panel" aria-labelledby="cfg-sec-seguranca">
+    <header class="gn2-card__head">
+      <h2 id="cfg-sec-seguranca">Segurança e auditoria</h2>
+    </header>
     <ul class="cfg-list">
       @for (item of securityItems; track item.path) {
         <li>
@@ -28,8 +32,10 @@
     </ul>
   </section>
 
-  <section class="cfg-panel" aria-labelledby="cfg-sec-comunicacao">
-    <h2 id="cfg-sec-comunicacao" class="cfg-panel__title">Comunicação</h2>
+  <section class="gn2-card cfg-panel" aria-labelledby="cfg-sec-comunicacao">
+    <header class="gn2-card__head">
+      <h2 id="cfg-sec-comunicacao">Comunicação</h2>
+    </header>
     <ul class="cfg-list">
       @for (item of communicationItems; track item.path) {
         <li>
@@ -48,8 +54,10 @@
     </ul>
   </section>
 
-  <section class="cfg-panel cfg-panel--muted" aria-labelledby="cfg-sec-plataforma">
-    <h2 id="cfg-sec-plataforma" class="cfg-panel__title">Plataforma</h2>
+  <section class="gn2-card cfg-panel cfg-panel--muted" aria-labelledby="cfg-sec-plataforma">
+    <header class="gn2-card__head">
+      <h2 id="cfg-sec-plataforma">Plataforma</h2>
+    </header>
     <ul class="cfg-list">
       <li>
         <div class="cfg-link cfg-link--disabled" data-accent="slate">

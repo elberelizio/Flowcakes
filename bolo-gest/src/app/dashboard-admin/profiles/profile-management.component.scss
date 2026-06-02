@@ -1,3 +1,5 @@
+@use '../../core/styles/gn2-admin-page';
+
 .profiles-page {
   padding: 1.5rem 1.25rem;
 }
@@ -407,3 +409,5 @@
   padding-top: 1rem;
   border-top: 1px solid var(--border);
 }
+
+

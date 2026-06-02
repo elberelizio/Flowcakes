@@ -1,137 +1,25 @@
-@use './fx-theme' as fx;
+@use '../../core/styles/gn2-admin-page';
+@use '../../core/styles/gn2-dashboard';
 
 :host {
   display: block;
 }
 
-.bi-dashboard {
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  padding: 0 0 2rem;
+.gn2 {
   display: flex;
   flex-direction: column;
   gap: 1.15rem;
+  padding-bottom: 2rem;
 }
 
-.bi-header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem 1.5rem;
-  padding: 0.25rem 0 0.5rem;
-}
-
-.bi-header__main {
-  min-width: 0;
-}
-
-.bi-header h1 {
-  margin: 0;
-  font-size: clamp(1.3rem, 2.2vw, 1.6rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: #0f172a;
-}
-
-.bi-header__subtitle {
-  margin: 0.25rem 0 0;
-  font-size: 0.88rem;
-  color: #64748b;
-}
-
-.bi-header__aside {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.6rem;
-  flex: 1;
-  min-width: min(100%, 28rem);
-}
-
-.bi-header__time {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #94a3b8;
-  font-variant-numeric: tabular-nums;
-  padding: 0.2rem 0.55rem;
-  border-radius: 6px;
-  background: rgba(248, 250, 252, 0.9);
-}
-
-.bi-header__nav {
-  display: flex;
-  flex-wrap: wrap;
+.gn2-hero--stacked .gn2-hero__chips {
   justify-content: flex-end;
-  gap: 0.4rem;
-}
-
-.bi-header__nav-link {
-  padding: 0.4rem 0.8rem;
-  border-radius: 9px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #475569;
-  text-decoration: none;
-  background: #fff;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-  transition: color 0.15s, border-color 0.15s, background 0.15s, box-shadow 0.15s;
-
-  &:hover {
-    color: fx.$fx-teal-deep;
-    border-color: rgba(13, 148, 136, 0.35);
-    background: #ecfdf5;
-    box-shadow: 0 2px 8px rgba(13, 148, 136, 0.12);
-  }
-}
-
-.bi-summary {
-  position: relative;
-  @include fx.fx-glass-panel;
-  @include fx.fx-accent-top-line;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.bi-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  min-height: 200px;
-  @include fx.fx-glass-panel;
-
-  p {
-    margin: 0;
-    font-size: 0.88rem;
-    color: #64748b;
-  }
-}
-
-.bi-loading__spinner {
-  width: 28px;
-  height: 28px;
-  border: 3px solid rgba(148, 163, 184, 0.2);
-  border-top-color: fx.$fx-teal;
-  border-radius: 50%;
-  animation: bi-spin 0.75s linear infinite;
-}
-
-@keyframes bi-spin {
-  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 768px) {
-  .bi-header__aside {
-    align-items: flex-start;
-    width: 100%;
-  }
-
-  .bi-header__nav {
+  .gn2-hero--stacked .gn2-hero__chips {
     justify-content: flex-start;
   }
 }
+
+

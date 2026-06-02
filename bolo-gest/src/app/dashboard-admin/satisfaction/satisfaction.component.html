@@ -1,69 +1,76 @@
-<div class="satisfaction-page">
-  <header class="page-header">
-    <div>
-      <a routerLink="/admin-dashboard" class="back-link">← Painel</a>
-      <h1>Satisfação dos utilizadores</h1>
-      <p class="subtitle">
+<div class="gn2">
+  <header class="gn2-hero gn2-hero--stacked">
+    <div class="gn2-hero__text">
+      <a routerLink="/admin-dashboard" class="gn2-hero__back">← Painel</a>
+      <h1 class="gn2__title">Satisfação dos utilizadores</h1>
+      <p class="gn2__subtitle">
         Avaliações enviadas após o primeiro login ou ao sair da conta (estrelas, recomendação e comentário).
       </p>
     </div>
-    <button type="button" class="btn btn-outline" [disabled]="loading()" (click)="load()">Actualizar</button>
+    <button type="button" class="gn2-btn gn2-btn--outline" [disabled]="loading()" (click)="load()">Actualizar</button>
   </header>
 
   @if (loading()) {
-    <p class="state-msg">A carregar…</p>
+    <div class="gn2-inline-loading">
+      <span class="gn2-spinner" aria-hidden="true"></span>
+      <p>A carregar…</p>
+    </div>
   } @else if (error()) {
-    <p class="state-msg state-msg--error">{{ error() }}</p>
+    <p class="gn2-alert" role="alert">{{ error() }}</p>
   } @else {
-    <div class="kpi-row">
-      <div class="kpi-card">
-        <span class="kpi-label">Média geral</span>
-        <strong class="kpi-value">{{ averageRating() || '—' }}</strong>
-        <span class="kpi-hint">de 5 estrelas</span>
-      </div>
-      <div class="kpi-card">
-        <span class="kpi-label">Recomendariam</span>
-        <strong class="kpi-value">{{ recommendYesCount() }}</strong>
-      </div>
-      <div class="kpi-card">
-        <span class="kpi-label">Não recomendariam</span>
-        <strong class="kpi-value">{{ recommendNoCount() }}</strong>
-      </div>
-      <div class="kpi-card">
-        <span class="kpi-label">Total de respostas</span>
-        <strong class="kpi-value">{{ items().length }}</strong>
-      </div>
+    <div class="gn2-metrics">
+      <article class="gn2-metric">
+        <span class="gn2-metric__label">Média geral</span>
+        <strong class="gn2-metric__value">{{ averageRating() || '—' }}</strong>
+        <span class="gn2-metric__meta">de 5 estrelas</span>
+      </article>
+      <article class="gn2-metric">
+        <span class="gn2-metric__label">Recomendariam</span>
+        <strong class="gn2-metric__value">{{ recommendYesCount() }}</strong>
+      </article>
+      <article class="gn2-metric">
+        <span class="gn2-metric__label">Não recomendariam</span>
+        <strong class="gn2-metric__value">{{ recommendNoCount() }}</strong>
+      </article>
+      <article class="gn2-metric">
+        <span class="gn2-metric__label">Total de respostas</span>
+        <strong class="gn2-metric__value">{{ items().length }}</strong>
+      </article>
     </div>
 
     @if (items().length === 0) {
-      <p class="state-msg">Ainda não há avaliações registadas.</p>
+      <div class="gn2-empty">
+        <p>Ainda não há avaliações registadas.</p>
+      </div>
     } @else {
-      <div class="table-wrap">
-        <table class="feedback-table">
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Utilizador</th>
-              <th>Estrelas</th>
-              <th>Recomenda?</th>
-              <th>Comentário</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of items(); track row.id) {
+      <div class="gn2-card gn2-card--table">
+        <div class="gn2-table-wrap">
+          <table class="gn2-table satisfaction-table">
+            <thead>
               <tr>
-                <td>{{ formatDate(row.createdAt) }}</td>
-                <td>
-                  <strong>{{ row.userFullName || '—' }}</strong>
-                  <span class="muted">{{ row.userPhone }}</span>
-                </td>
-                <td><span class="stars" [attr.aria-label]="row.rating + ' estrelas'">{{ stars(row.rating) }}</span></td>
-                <td>{{ recommendLabel(row.wouldRecommend) }}</td>
-                <td>{{ row.comment || '—' }}</td>
+                <th>Data</th>
+                <th>Utilizador</th>
+                <th>Estrelas</th>
+                <th>Recomenda?</th>
+                <th>Comentário</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (row of items(); track row.id) {
+                <tr>
+                  <td>{{ formatDate(row.createdAt) }}</td>
+                  <td>
+                    <strong>{{ row.userFullName || '—' }}</strong>
+                    <span class="satisfaction-table__muted">{{ row.userPhone }}</span>
+                  </td>
+                  <td><span class="satisfaction-table__stars" [attr.aria-label]="row.rating + ' estrelas'">{{ stars(row.rating) }}</span></td>
+                  <td>{{ recommendLabel(row.wouldRecommend) }}</td>
+                  <td>{{ row.comment || '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
     }
   }

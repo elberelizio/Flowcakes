@@ -1,3 +1,6 @@
+@use '../../../core/styles/gn2-admin-page';
+@use '../../../core/styles/gn2-dashboard';
+
 @use '../fx-theme' as fx;
 
 .bi-ranking {
@@ -146,3 +149,5 @@
     background: rgba(251, 191, 36, 0.15);
   }
 }
+
+

@@ -1,9 +1,11 @@
+@use '../../core/styles/gn2-admin-page';
+
 .admin-orders-page {
   width: 100%;
   max-width: none;
 }
 
-/* —— Cabeçalho —— */
+/* â€”â€” CabeÃ§alho â€”â€” */
 .orders-header {
   display: flex;
   flex-wrap: wrap;
@@ -80,7 +82,7 @@
   }
 }
 
-/* —— Estados —— */
+/* â€”â€” Estados â€”â€” */
 .orders-alert {
   margin: 0 0 1rem;
   padding: 0.65rem 1rem;
@@ -118,7 +120,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* —— KPIs —— */
+/* â€”â€” KPIs â€”â€” */
 .orders-kpis {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -185,7 +187,7 @@
   }
 }
 
-/* —— Totais do filtro —— */
+/* â€”â€” Totais do filtro â€”â€” */
 .orders-totals {
   display: flex;
   flex-wrap: wrap;
@@ -222,7 +224,7 @@
   color: #b91c1c;
 }
 
-/* —— Filtros —— */
+/* â€”â€” Filtros â€”â€” */
 .orders-filters {
   margin-bottom: 1rem;
   padding: 1rem 1.15rem;
@@ -301,7 +303,7 @@
   }
 }
 
-/* —— Tabela —— */
+/* â€”â€” Tabela â€”â€” */
 .orders-table-panel {
   border-radius: 14px;
   background: #fff;
@@ -484,7 +486,7 @@
   }
 }
 
-/* —— Responsivo —— */
+/* â€”â€” Responsivo â€”â€” */
 @media (max-width: 1100px) {
   .orders-kpis {
     grid-template-columns: repeat(2, 1fr);
@@ -523,3 +525,5 @@
     font-size: 0.82rem;
   }
 }
+
+
