@@ -17,6 +17,8 @@ export class NotificationsComponent implements OnInit {
 
   readonly unreadCount = computed(() => this.items().filter((n) => !n.dismissed).length);
 
+  readonly readCount = computed(() => this.items().filter((n) => n.dismissed).length);
+
   ngOnInit(): void {
     this.systemNotifications.load();
   }
@@ -36,5 +38,13 @@ export class NotificationsComponent implements OnInit {
       month: 'long',
       year: 'numeric',
     });
+  }
+
+  maintenancePeriod(n: SystemNotification): string {
+    return this.systemNotifications.maintenancePeriod(n);
+  }
+
+  categoryIcon(n: SystemNotification): string {
+    return n.category === 'maintenance' ? 'fa-wrench' : 'fa-bullhorn';
   }
 }

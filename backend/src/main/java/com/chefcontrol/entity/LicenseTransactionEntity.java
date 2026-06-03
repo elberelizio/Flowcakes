@@ -34,6 +34,12 @@ public class LicenseTransactionEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Column(name = "receipt_number", length = 32)
+    private String receiptNumber;
+
+    @Column(name = "valid_until_after")
+    private Instant validUntilAfter;
+
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) createdAt = Instant.now();
@@ -53,4 +59,8 @@ public class LicenseTransactionEntity {
     public void setDurationMonths(Integer durationMonths) { this.durationMonths = durationMonths; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public String getReceiptNumber() { return receiptNumber; }
+    public void setReceiptNumber(String receiptNumber) { this.receiptNumber = receiptNumber; }
+    public Instant getValidUntilAfter() { return validUntilAfter; }
+    public void setValidUntilAfter(Instant validUntilAfter) { this.validUntilAfter = validUntilAfter; }
 }

@@ -21,6 +21,7 @@ import { SatisfactionPromptService } from './services/satisfaction-prompt.servic
 import { SatisfactionSurveyModalComponent } from './core/satisfaction/satisfaction-survey-modal.component';
 import { orderDisplayName } from './models/order.model';
 import { isPaidOrTrialStatus } from './core/license/license-status';
+import { PublicPageMotionService } from './public/web-page/public-page-motion.service';
 
 @Component({
   selector: 'app-root',
@@ -71,6 +72,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   welcomeOnboardingPopup = inject(WelcomeOnboardingPopupService);
   satisfactionPrompt = inject(SatisfactionPromptService);
   loginPopupOrchestrator = inject(LoginPopupOrchestratorService);
+  private publicPageMotion = inject(PublicPageMotionService);
   displayName = orderDisplayName;
 
   /** Nome do ícone para o item Retiradas (evita erro de tipo no template). */
@@ -117,16 +119,18 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
         this.licenseStatus.set(null);
         return;
       }
-      void this.auth.getLicenseStatus().then((s) => {
-        this.licenseStatus.set(s);
-        this.licenseExpiryPopup.tryShowFromStatus(s);
-      });
+      void this.auth.getLicenseStatus().then((s) => this.licenseStatus.set(s));
     });
 
     this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => {
       if (this.auth.isLoggedIn() && !this.auth.isAdmin() && !this.isPublicPage()) {
         queueMicrotask(() => this.loginPopupOrchestrator.continueChainAfterShell());
       }
+    });
+
+    effect(() => {
+      const lock = this.loginPopupOrchestrator.activeStep() === 'welcome';
+      document.body.classList.toggle('login-popup-scroll-lock', lock);
     });
   }
 
@@ -137,6 +141,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
+    this.publicPageMotion.bindPublicRouteTransitions(this.router);
     if (this.auth.isLoggedIn()) {
       if (this.auth.isAdmin()) {
         this.adminStats.loadStats();
@@ -160,6 +165,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy(): void {
     if (this.dateTimeInterval) clearInterval(this.dateTimeInterval);
+    document.body.classList.remove('login-popup-scroll-lock');
   }
 
   formatLicenseExpiry(validUntil?: string): string {
@@ -239,18 +245,32 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     this.loginPopupOrchestrator.confirmWelcome();
   }
 
+  /** Bloqueia cliques no fundo escuro — o popup só fecha pelos botões. */
+  onWelcomeOverlayClick(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
   onLicensePopupClose(): void {
     this.licenseExpiryPopup.close();
   }
 
   async onLogout(): Promise<void> {
     this.closeNavDropdowns();
-    await this.satisfactionPrompt.runBeforeLogout();
+    this.satisfactionPrompt.reset();
     this.auth.logout();
   }
 
   @HostListener('document:click') onDocumentClick(): void {
     this.closeNavDropdowns();
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onDocumentEscape(event: KeyboardEvent): void {
+    if (this.loginPopupOrchestrator.activeStep() === 'welcome') {
+      event.preventDefault();
+      event.stopPropagation();
+    }
   }
 
   /** Páginas públicas: sem app-shell (início, login, registo/register, ativação de licença, loja pública). */
@@ -280,7 +300,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     if (url.includes('/admin-orders')) return 'Encomendas';
     if (url.includes('/recover-password')) return 'Recuperar senha';
     if (url.includes('/reminders')) return 'Lembretes';
-    if (url.includes('/notifications')) return 'Notificações';
+    if (url.includes('/notifications')) return 'Comunicado';
     if (url.includes('/variable-expenses')) return 'Despesas extras';
     if (url.includes('/debts')) return 'Gestão de dívidas';
     if (url.includes('/clients')) return 'Clientes';

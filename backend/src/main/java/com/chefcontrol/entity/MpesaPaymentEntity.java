@@ -57,6 +57,20 @@ public class MpesaPaymentEntity {
     @Column(name = "completed_at")
     private Instant completedAt;
 
+    @Column(name = "admin_rejection_reason", length = 500)
+    private String adminRejectionReason;
+
+    @Column(name = "rejected_at")
+    private Instant rejectedAt;
+
+    /** Referência opcional que o cliente indicou (SMS, comprovativo, etc.). */
+    @Column(name = "user_transfer_reference", length = 120)
+    private String userTransferReference;
+
+    /** ID da transação na operadora (ex.: últimos 6 dígitos), confirmado pelo admin. */
+    @Column(name = "operator_transaction_ref", length = 32)
+    private String operatorTransactionRef;
+
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) createdAt = Instant.now();
@@ -90,4 +104,12 @@ public class MpesaPaymentEntity {
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public Instant getCompletedAt() { return completedAt; }
     public void setCompletedAt(Instant completedAt) { this.completedAt = completedAt; }
+    public String getAdminRejectionReason() { return adminRejectionReason; }
+    public void setAdminRejectionReason(String adminRejectionReason) { this.adminRejectionReason = adminRejectionReason; }
+    public Instant getRejectedAt() { return rejectedAt; }
+    public void setRejectedAt(Instant rejectedAt) { this.rejectedAt = rejectedAt; }
+    public String getUserTransferReference() { return userTransferReference; }
+    public void setUserTransferReference(String userTransferReference) { this.userTransferReference = userTransferReference; }
+    public String getOperatorTransactionRef() { return operatorTransactionRef; }
+    public void setOperatorTransactionRef(String operatorTransactionRef) { this.operatorTransactionRef = operatorTransactionRef; }
 }

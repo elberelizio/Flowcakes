@@ -21,6 +21,12 @@ interface NovoUtilizador {
 }
 
 type TabFilter = 'pendentes' | 'rejeitados';
+type MainTab = 'transferencias' | 'registos';
+
+interface RejectionReasonOption {
+  id: string;
+  label: string;
+}
 
 interface SimulatedPaymentPending {
   paymentId: string;
@@ -29,7 +35,9 @@ interface SimulatedPaymentPending {
   userPhone: string;
   amount: number;
   durationMonths: number;
+  /** Ref. interna Chef Control (auto). */
   transactionRef: string;
+  userTransferReference?: string;
   createdAt: string;
   simulationChannel?: string;
 }
@@ -50,6 +58,7 @@ export class NewUsersComponent implements OnInit {
   error = signal('');
   aprovandoId = signal<string | null>(null);
   rejeitandoId = signal<string | null>(null);
+  mainTab = signal<MainTab>('transferencias');
   tabFilter = signal<TabFilter>('pendentes');
   searchQuery = signal('');
 
@@ -80,12 +89,32 @@ export class NewUsersComponent implements OnInit {
   simulatedLoading = signal(false);
   simulatedError = signal('');
   aprovandoSimuladoId = signal<string | null>(null);
+  rejeitandoSimuladoId = signal<string | null>(null);
+  modalRejeitarSim = signal<SimulatedPaymentPending | null>(null);
+  modalAprovarSim = signal<SimulatedPaymentPending | null>(null);
+  approveOperatorRef = '';
+  approveSimModalError = signal('');
+  rejectReasonId = signal('valor_nao_recebido');
+  rejectReasonCustom = signal('');
+  rejectModalError = signal('');
 
   readonly durationOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  /** Últimos dígitos do ID da transação no SMS M-Pesa / e-Mola. */
+  readonly operatorSmsDigits = 6;
+  readonly rejectionReasons: RejectionReasonOption[] = [
+    { id: 'valor_nao_recebido', label: 'Valor não recebido na conta Chef Control' },
+    { id: 'valor_incorreto', label: 'Valor transferido não corresponde ao pedido' },
+    { id: 'referencia_invalida', label: 'Referência ou comprovativo inválido' },
+    { id: 'outro', label: 'Outro motivo' },
+  ];
 
   ngOnInit(): void {
     this.carregar();
     this.carregarSimulados();
+  }
+
+  setMainTab(tab: MainTab): void {
+    this.mainTab.set(tab);
   }
 
   carregarSimulados(): void {
@@ -93,12 +122,14 @@ export class NewUsersComponent implements OnInit {
     this.simulatedError.set('');
     this.http.get<SimulatedPaymentPending[]>(`${API_URL}/admin/simulated-payments/pending`).subscribe({
       next: (rows) => {
-        this.simulatedPending.set(
-          (rows ?? []).map((r) => ({
-            ...r,
-            amount: typeof r.amount === 'number' ? r.amount : Number(r.amount),
-          }))
-        );
+        const list = (rows ?? []).map((r) => ({
+          ...r,
+          amount: typeof r.amount === 'number' ? r.amount : Number(r.amount),
+        }));
+        this.simulatedPending.set(list);
+        if (list.length > 0) {
+          this.mainTab.set('transferencias');
+        }
         this.simulatedLoading.set(false);
       },
       error: (err) => {
@@ -108,21 +139,114 @@ export class NewUsersComponent implements OnInit {
     });
   }
 
-  aprovarSimulado(p: SimulatedPaymentPending): void {
-    this.simulatedError.set('');
+  abrirRejeitarSimulado(p: SimulatedPaymentPending): void {
+    this.modalRejeitarSim.set(p);
+    this.rejectReasonId.set('valor_nao_recebido');
+    this.rejectReasonCustom.set('');
+    this.rejectModalError.set('');
+  }
+
+  fecharRejeitarSimulado(): void {
+    this.modalRejeitarSim.set(null);
+    this.rejectModalError.set('');
+  }
+
+  selectRejectReason(id: string): void {
+    this.rejectReasonId.set(id);
+    this.rejectModalError.set('');
+  }
+
+  private buildRejectReasonText(): string {
+    const id = this.rejectReasonId();
+    if (id === 'outro') {
+      return this.rejectReasonCustom().trim();
+    }
+    return this.rejectionReasons.find((r) => r.id === id)?.label ?? '';
+  }
+
+  confirmarRejeitarSimulado(): void {
+    const p = this.modalRejeitarSim();
+    if (!p) return;
+    const reason = this.buildRejectReasonText();
+    if (!reason) {
+      this.rejectModalError.set('Indique o motivo da rejeição.');
+      return;
+    }
+    this.rejectModalError.set('');
+    this.rejeitandoSimuladoId.set(p.paymentId);
+    this.http
+      .post<{ ok: boolean }>(`${API_URL}/admin/simulated-payments/${p.paymentId}/reject`, { reason })
+      .subscribe({
+        next: () => {
+          this.simulatedPending.update((list) => list.filter((x) => x.paymentId !== p.paymentId));
+          this.rejeitandoSimuladoId.set(null);
+          this.fecharRejeitarSimulado();
+          this.adminStats.loadStats();
+        },
+        error: (err) => {
+          this.simulatedError.set(err?.error?.message || 'Erro ao rejeitar transferência.');
+          this.rejeitandoSimuladoId.set(null);
+        },
+      });
+  }
+
+  abrirAprovarSimulado(p: SimulatedPaymentPending): void {
+    this.modalAprovarSim.set(p);
+    this.approveOperatorRef = '';
+    this.approveSimModalError.set('');
+  }
+
+  fecharAprovarSimulado(): void {
+    this.modalAprovarSim.set(null);
+    this.approveSimModalError.set('');
+  }
+
+  /** Impede fechar o popup ao clicar no fundo escuro. */
+  bloquearFecharBackdrop(event: MouseEvent): void {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+
+  onApproveOperatorRefChange(raw: string): void {
+    const digits = raw.replace(/\D/g, '').slice(0, this.operatorSmsDigits);
+    this.approveOperatorRef = digits;
+    if (this.approveSimModalError()) {
+      this.approveSimModalError.set('');
+    }
+  }
+
+  confirmarAprovarSimulado(): void {
+    const p = this.modalAprovarSim();
+    if (!p) return;
+    const digits = this.approveOperatorRef.replace(/\D/g, '');
+    if (digits.length !== this.operatorSmsDigits) {
+      this.approveSimModalError.set(`Indique exactamente ${this.operatorSmsDigits} dígitos (últimos do ID no SMS).`);
+      return;
+    }
+    this.approveSimModalError.set('');
     this.aprovandoSimuladoId.set(p.paymentId);
-    this.http.post<{ ok: boolean }>(`${API_URL}/admin/simulated-payments/${p.paymentId}/approve`, {}).subscribe({
-      next: () => {
-        this.simulatedPending.update((list) => list.filter((x) => x.paymentId !== p.paymentId));
-        this.allLista.update((list) => list.filter((x) => x.id !== p.userId));
-        this.aprovandoSimuladoId.set(null);
-        this.adminStats.loadStats();
-      },
-      error: (err) => {
-        this.simulatedError.set(err?.error?.message || 'Erro ao aprovar.');
-        this.aprovandoSimuladoId.set(null);
-      },
-    });
+    this.http
+      .post<{ ok: boolean }>(`${API_URL}/admin/simulated-payments/${p.paymentId}/approve`, {
+        operatorTransactionRef: digits,
+      })
+      .subscribe({
+        next: () => {
+          this.simulatedPending.update((list) => list.filter((x) => x.paymentId !== p.paymentId));
+          this.allLista.update((list) => list.filter((x) => x.id !== p.userId));
+          this.aprovandoSimuladoId.set(null);
+          this.fecharAprovarSimulado();
+          this.adminStats.loadStats();
+        },
+        error: (err) => {
+          this.approveSimModalError.set(err?.error?.message || 'Erro ao aprovar.');
+          this.aprovandoSimuladoId.set(null);
+        },
+      });
+  }
+
+  shortPaymentId(paymentId: string): string {
+    const clean = paymentId.replace(/-/g, '').toUpperCase();
+    return clean.length >= 8 ? clean.slice(0, 8) : clean;
   }
 
   carregar(): void {

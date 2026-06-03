@@ -17,6 +17,11 @@ export class SatisfactionPromptService {
   private readonly injector = inject(Injector);
   private readonly feedback = inject(UserFeedbackService);
   private readonly auth = inject(AuthService);
+  /**
+   * Feature flag temporária: questionário de satisfação desactivado.
+   * Para reactivar, mudar para `true`.
+   */
+  private readonly enabled = false;
 
   readonly visible = signal(false);
   readonly mode = signal<SatisfactionPromptMode>('login');
@@ -40,6 +45,7 @@ export class SatisfactionPromptService {
 
   /** Called when the post-login chain may show the survey. */
   async tryShowAfterLoginChain(): Promise<boolean> {
+    if (!this.enabled) return false;
     if (this.auth.isAdmin()) return false;
     if (this.wasSkipped(SKIP_LOGIN_KEY)) return false;
     try {
@@ -55,6 +61,7 @@ export class SatisfactionPromptService {
 
   /** Blocks until the user submits, skips, or no prompt is needed. */
   async runBeforeLogout(): Promise<void> {
+    if (!this.enabled) return;
     if (this.auth.isAdmin()) return;
     if (this.wasSkipped(SKIP_LOGOUT_KEY)) return;
     try {

@@ -2,7 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AuthService, normalizeMzPhoneDigits } from '../../services/auth.service';
+import { AuthService, LicenseStatusResponse, normalizeMzPhoneDigits } from '../../services/auth.service';
 import { PROVINCES } from '../../models/user.model';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { IconName } from '../../ui/icon/icon-names';
@@ -28,6 +28,7 @@ export class ProfileComponent implements OnInit {
   savingPhone = false;
   readonly provinces = PROVINCES;
   activeTab = signal<'dados' | 'contacto' | 'senha'>('dados');
+  licenseStatus = signal<LicenseStatusResponse | null>(null);
 
   readonly iconPhone: IconName = 'phone';
   readonly iconLock: IconName = 'lock';
@@ -67,6 +68,9 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit(): void {
     void this.auth.refreshProfile().then(() => this.fillProfileForm());
+    if (!this.auth.isAdmin()) {
+      void this.auth.getLicenseStatus().then((s) => this.licenseStatus.set(s));
+    }
   }
 
   formatAccountCreatedAt(iso?: string): string {

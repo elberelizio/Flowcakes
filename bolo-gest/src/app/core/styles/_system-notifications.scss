@@ -77,6 +77,17 @@
   animation: orderAlertsFadeIn 0.2s ease-out;
 }
 
+/* Boas-vindas: bloqueia interação com a app por baixo */
+.login-popup-overlay--locked {
+  z-index: 10000;
+  cursor: default;
+  touch-action: none;
+}
+
+body.login-popup-scroll-lock {
+  overflow: hidden;
+}
+
 .sys-aviso-popup {
   width: 100%;
   max-width: 26rem;
@@ -219,39 +230,216 @@
 }
 
 .welcome-onboarding-popup {
-  max-width: 28rem;
+  position: relative;
+  width: 100%;
+  max-width: 32rem;
+  max-height: min(92vh, 44rem);
+  overflow: hidden auto;
+  padding: 1.35rem 1.35rem 1.2rem;
+  border-radius: 20px;
+  background: linear-gradient(165deg, #ffffff 0%, #f8fafc 42%, #f0fdfa 100%);
+  border: 1px solid rgba(153, 246, 228, 0.65);
+  box-shadow:
+    0 28px 64px rgba(15, 118, 110, 0.14),
+    0 12px 32px rgba(15, 23, 42, 0.1);
+  animation: orderAlertsSlideIn 0.3s ease-out;
 
-  .popup-header app-icon {
-    color: #0f766e;
+  > :not(.welcome-onboarding-fireworks) {
+    position: relative;
+    z-index: 1;
   }
 }
 
-.welcome-onboarding-list {
-  list-style: none;
-  margin: 0 0 0.75rem;
-  padding: 0;
+.welcome-onboarding-popup__hero {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.welcome-onboarding-popup__badge {
+  display: inline-block;
+  margin-bottom: 0.65rem;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0f766e;
+  background: #ccfbf1;
+  border: 1px solid #99f6e4;
+}
+
+.welcome-onboarding-popup__brand {
   display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
+  justify-content: center;
+  margin-bottom: 0.55rem;
 
-  li {
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-    padding: 0.55rem 0.65rem;
-    border-radius: 10px;
-    background: #f0fdfa;
-    border: 1px solid #ccfbf1;
+  img {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(15, 118, 110, 0.18);
+  }
+}
 
-    strong {
-      font-size: 0.82rem;
-      color: #0f766e;
-    }
+.welcome-onboarding-popup__title {
+  margin: 0 0 0.45rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #0f172a;
+}
 
-    span {
-      font-size: 0.78rem;
-      color: #334155;
-      line-height: 1.35;
-    }
+.welcome-onboarding-popup__lead {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.welcome-onboarding-features {
+  list-style: none;
+  margin: 0 0 0.85rem;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+
+  @media (min-width: 480px) {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+}
+
+.welcome-onboarding-features__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.65rem 0.7rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #e2e8f0;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  strong {
+    display: block;
+    margin-bottom: 0.12rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #0f766e;
+  }
+
+  span {
+    font-size: 0.76rem;
+    line-height: 1.4;
+    color: #64748b;
+  }
+}
+
+.welcome-onboarding-features__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #f0fdfa, #ccfbf1);
+  color: #0f766e;
+
+  app-icon,
+  ::ng-deep svg {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+}
+
+.welcome-onboarding-popup__hint {
+  margin: 0 0 1rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  text-align: center;
+  color: #64748b;
+}
+
+.welcome-onboarding-popup__actions {
+  display: flex;
+  justify-content: stretch;
+}
+
+.welcome-onboarding-popup__cta {
+  width: 100%;
+  padding: 0.78rem 1.1rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 55%, #14b8a6 100%);
+  box-shadow: 0 10px 24px rgba(13, 148, 136, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+
+  &:hover {
+    filter: brightness(1.04);
+    box-shadow: 0 12px 28px rgba(13, 148, 136, 0.42);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #5eead4;
+    outline-offset: 2px;
+  }
+}
+
+/* ── Fireworks (primeiro login) ── */
+.welcome-onboarding-fireworks {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.welcome-onboarding-fireworks__particle {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  width: var(--size, 4px);
+  height: var(--size, 4px);
+  border-radius: 9999px;
+  background: hsla(var(--hue, 45), 95%, 60%, 0.95);
+  box-shadow:
+    0 0 18px hsla(var(--hue, 45), 95%, 62%, 0.55),
+    0 0 5px hsla(var(--hue, 45), 95%, 62%, 0.35);
+  transform: translate(-50%, -50%) scale(0.2);
+  opacity: 0;
+  animation: welcomeFireworkParticle 1.35s ease-out both;
+  animation-delay: var(--delay, 0s);
+}
+
+@keyframes welcomeFireworkParticle {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2);
+  }
+  15% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, -60px))) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, -60px))) scale(0.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-onboarding-fireworks__particle {
+    animation: none;
+    opacity: 0;
   }
 }

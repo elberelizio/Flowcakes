@@ -47,6 +47,10 @@
   padding: 6.5rem 1.25rem 3.5rem;
 }
 
+.plan-page__main--single {
+  max-width: 32rem;
+}
+
 @media (min-width: 768px) {
   .plan-page__main {
     padding: 7.5rem 2rem 4rem;
@@ -119,12 +123,31 @@
   gap: 1.25rem;
 }
 
+.plan-page__grid--single {
+  max-width: 28rem;
+  margin-inline: auto;
+}
+
 @media (min-width: 720px) {
-  .plan-page__grid {
+  .plan-page__grid:not(.plan-page__grid--single) {
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
     align-items: stretch;
   }
+}
+
+.plan-card--featured {
+  padding: 1.75rem 1.5rem 1.5rem;
+  box-shadow:
+    0 0 0 1px rgba(13, 148, 136, 0.1),
+    0 20px 48px -16px rgba(13, 148, 136, 0.28);
+}
+
+.plan-card--featured:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 0 0 1px rgba(13, 148, 136, 0.15),
+    0 24px 56px -16px rgba(13, 148, 136, 0.35);
 }
 
 .plan-card {
@@ -149,6 +172,14 @@
 .plan-card--pro {
   border: 2px solid rgba(13, 148, 136, 0.35);
   background: linear-gradient(165deg, #fff 0%, #f0fdfa 100%);
+}
+
+.plan-card--ui-hidden {
+  display: none !important;
+}
+
+.plan-card--locked .plan-card__btn:disabled {
+  cursor: not-allowed;
 }
 
 .plan-card__badge {
@@ -308,6 +339,65 @@
 
 .plan-card__btn--primary:hover {
   filter: brightness(1.05);
+}
+
+.plan-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  width: 100%;
+  min-height: 3.25rem;
+  margin-top: auto;
+  padding: 0.9rem 1.5rem;
+  border: none;
+  border-radius: 0.875rem;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 45%, #0f766e 100%);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 8px 24px -4px rgba(13, 148, 136, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+
+  i {
+    font-size: 0.9rem;
+    transition: transform 0.25s ease;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+    box-shadow:
+      0 4px 8px rgba(15, 23, 42, 0.08),
+      0 14px 32px -6px rgba(13, 148, 136, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25);
+
+    i {
+      transform: translateX(3px);
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+    filter: brightness(0.98);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 3px #fff,
+      0 0 0 5px rgba(13, 148, 136, 0.45),
+      0 8px 24px -4px rgba(13, 148, 136, 0.4);
+  }
 }
 
 .plan-page__footer-note {

@@ -1,43 +1,116 @@
-<div class="notif-page">
-  <header class="notif-header">
-    <a routerLink="/dashboard" class="notif-back">← Dashboard</a>
-    <div class="notif-header__row">
-      <div>
-        <h1>Notificações</h1>
-        <p class="notif-sub">Avisos de manutenção e comunicados da plataforma</p>
-      </div>
-      @if (unreadCount() > 0) {
-        <span class="notif-unread-badge">{{ unreadCount() }} por ler</span>
-      }
+<div class="comunicados-page">
+  <header class="page-hero">
+    <a routerLink="/dashboard" class="btn-back">← Voltar ao dashboard</a>
+    <div class="page-hero__main">
+      <p class="page-hero__eyebrow">Plataforma</p>
+      <h1>Comunicado</h1>
+      <p class="page-hero__sub">
+        Avisos de manutenção e mensagens da equipa Chef Control. Os comunicados expiram automaticamente após o período indicado.
+      </p>
     </div>
   </header>
 
-  @if (systemNotifications.loading()) {
-    <p class="notif-empty">A carregar…</p>
-  } @else if (items().length === 0) {
-    <section class="notif-card notif-card--empty">
-      <p>Não há notificações activas.</p>
-      <p class="notif-empty-hint">Os avisos de manutenção desaparecem automaticamente após o período indicado.</p>
-    </section>
-  } @else {
-    <ul class="notif-list">
-      @for (n of items(); track n.id) {
-        <li class="notif-item" [class.notif-item--read]="n.dismissed" [attr.data-category]="n.category">
-          <div class="notif-item__top">
-            <span class="notif-item__badge">{{ phaseLabel(n) }}</span>
-            @if (n.category === 'maintenance' && n.maintenanceEndAt) {
-              <span class="notif-item__until">Até {{ formatDate(n.maintenanceEndAt) }}</span>
-            }
-          </div>
-          <h2 class="notif-item__title">{{ n.title }}</h2>
-          <p class="notif-item__msg" [innerHTML]="systemNotifications.messageHtml(n)"></p>
-          @if (!n.dismissed) {
-            <button type="button" class="notif-item__btn" (click)="dismiss(n.id)">Marcar como lida</button>
-          } @else {
-            <span class="notif-item__read-label">Lida</span>
-          }
-        </li>
+  <section class="kpi-strip" aria-label="Resumo de comunicados">
+    <article class="kpi-card">
+      <span class="kpi-card__icon" aria-hidden="true"><i class="fa-solid fa-bullhorn"></i></span>
+      <div>
+        <span class="kpi-card__label">Activos</span>
+        <p class="kpi-card__value">{{ items().length }}</p>
+      </div>
+    </article>
+    <article class="kpi-card kpi-card--unread">
+      <span class="kpi-card__icon" aria-hidden="true"><i class="fa-solid fa-envelope"></i></span>
+      <div>
+        <span class="kpi-card__label">Por ler</span>
+        <p class="kpi-card__value">{{ unreadCount() }}</p>
+      </div>
+    </article>
+    <article class="kpi-card kpi-card--read">
+      <span class="kpi-card__icon" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+      <div>
+        <span class="kpi-card__label">Lidos</span>
+        <p class="kpi-card__value">{{ readCount() }}</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="panel card">
+    <div class="panel-head">
+      <span class="panel-icon" aria-hidden="true"><i class="fa-solid fa-inbox"></i></span>
+      <div class="panel-head__text">
+        <h2>Os seus comunicados</h2>
+        <p class="panel-desc">Mensagens recentes da plataforma, por ordem de publicação</p>
+      </div>
+      @if (items().length > 0) {
+        <span class="panel-count">{{ items().length }}</span>
       }
-    </ul>
-  }
+    </div>
+
+    @if (systemNotifications.loading()) {
+      <div class="loading-state" role="status">
+        <span class="loading-state__spinner" aria-hidden="true"></span>
+        <p>A carregar comunicados…</p>
+      </div>
+    } @else if (items().length === 0) {
+      <div class="empty-state">
+        <span class="empty-state__icon" aria-hidden="true"><i class="fa-solid fa-inbox"></i></span>
+        <p class="empty-state__title">Não há comunicados activos</p>
+        <p class="empty-state__text">
+          Quando houver manutenção ou novidades, aparecerão aqui e no ícone do menu superior.
+        </p>
+        <p class="empty-state__hint">
+          Os avisos de manutenção desaparecem automaticamente após o período indicado.
+        </p>
+      </div>
+    } @else {
+      <ul class="comunicado-list">
+        @for (n of items(); track n.id) {
+          <li
+            class="comunicado-card"
+            [class.comunicado-card--read]="n.dismissed"
+            [attr.data-category]="n.category || 'announcement'"
+          >
+            <div class="comunicado-card__head">
+              <span class="comunicado-card__icon" aria-hidden="true">
+                <i class="fa-solid" [class]="categoryIcon(n)"></i>
+              </span>
+              <div class="comunicado-card__meta">
+                <span class="comunicado-card__badge">{{ phaseLabel(n) }}</span>
+                @if (n.category === 'maintenance' && n.maintenanceEndAt) {
+                  <span class="comunicado-card__until">Até {{ formatDate(n.maintenanceEndAt) }}</span>
+                }
+              </div>
+              @if (!n.dismissed) {
+                <span class="comunicado-card__dot" aria-label="Por ler"></span>
+              }
+            </div>
+
+            <h3 class="comunicado-card__title">{{ n.title }}</h3>
+            <div class="comunicado-card__msg" [innerHTML]="systemNotifications.messageHtml(n)"></div>
+
+            @if (n.category === 'maintenance' && maintenancePeriod(n)) {
+              <p class="comunicado-card__period">
+                <i class="fa-solid fa-calendar-range" aria-hidden="true"></i>
+                {{ maintenancePeriod(n) }}
+              </p>
+            }
+
+            <div class="comunicado-card__footer">
+              @if (!n.dismissed) {
+                <button type="button" class="btn-mark-read" (click)="dismiss(n.id)">
+                  <i class="fa-solid fa-check" aria-hidden="true"></i>
+                  Marcar como lido
+                </button>
+              } @else {
+                <span class="comunicado-card__read-label">
+                  <i class="fa-solid fa-check-double" aria-hidden="true"></i>
+                  Lido
+                </span>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </section>
 </div>

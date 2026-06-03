@@ -9,7 +9,7 @@
   padding: 1.25rem 1.35rem;
   border-radius: 1rem;
   border: 1px solid var(--border);
-  background: linear-gradient(120deg, #eff6ff 0%, #dbeafe 24%, var(--card-bg, #fff) 62%);
+  background: linear-gradient(120deg, var(--primary-light) 0%, #99f6e4 22%, var(--card-bg, #fff) 62%);
   box-shadow: 0 8px 26px rgba(15, 23, 42, 0.06);
 
   .btn-back {
@@ -32,7 +32,8 @@
     &:hover {
       background: var(--secondary);
       color: var(--text);
-      border-color: rgba(37, 99, 235, 0.3);
+      border-color: rgba(15, 118, 110, 0.35);
+      color: var(--primary-dark);
     }
   }
 
@@ -46,7 +47,7 @@
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #1d4ed8;
+    color: var(--primary-dark);
   }
 
   h1 {
@@ -111,9 +112,9 @@
   }
 
   &--week .profit-card__icon {
-    background: #ede9fe;
-    color: #6d28d9;
-    border: 1px solid #ddd6fe;
+    background: #dbeafe;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
   }
 
   &--month .profit-card__icon {
@@ -156,7 +157,7 @@
   }
 
   &--week .profit-card__value {
-    color: #6d28d9;
+    color: #1d4ed8;
   }
 
   &__meta {
@@ -274,7 +275,7 @@
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.75rem;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: #fff;
   font-size: 1rem;
   flex-shrink: 0;
@@ -370,7 +371,109 @@
   }
 }
 
+.export-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.15rem;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+
+  &__label {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  &__hint {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+.export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.65rem;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.15s;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  &--pdf {
+    color: #b91c1c;
+    border-color: #fecaca;
+
+    &:hover:not(:disabled) {
+      background: #fef2f2;
+    }
+  }
+
+  &--word {
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+
+    &:hover:not(:disabled) {
+      background: #eff6ff;
+    }
+  }
+
+  &--excel {
+    color: #047857;
+    border-color: #a7f3d0;
+
+    &:hover:not(:disabled) {
+      background: #ecfdf5;
+    }
+  }
+}
+
 @media (max-width: 639px) {
+  .export-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .export-toolbar__actions {
+    width: 100%;
+  }
+
+  .export-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
   .profit-kpis {
     grid-template-columns: 1fr;
   }

@@ -218,13 +218,20 @@
           }
 
           <!-- Botões -->
-          <div class="space-y-3 pt-4 animate-fade-in-up" [style.--delay]="'400ms'" style="animation-delay: 400ms;">
-            <button 
-              type="submit" 
-              class="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 text-white font-bold hover:from-brand-700 hover:to-brand-800 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95" 
+          <div class="register-actions space-y-3 pt-4 animate-fade-in-up" [style.--delay]="'400ms'" style="animation-delay: 400ms;">
+            <button
+              type="submit"
+              class="register-submit-btn"
+              [class.register-submit-btn--loading]="loading"
               [disabled]="loading || form.invalid"
             >
-              <i class="fa-solid fa-check-circle mr-2"></i>{{ loading ? 'A carregar...' : 'Criar conta' }}
+              @if (loading) {
+                <span class="register-submit-btn__spinner" aria-hidden="true"></span>
+                <span>A criar conta…</span>
+              } @else {
+                <span>Criar conta</span>
+                <i class="fa-solid fa-arrow-right register-submit-btn__icon" aria-hidden="true"></i>
+              }
             </button>
             <a 
               routerLink="/login" 

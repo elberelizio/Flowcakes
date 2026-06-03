@@ -244,6 +244,22 @@
   }
 }
 
+.nav-item--comunicado-pending {
+  .nav-label {
+    color: #f87171;
+    font-weight: 700;
+  }
+
+  app-icon {
+    color: #f87171;
+  }
+
+  &:not(.active):hover .nav-label,
+  &:not(.active):hover app-icon {
+    color: #fca5a5;
+  }
+}
+
 .sidebar-license {
   padding: 0.9rem 1rem;
   margin: 0.5rem 0.5rem 0;

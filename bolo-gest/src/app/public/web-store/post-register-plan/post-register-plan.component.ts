@@ -24,6 +24,11 @@ export class PostRegisterPlanComponent implements OnInit {
   phoneDigits = '';
   fromRegister = false;
   readonly progressStep = 2 as const;
+  /**
+   * Plano Pro na UI. Manter `false` até a API de pagamento (M-Pesa/e-Mola) estar activa.
+   * A lógica `choosePaidPro()` permanece no componente.
+   */
+  readonly proPlanUiEnabled = false;
 
   ngOnInit(): void {
     const q = this.route.snapshot.queryParamMap;
@@ -67,6 +72,7 @@ export class PostRegisterPlanComponent implements OnInit {
   }
 
   choosePaidPro(): void {
+    if (!this.proPlanUiEnabled) return;
     this.registrationFlow.markPaidChosen();
     const queryParams: Record<string, string> = { from: 'register' };
     if (this.phoneDigits) {

@@ -1,4 +1,11 @@
 :host {
   display: block;
   min-height: 100%;
+  perspective: 1200px;
+}
+
+.web-page-layout-stage {
+  display: block;
+  min-height: 100%;
+  transform-style: preserve-3d;
 }

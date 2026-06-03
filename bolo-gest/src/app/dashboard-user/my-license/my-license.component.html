@@ -71,16 +71,36 @@
             }
           </div>
 
-          @if (lic.status === 'pending') {
+          @if (lic.lastPaymentRejected) {
+            <div class="status-panel__rejected" role="alert">
+              <p class="status-panel__rejected-title">Pagamento não confirmado</p>
+              <p class="status-panel__rejected-text">
+                {{ lic.paymentRejectionReason || 'A transferência não foi validada. Pode enviar um novo pedido.' }}
+              </p>
+            </div>
+          }
+
+          @if (lic.status === 'pending' && !lic.lastPaymentRejected) {
             <div class="status-panel__pending">
               <div class="pending-amount">
                 <span class="pending-amount__label">Valor a pagar</span>
                 <span class="pending-amount__value">{{ lic.amount | number:'1.0-0' }} MZN</span>
               </div>
-              <p class="pending-hint">
-                <i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i>
-                Pagar via e-Mola {{ lic.eMolaPhone || '' }}
-              </p>
+              <p class="pending-hint">Transfira para um dos números Chef Control e confirme em «Pagar ou renovar».</p>
+              <ul class="pending-numbers">
+                @if (lic.mpesaPhone) {
+                  <li><strong>Vodacom (M-Pesa):</strong> {{ formatPhone(lic.mpesaPhone) }}</li>
+                }
+                @if (lic.eMolaPhone) {
+                  <li><strong>Movitel (e-Mola):</strong> {{ formatPhone(lic.eMolaPhone) }}</li>
+                }
+              </ul>
+              @if (lic.supportWhatsapp) {
+                <a class="pending-support" [href]="whatsappSupportUrl(lic.supportWhatsapp)" target="_blank" rel="noopener noreferrer">
+                  <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+                  Suporte WhatsApp
+                </a>
+              }
             </div>
           }
         </section>
@@ -95,8 +115,10 @@
         <div class="panel-head">
           <span class="panel-icon" aria-hidden="true"><i class="fa-solid fa-clock-rotate-left"></i></span>
           <div>
-            <h2 class="panel-title">Histórico de pagamentos</h2>
-            <p class="panel-desc">Recibos e transacções da sua licença</p>
+            <h2 class="panel-title">Recibos emitidos</h2>
+            <p class="panel-desc">
+              {{ payments().length }} {{ payments().length === 1 ? 'recibo registado' : 'recibos registados' }} — descarregue cada PDF
+            </p>
           </div>
         </div>
 
@@ -116,9 +138,12 @@
             <table class="history-table">
               <thead>
                 <tr>
+                  <th>N.º recibo</th>
                   <th>Data</th>
+                  <th>Estado</th>
                   <th>Valor</th>
-                  <th>Duração</th>
+                  <th>Validade</th>
+                  <th>Válida até</th>
                   <th>ID e-Mola</th>
                   <th></th>
                 </tr>
@@ -126,9 +151,14 @@
               <tbody>
                 @for (row of payments(); track row.id) {
                   <tr>
+                    <td data-label="N.º recibo" class="receipt-no">{{ receiptNumber(row) }}</td>
                     <td data-label="Data">{{ formatDate(row.createdAt) }}</td>
+                    <td data-label="Estado">
+                      <span class="payment-status payment-status--confirmed">{{ paymentStatusLabel(row) }}</span>
+                    </td>
                     <td data-label="Valor"><strong>{{ row.amount | number:'1.0-0' }}</strong> MZN</td>
-                    <td data-label="Duração">{{ row.durationMonths }} {{ row.durationMonths === 1 ? 'mês' : 'meses' }}</td>
+                    <td data-label="Validade">{{ periodLabel(row) }}</td>
+                    <td data-label="Válida até">{{ validUntilAfterPayment(row) }}</td>
                     <td data-label="ID e-Mola" class="tx-id">{{ txId(row) || '—' }}</td>
                     <td>
                       <button type="button" class="btn-recibo" (click)="downloadRecibo(row)">

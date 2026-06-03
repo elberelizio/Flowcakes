@@ -6,6 +6,7 @@ import { API_URL } from '../core/config/api.config';
 import { OrderAlertsPopupService } from './order-alerts-popup.service';
 import { LicenseExpiryPopupService } from './license-expiry-popup.service';
 import { LoginPopupOrchestratorService } from './login-popup-orchestrator.service';
+import { SatisfactionPromptService } from './satisfaction-prompt.service';
 import { AdminLoginSummaryPopupService } from '../dashboard-admin/services/admin-login-summary-popup.service';
 
 /** Só dígitos; se começar por 258, usa os 9 dígitos nacionais (para pedidos à API). */
@@ -83,11 +84,16 @@ export interface LicenseStatusResponse {
   status: string;
   amount: number;
   eMolaPhone: string;
+  mpesaPhone?: string;
+  supportWhatsapp?: string;
   licenseToken?: string;
   accountFinalized: boolean;
   validUntil?: string; // ISO date
   daysRemaining?: number;
   showLicenseExpiryWarning?: boolean;
+  lastPaymentRejected?: boolean;
+  paymentRejectionReason?: string;
+  paymentRejectedAt?: string;
 }
 
 export interface LicensePaymentRow {
@@ -95,7 +101,12 @@ export interface LicensePaymentRow {
   createdAt?: string;
   amount: number;
   durationMonths: number;
+  /** Dias de validade (durationMonths × 30). */
+  durationDays?: number;
   eMolaTransactionId: string;
+  receiptNumber?: string;
+  validUntilAfter?: string;
+  paymentStatus?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -371,6 +382,7 @@ export class AuthService {
     this.orderAlertsPopup.resetForNextLogin();
     this.licenseExpiryPopup.resetForNextLogin();
     this.injector.get(LoginPopupOrchestratorService).reset();
+    this.injector.get(SatisfactionPromptService).reset();
     this.adminLoginSummaryPopup.resetForNextLogin();
     try {
       sessionStorage.removeItem('chefcontrol_login_summary_dismissed');
@@ -535,6 +547,11 @@ export class AuthService {
     configured?: boolean;
     hint?: string;
     simulated?: boolean;
+    manualTransfer?: boolean;
+    mpesaDestinationPhone?: string;
+    emolaDestinationPhone?: string;
+    supportWhatsapp?: string;
+    licenseAmountMzn?: number;
   }> {
     return this.http
       .get<{
@@ -543,6 +560,11 @@ export class AuthService {
         configured?: boolean;
         hint?: string;
         simulated?: boolean;
+        manualTransfer?: boolean;
+        mpesaDestinationPhone?: string;
+        emolaDestinationPhone?: string;
+        supportWhatsapp?: string;
+        licenseAmountMzn?: number;
       }>(`${API_URL}/mpesa/available`)
       .toPromise()
       .then((r) => r ?? { available: false, environment: '' })
@@ -557,7 +579,8 @@ export class AuthService {
   initiateMpesaPayment(
     phone: string,
     months: number,
-    simulatedChannel: 'mpesa' | 'emola' = 'mpesa'
+    simulatedChannel: 'mpesa' | 'emola' = 'mpesa',
+    transferReference?: string
   ): Promise<{
     success: boolean;
     message: string;
@@ -572,7 +595,12 @@ export class AuthService {
         paymentId?: string;
         simulated?: boolean;
         simulatedChannel?: string;
-      }>(`${API_URL}/mpesa/pay`, { phone, months, simulatedChannel })
+      }>(`${API_URL}/mpesa/pay`, {
+        phone,
+        months,
+        simulatedChannel,
+        transferReference: transferReference?.trim() || undefined,
+      })
       .toPromise()
       .then((r) => r ?? { success: false, message: 'Sem resposta do servidor.' })
       .catch((err) => ({
@@ -582,9 +610,23 @@ export class AuthService {
   }
 
   /** Verifica estado de pagamento pendente. */
-  checkMpesaPaymentStatus(): Promise<{ hasPending: boolean; status?: string; amount?: number }> {
+  checkMpesaPaymentStatus(): Promise<{
+    hasPending: boolean;
+    hasRejected?: boolean;
+    status?: string;
+    amount?: number;
+    rejectionReason?: string;
+    rejectedAt?: string;
+  }> {
     return this.http
-      .get<{ hasPending: boolean; status?: string; amount?: number }>(`${API_URL}/mpesa/status`)
+      .get<{
+        hasPending: boolean;
+        hasRejected?: boolean;
+        status?: string;
+        amount?: number;
+        rejectionReason?: string;
+        rejectedAt?: string;
+      }>(`${API_URL}/mpesa/status`)
       .toPromise()
       .then((r) => r ?? { hasPending: false })
       .catch(() => ({ hasPending: false }));

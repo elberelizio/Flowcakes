@@ -24,7 +24,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocumentId, LegalDocument> = {
       {
         title: '1. Objeto do serviço',
         paragraphs: [
-          'O ChefControl é uma plataforma de gestão para confeiteiras e negócios de confeitaria, incluindo pedidos, stock, clientes e relatórios.',
+          'O ChefControl é uma plataforma de gestão para confeiteiras e negócios de confeitaria, incluindo encomendas, clientes, dívidas, relatórios financeiros e lembretes.',
           'A conta é pessoal e intransmissível. É proibido partilhar credenciais ou permitir acesso não autorizado a terceiros.',
         ],
       },
@@ -76,7 +76,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocumentId, LegalDocument> = {
         title: '1. Dados que recolhemos',
         paragraphs: [
           'No registo: nome, província, contacto telefónico, e-mail (opcional) e credenciais de acesso (senha armazenada de forma segura no servidor).',
-          'Durante o uso: dados de pedidos, clientes, stock e actividade necessários ao funcionamento da aplicação.',
+          'Durante o uso: dados de encomendas, clientes, pagamentos e actividade necessários ao funcionamento da aplicação.',
         ],
       },
       {

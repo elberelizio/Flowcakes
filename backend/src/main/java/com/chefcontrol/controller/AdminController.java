@@ -18,6 +18,8 @@ import com.chefcontrol.dto.RevenueByMonthDto;
 import com.chefcontrol.dto.SystemNotificationDto;
 import com.chefcontrol.dto.SystemNotificationRequest;
 import com.chefcontrol.dto.LicenseExpiringUserDto;
+import com.chefcontrol.dto.ApproveSimulatedPaymentRequest;
+import com.chefcontrol.dto.RejectSimulatedPaymentRequest;
 import com.chefcontrol.dto.SimulatedPaymentPendingDto;
 import com.chefcontrol.dto.UserFeedbackDto;
 import com.chefcontrol.service.AdminService;
@@ -159,8 +161,21 @@ public class AdminController {
     @PostMapping("/simulated-payments/{paymentId}/approve")
     public ResponseEntity<Map<String, Boolean>> approveSimulatedPayment(
             @CurrentUserId UUID adminUserId,
-            @PathVariable UUID paymentId) {
-        adminService.approveSimulatedPayment(adminUserId, paymentId);
+            @PathVariable UUID paymentId,
+            @RequestBody(required = false) ApproveSimulatedPaymentRequest body) {
+        String operatorRef = body != null && body.getOperatorTransactionRef() != null
+            ? body.getOperatorTransactionRef() : "";
+        adminService.approveSimulatedPayment(adminUserId, paymentId, operatorRef);
+        return ResponseEntity.ok(Map.of("ok", true));
+    }
+
+    @PostMapping("/simulated-payments/{paymentId}/reject")
+    public ResponseEntity<Map<String, Boolean>> rejectSimulatedPayment(
+            @CurrentUserId UUID adminUserId,
+            @PathVariable UUID paymentId,
+            @RequestBody(required = false) RejectSimulatedPaymentRequest body) {
+        String reason = body != null && body.getReason() != null ? body.getReason() : "";
+        adminService.rejectSimulatedPayment(adminUserId, paymentId, reason);
         return ResponseEntity.ok(Map.of("ok", true));
     }
 

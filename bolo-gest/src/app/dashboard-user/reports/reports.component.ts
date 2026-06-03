@@ -1,16 +1,54 @@
-import { Component, computed, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  OnInit,
+  OnDestroy,
+  AfterViewInit,
+  ViewChild,
+  ElementRef,
+  signal,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { Chart } from 'chart.js/auto';
+import { Chart, Plugin } from 'chart.js/auto';
 import { OrdersService } from '../../services/orders.service';
 import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
 import { API_URL } from '../../core/config/api.config';
+import {
+  ReportsExportService,
+  RevenueByMonthDto,
+  ReportsExportPayload,
+} from './reports-export.service';
 
-export interface RevenueByMonthDto {
-  month: string;
-  revenue: number;
-}
+const revenueBarLabelsPlugin: Plugin<'bar'> = {
+  id: 'revenueBarLabels',
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    chart.data.datasets.forEach((dataset, datasetIndex) => {
+      const meta = chart.getDatasetMeta(datasetIndex);
+      if (meta.hidden) return;
+      meta.data.forEach((element, index) => {
+        const raw = dataset.data[index];
+        const value = typeof raw === 'number' ? raw : Number(raw);
+        if (!Number.isFinite(value)) return;
+        const label = value.toLocaleString('pt-MZ', {
+          maximumFractionDigits: 0,
+        });
+        const { x, y } = element.getProps(['x', 'y'], true);
+        ctx.save();
+        ctx.font = '600 11px system-ui, sans-serif';
+        ctx.fillStyle = '#0f766e';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(label, x, y - 6);
+        ctx.restore();
+      });
+    });
+  },
+};
 
 @Component({
   selector: 'app-reports',
@@ -22,11 +60,19 @@ export interface RevenueByMonthDto {
 export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('revenueChart') chartCanvas!: ElementRef<HTMLCanvasElement>;
 
+  private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
+  private readonly reportExport = inject(ReportsExportService);
+  private readonly notification = inject(NotificationService);
+
+  readonly orders = inject(OrdersService);
+
   today = new Date();
   isAdmin = false;
   revenueByMonth = signal<RevenueByMonthDto[]>([]);
   chartLoading = signal(true);
   chartError = signal('');
+  exportBusy = signal(false);
   private chart: Chart | null = null;
 
   dayOrders = computed(() => this.orders.ordersOfDay(this.today));
@@ -40,18 +86,15 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
   totalOrders = computed(() => this.orders.allOrders().length);
   pendingCount = computed(() => this.orders.ordersWithPendingBalance().length);
 
-  backLink = computed(() => '/dashboard');
-
-  constructor(
-    public orders: OrdersService,
-    private http: HttpClient,
-    private auth: AuthService
-  ) {
-    this.isAdmin = this.auth.isAdmin();
-  }
+  canExport = computed(
+    () => !this.chartLoading() && (this.revenueByMonth().length > 0 || !this.isAdmin)
+  );
 
   ngOnInit(): void {
-    const url = this.isAdmin ? `${API_URL}/admin/revenue-by-month` : `${API_URL}/orders/revenue-by-month`;
+    this.isAdmin = this.auth.isAdmin();
+    const url = this.isAdmin
+      ? `${API_URL}/admin/revenue-by-month`
+      : `${API_URL}/orders/revenue-by-month`;
     this.chartLoading.set(true);
     this.chartError.set('');
     this.http.get<RevenueByMonthDto[]>(url).subscribe({
@@ -79,6 +122,56 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
       this.chart.destroy();
       this.chart = null;
     }
+  }
+
+  exportPdf(): void {
+    this.runExport('PDF', () => this.reportExport.exportPdf(this.buildExportPayload()));
+  }
+
+  exportWord(): void {
+    this.runExport('Word', () => this.reportExport.exportWord(this.buildExportPayload()));
+  }
+
+  exportExcel(): void {
+    this.runExport('Excel', () => this.reportExport.exportExcel(this.buildExportPayload()));
+  }
+
+  private runExport(formatLabel: string, action: () => void): void {
+    if (this.exportBusy()) return;
+    this.exportBusy.set(true);
+    try {
+      action();
+      this.notification.showSuccess(`Relatório exportado (${formatLabel}).`);
+    } catch {
+      this.notification.showError('Não foi possível exportar o relatório.');
+    } finally {
+      setTimeout(() => this.exportBusy.set(false), 400);
+    }
+  }
+
+  private buildExportPayload(): ReportsExportPayload {
+    const fmt = (n: number) =>
+      n.toLocaleString('pt-MZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' MZN';
+    const orderLabel = (n: number) => `${n} ${n === 1 ? 'pedido' : 'pedidos'}`;
+
+    const summary: ReportsExportPayload['summary'] = [];
+    if (!this.isAdmin) {
+      summary.push(
+        { label: 'Lucro do dia', value: fmt(this.profitDay()), detail: orderLabel(this.dayOrders().length) },
+        { label: 'Lucro da semana', value: fmt(this.profitWeek()), detail: orderLabel(this.weekOrders().length) },
+        { label: 'Lucro do mês', value: fmt(this.profitMonth()), detail: orderLabel(this.monthOrders().length) },
+        { label: 'Total de pedidos', value: String(this.totalOrders()) },
+        { label: 'Com saldo pendente', value: String(this.pendingCount()) }
+      );
+    }
+
+    return {
+      isAdmin: this.isAdmin,
+      userName: this.auth.getDisplayName(),
+      extractedAt: new Date(),
+      summary,
+      revenueByMonth: [...this.revenueByMonth()],
+    };
   }
 
   private buildOrUpdateChart(): void {
@@ -111,22 +204,28 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
           },
         ],
       },
+      plugins: [revenueBarLabelsPlugin],
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        layout: {
+          padding: { top: 28 },
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: (ctx) => `${Number(ctx.raw).toFixed(2)} MZN`,
+              label: (ctx) => `${Number(ctx.raw).toLocaleString('pt-MZ', { minimumFractionDigits: 2 })} MZN`,
             },
           },
         },
         scales: {
           y: {
             beginAtZero: true,
+            grace: '10%',
             ticks: {
-              callback: (v) => (typeof v === 'number' ? v.toFixed(0) + ' MZN' : v),
+              callback: (v) =>
+                typeof v === 'number' ? v.toLocaleString('pt-MZ', { maximumFractionDigits: 0 }) : v,
             },
           },
         },

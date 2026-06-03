@@ -33,6 +33,19 @@
           </div>
         </div>
 
+        @if (licenseStatus(); as lic) {
+          @if (lic.lastPaymentRejected) {
+            <div class="payment-rejection-callout card" role="alert">
+              <app-icon [name]="iconAlert" class="payment-rejection-callout__icon" />
+              <div>
+                <strong>Pagamento não confirmado</strong>
+                <p>{{ lic.paymentRejectionReason || 'O administrador não confirmou a transferência. Pode tentar novamente em «Minha licença».' }}</p>
+                <a routerLink="/license-payment" class="payment-rejection-callout__link">Ir para pagamento</a>
+              </div>
+            </div>
+          }
+        }
+
         <div class="info-callout card">
           <app-icon [name]="iconAlert" class="info-callout__icon" />
           <p>

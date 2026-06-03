@@ -109,9 +109,14 @@
               <span class="nav-badge">{{ reminderCount() }}</span>
             }
           </a>
-          <a routerLink="/notifications" routerLinkActive="active" class="nav-item">
+          <a
+            routerLink="/notifications"
+            routerLinkActive="active"
+            class="nav-item"
+            [class.nav-item--comunicado-pending]="systemNotifications.unreadCount() > 0"
+          >
             <app-icon name="alert-circle" />
-            <span class="nav-label">Notificações</span>
+            <span class="nav-label">Comunicado</span>
             @if (systemNotifications.unreadCount() > 0) {
               <span class="nav-badge nav-badge--alert">{{ systemNotifications.unreadCount() }}</span>
             }
@@ -236,7 +241,7 @@
             </button>
           </div>
           <div class="navbar-dropdown-wrap">
-            <button type="button" class="navbar-icon-btn" (click)="toggleNotifications($event); $event.stopPropagation()" aria-label="Notificações" [class.active]="notificationsOpen()">
+            <button type="button" class="navbar-icon-btn" (click)="toggleNotifications($event); $event.stopPropagation()" aria-label="Comunicados" [class.active]="notificationsOpen()">
               <app-icon name="bell" />
               @if (systemNotifications.unreadCount() > 0) {
                 <span class="navbar-icon-badge navbar-icon-badge--alert">{{ systemNotifications.unreadCount() }}</span>
@@ -249,7 +254,7 @@
                 @if (systemNotifications.loading()) {
                   <div class="dropdown-empty">A carregar…</div>
                 } @else if (systemNotifications.items().length === 0) {
-                  <div class="dropdown-empty">Nenhuma notificação.</div>
+                  <div class="dropdown-empty">Nenhum comunicado activo.</div>
                 } @else {
                   <ul class="sys-notif-list">
                     @for (n of systemNotifications.items(); track n.id) {
@@ -272,7 +277,7 @@
                 }
                 @if (!auth.isAdmin()) {
                   <a routerLink="/notifications" class="sys-notif-dropdown-link" (click)="closeNavDropdowns()">
-                    Ver todas as notificações
+                    Ver todos os comunicados
                   </a>
                 }
               </div>
@@ -357,34 +362,73 @@
   }
 
   @if (loginPopupOrchestrator.activeStep() === 'welcome' && !auth.isAdmin()) {
-    <div class="login-popup-overlay" role="dialog" aria-modal="true" aria-label="Boas-vindas">
-      <div class="order-alerts-popup welcome-onboarding-popup">
-        <div class="popup-header">
-          <app-icon name="user" />
-          <h3>Bem-vindo ao Chef Control</h3>
-          <p class="popup-subtitle">Resumo rápido do que pode fazer na plataforma:</p>
+    <div
+      class="login-popup-overlay login-popup-overlay--locked"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="welcome-onboarding-title"
+      (click)="onWelcomeOverlayClick($event)"
+      (mousedown)="onWelcomeOverlayClick($event)">
+      <div class="welcome-onboarding-popup" (click)="$event.stopPropagation()" (mousedown)="$event.stopPropagation()">
+        <div class="welcome-onboarding-fireworks" aria-hidden="true">
+          <span class="welcome-onboarding-fireworks__particle" style="--dx: -70px; --dy: -120px; --delay: 0.00s; --hue: 48; --size: 6px"></span>
+          <span class="welcome-onboarding-fireworks__particle" style="--dx: 40px; --dy: -110px; --delay: 0.05s; --hue: 35; --size: 5px"></span>
+          <span class="welcome-onboarding-fireworks__particle" style="--dx: 90px; --dy: -40px; --delay: 0.10s; --hue: 12; --size: 5px"></span>
+          <span class="welcome-onboarding-fireworks__particle" style="--dx: 65px; --dy: 30px; --delay: 0.15s; --hue: 190; --size: 4px"></span>
+          <span class="welcome-onboarding-fireworks__particle" style="--dx: 10px; --dy: 95px; --delay: 0.20s; --hue: 150; --size: 5px"></span>
+          <span class="welcome-onboarding-fireworks__particle" style="--dx: -40px; --dy: 80px; --delay: 0.25s; --hue: 170; --size: 4px"></span>
+          <span class="welcome-onboarding-fireworks__particle" style="--dx: -90px; --dy: 25px; --delay: 0.30s; --hue: 300; --size: 4px"></span>
+          <span class="welcome-onboarding-fireworks__particle" style="--dx: -120px; --dy: -10px; --delay: 0.35s; --hue: 210; --size: 4px"></span>
         </div>
-        <ul class="welcome-onboarding-list">
-          <li>
-            <strong>Encomendas</strong>
-            <span>Registe pedidos, valores, entregas e marque como entregues ou fechados.</span>
+
+        <header class="welcome-onboarding-popup__hero">
+          <span class="welcome-onboarding-popup__badge">Primeiro acesso</span>
+          <div class="welcome-onboarding-popup__brand" aria-hidden="true">
+            <img src="/logotipo.png" alt="" width="48" height="48" decoding="async" />
+          </div>
+          <h2 id="welcome-onboarding-title" class="welcome-onboarding-popup__title">Bem-vindo ao Chef Control</h2>
+          <p class="welcome-onboarding-popup__lead">
+            Em poucos cliques, organize encomendas, calcule o lucro, controle dívidas e mantenha lembretes — tudo em MZN.
+          </p>
+        </header>
+
+        <ul class="welcome-onboarding-features">
+          <li class="welcome-onboarding-features__item">
+            <span class="welcome-onboarding-features__icon" aria-hidden="true"><app-icon name="package" /></span>
+            <div>
+              <strong>Encomendas</strong>
+              <span>Registe pedidos, valores e entregas; marque como entregues ou fechados.</span>
+            </div>
           </li>
-          <li>
-            <strong>Lembretes</strong>
-            <span>Receba avisos antes das datas importantes dos seus clientes.</span>
+          <li class="welcome-onboarding-features__item">
+            <span class="welcome-onboarding-features__icon" aria-hidden="true"><app-icon name="bell" /></span>
+            <div>
+              <strong>Lembretes</strong>
+              <span>Avisos antes das datas importantes dos seus clientes.</span>
+            </div>
           </li>
-          <li>
-            <strong>Clientes e dívidas</strong>
-            <span>Consulte contactos, saldos em aberto e despesas extras da confeitaria.</span>
+          <li class="welcome-onboarding-features__item">
+            <span class="welcome-onboarding-features__icon" aria-hidden="true"><app-icon name="wallet" /></span>
+            <div>
+              <strong>Clientes e dívidas</strong>
+              <span>Contactos, saldos em aberto e despesas extras da confeitaria.</span>
+            </div>
           </li>
-          <li>
-            <strong>Dashboard</strong>
-            <span>Veja o resumo financeiro e o calendário das próximas entregas.</span>
+          <li class="welcome-onboarding-features__item">
+            <span class="welcome-onboarding-features__icon" aria-hidden="true"><app-icon name="dashboard" /></span>
+            <div>
+              <strong>Dashboard</strong>
+              <span>Resumo financeiro e calendário das próximas entregas.</span>
+            </div>
           </li>
         </ul>
-        <p class="popup-advice">Pode explorar o menu lateral — comece por «Encomendas» ou «Dashboard».</p>
-        <div class="popup-actions">
-          <button type="button" class="btn btn-primary" (click)="onWelcomeOnboardingConfirm()">Começar a usar</button>
+
+        <p class="welcome-onboarding-popup__hint">Use o menu lateral — comece por «Encomendas» ou «Dashboard».</p>
+
+        <div class="welcome-onboarding-popup__actions">
+          <button type="button" class="welcome-onboarding-popup__cta" (click)="onWelcomeOnboardingConfirm()">
+            Começar a usar
+          </button>
         </div>
       </div>
     </div>
@@ -408,7 +452,9 @@
   }
 }
 
-<app-satisfaction-survey-modal />
+@if (auth.isLoggedIn() && !auth.isAdmin() && satisfactionPrompt.visible()) {
+  <app-satisfaction-survey-modal />
+}
 
 <!-- Snackbar global para toasts em todas as páginas -->
 <app-snackbar />

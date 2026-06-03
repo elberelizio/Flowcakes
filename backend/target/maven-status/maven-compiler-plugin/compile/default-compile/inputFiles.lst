@@ -94,6 +94,7 @@ C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontro
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\SimulatedPaymentPendingDto.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\StoreSettingsDto.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\ConfirmPaymentRequest.java
+C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\FeedbackPromptStatusDto.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\mpesa\MpesaConfig.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\entity\PhoneChangeRequestEntity.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\repository\AccessLogRepository.java

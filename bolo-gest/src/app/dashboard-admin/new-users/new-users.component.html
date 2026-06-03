@@ -1,154 +1,170 @@
-<div class="gn2">
-  <header class="gn2-hero gn2-hero--stacked">
-    <div class="gn2-hero__top">
-      <a routerLink="/admin-dashboard" class="gn2-hero__back">
-        <app-icon name="chevron-left" />
-        Painel
-      </a>
-      @if (!loading()) {
-        <div class="gn2-hero__chips">
-          <span class="gn2-hero__chip gn2-hero__chip--warn">
-            <app-icon name="clock" />
-            {{ pendentes().length }} pendente(s)
-          </span>
-          @if (simulatedPending().length > 0) {
-            <span class="gn2-hero__chip gn2-hero__chip--accent">
-              <app-icon name="receipt" />
-              {{ simulatedPending().length }} simulado(s)
-            </span>
-          }
-        </div>
-      }
-    </div>
-    <div class="gn2-hero__text">
-      <p class="gn2-hero__eyebrow">Aprovações</p>
-      <h1 class="gn2__title">Novos utilizadores</h1>
-      <p class="gn2__subtitle">
-        Pagamentos <strong>simulados</strong> — aprovação com um clique. Pagamento real — ID e-Mola (18 caracteres).
-        Rejeitados podem ser aprovados depois.
-      </p>
-    </div>
+<div class="nu-page">
+  <header class="nu-hero">
+    <a routerLink="/admin-dashboard" class="nu-hero__back">
+      <app-icon name="chevron-left" />
+      Painel
+    </a>
   </header>
 
+  <div class="nu-hero__main">
+    <p class="nu-hero__eyebrow">Aprovações</p>
+    <h1 class="nu-hero__title">Novos utilizadores</h1>
+    <p class="nu-hero__sub">
+      Valide transferências M-Pesa / e-Mola e aprove registos de licença. Rejeite transferências não recebidas — o utilizador vê o motivo no perfil.
+    </p>
+  </div>
+
+  @if (!loading() || simulatedPending().length > 0) {
+    <div class="nu-kpis" aria-label="Resumo">
+      <article class="nu-kpi nu-kpi--teal">
+        <span class="nu-kpi__label">Transferências</span>
+        <strong class="nu-kpi__value">{{ simulatedPending().length }}</strong>
+      </article>
+      <article class="nu-kpi nu-kpi--amber">
+        <span class="nu-kpi__label">Registos pendentes</span>
+        <strong class="nu-kpi__value">{{ pendentes().length }}</strong>
+      </article>
+      <article class="nu-kpi nu-kpi--slate">
+        <span class="nu-kpi__label">Rejeitados</span>
+        <strong class="nu-kpi__value">{{ rejeitados().length }}</strong>
+      </article>
+    </div>
+  }
+
+  <nav class="nu-tabs" aria-label="Tipo de aprovação">
+    <button
+      type="button"
+      class="nu-tab"
+      [class.nu-tab--on]="mainTab() === 'transferencias'"
+      (click)="setMainTab('transferencias')">
+      <app-icon name="receipt" />
+      Transferências manuais
+      @if (simulatedPending().length > 0) {
+        <span class="nu-tab__badge">{{ simulatedPending().length }}</span>
+      }
+    </button>
+    <button
+      type="button"
+      class="nu-tab"
+      [class.nu-tab--on]="mainTab() === 'registos'"
+      (click)="setMainTab('registos')">
+      <app-icon name="user" />
+      Registos de licença
+      @if (pendentes().length > 0) {
+        <span class="nu-tab__badge">{{ pendentes().length }}</span>
+      }
+    </button>
+  </nav>
+
   @if (simulatedError()) {
-    <div class="gn2-alert" role="alert">
+    <div class="nu-alert" role="alert">
       <app-icon name="alert-circle" />
       <span>{{ simulatedError() }}</span>
     </div>
   }
 
-  @if (simulatedLoading()) {
-    <div class="gn2-inline-loading">
-      <span class="gn2-spinner" aria-hidden="true"></span>
-      A carregar pedidos simulados…
-    </div>
-  } @else if (simulatedPending().length > 0) {
-    <section class="gn2-card gn2-card--simulated" aria-labelledby="simulated-title">
-      <header class="gn2-card__head">
-        <div class="gn2-form-icon" aria-hidden="true">
-          <app-icon name="receipt" />
-        </div>
-        <div>
-          <h2 id="simulated-title">Pagamentos simulados pendentes</h2>
-          <p>Sem cobrança real — aprovar activa a licença imediatamente</p>
-        </div>
+  @if (mainTab() === 'transferencias') {
+    <section class="nu-section" aria-labelledby="transfer-title">
+      <header class="nu-section__head">
+        <h2 id="transfer-title">Pagamentos por transferência</h2>
+        <p>Confirme se o valor chegou à conta Chef Control ou rejeite com motivo (visível no perfil do cliente).</p>
       </header>
-      <div class="nu-grid">
-        @for (p of simulatedPending(); track p.paymentId) {
-          <article class="nu-user-card nu-user-card--sim">
-            <div class="nu-user-card__header">
-              <span class="nu-avatar nu-avatar--sim">{{ initials(p.userFullName) }}</span>
-              <div class="nu-user-card__identity">
-                <h3>{{ p.userFullName }}</h3>
-                <p><app-icon name="phone" /> {{ p.userPhone }}</p>
+
+      @if (simulatedLoading()) {
+        <div class="nu-empty">
+          <span class="nu-spinner" aria-hidden="true"></span>
+          <p>A carregar transferências…</p>
+        </div>
+      } @else if (simulatedPending().length === 0) {
+        <div class="nu-empty nu-empty--ok">
+          <app-icon name="check-circle" />
+          <p class="nu-empty__title">Nenhuma transferência pendente</p>
+          <p class="nu-empty__desc">Novos pedidos aparecem aqui quando o cliente confirmar o envio.</p>
+        </div>
+      } @else {
+        <div class="nu-grid">
+          @for (p of simulatedPending(); track p.paymentId) {
+            <article class="nu-card nu-card--transfer">
+              <div class="nu-card__top">
+                <span class="nu-avatar">{{ initials(p.userFullName) }}</span>
+                <div class="nu-card__who">
+                  <h3>{{ p.userFullName }}</h3>
+                  <p>{{ p.userPhone }}</p>
+                </div>
+                <span class="nu-pill nu-pill--pending">Aguarda validação</span>
               </div>
-              <span class="nu-badge nu-badge--sim">Simulado</span>
-            </div>
-            <dl class="nu-details">
-              <div><dt>Canal</dt><dd>{{ canalSimuladoLabel(p.simulationChannel) }}</dd></div>
-              <div><dt>Valor</dt><dd class="nu-value">{{ formatAmount(p.amount) }}</dd></div>
-              <div><dt>Duração</dt><dd>{{ p.durationMonths }} {{ p.durationMonths === 1 ? 'mês' : 'meses' }}</dd></div>
-              <div><dt>Ref. (18)</dt><dd><code>{{ p.transactionRef }}</code></dd></div>
-              <div><dt>Pedido</dt><dd>{{ formatDate(p.createdAt) }}</dd></div>
-            </dl>
-            <div class="nu-user-card__actions">
-              <button
-                type="button"
-                class="gn2-btn gn2-btn--primary gn2-btn--block"
-                [disabled]="aprovandoSimuladoId() === p.paymentId"
-                (click)="aprovarSimulado(p)">
-                <app-icon name="check-circle" />
-                {{ aprovandoSimuladoId() === p.paymentId ? 'A processar…' : 'Aprovar pagamento simulado' }}
-              </button>
-            </div>
-          </article>
-        }
-      </div>
+              <dl class="nu-card__meta">
+                <div><dt>ID pedido</dt><dd><code>{{ shortPaymentId(p.paymentId) }}</code></dd></div>
+                <div><dt>Canal</dt><dd>{{ canalSimuladoLabel(p.simulationChannel) }}</dd></div>
+                <div><dt>Valor</dt><dd class="nu-card__amount">{{ formatAmount(p.amount) }}</dd></div>
+                <div><dt>Duração</dt><dd>{{ p.durationMonths }} {{ p.durationMonths === 1 ? 'mês' : 'meses' }}</dd></div>
+                <div class="nu-card__meta-row--stack">
+                  <dt>Ref. interna</dt>
+                  <dd><code class="nu-ref-internal" title="Gerada pelo Chef Control — não é o ID da operadora">{{ p.transactionRef }}</code></dd>
+                </div>
+                <div><dt>Ref. cliente</dt><dd>{{ p.userTransferReference?.trim() || '—' }}</dd></div>
+                <div><dt>Data</dt><dd>{{ formatDate(p.createdAt) }}</dd></div>
+              </dl>
+              <p class="nu-card__footnote">A ref. interna identifica o pedido no sistema. Ao confirmar, registe os últimos dígitos do ID M-Pesa / e-Mola do SMS.</p>
+              <div class="nu-card__actions nu-card__actions--split">
+                <button
+                  type="button"
+                  class="nu-btn nu-btn--primary"
+                  [disabled]="aprovandoSimuladoId() === p.paymentId || rejeitandoSimuladoId() === p.paymentId"
+                  (click)="abrirAprovarSimulado(p)">
+                  <app-icon name="check-circle" />
+                  {{ aprovandoSimuladoId() === p.paymentId ? 'A processar…' : 'Valor recebido' }}
+                </button>
+                <button
+                  type="button"
+                  class="nu-btn nu-btn--danger-outline"
+                  [disabled]="aprovandoSimuladoId() === p.paymentId || rejeitandoSimuladoId() === p.paymentId"
+                  (click)="abrirRejeitarSimulado(p)">
+                  {{ rejeitandoSimuladoId() === p.paymentId ? '…' : 'Não recebido' }}
+                </button>
+              </div>
+            </article>
+          }
+        </div>
+      }
     </section>
   }
 
-  @if (error()) {
-    <div class="gn2-alert" role="alert">
-      <app-icon name="alert-circle" />
-      <span>{{ error() }}</span>
-    </div>
-  } @else if (loading()) {
-    <div class="gn2-empty">
-      <span class="gn2-spinner" aria-hidden="true"></span>
-      <p>A carregar utilizadores…</p>
-    </div>
-  } @else {
-    <section class="gn2-metrics" aria-label="Resumo">
-      <article class="gn2-metric" data-accent="amber">
-        <span class="gn2-metric__icon"><app-icon name="clock" /></span>
-        <div>
-          <span class="gn2-metric__label">A aguardar</span>
-          <strong class="gn2-metric__value">{{ pendentes().length }}</strong>
-        </div>
-      </article>
-      <article class="gn2-metric" data-accent="slate">
-        <span class="gn2-metric__icon"><app-icon name="user-x" /></span>
-        <div>
-          <span class="gn2-metric__label">Rejeitados</span>
-          <strong class="gn2-metric__value">{{ rejeitados().length }}</strong>
-        </div>
-      </article>
-      <article class="gn2-metric" data-accent="teal">
-        <span class="gn2-metric__icon"><app-icon name="user" /></span>
-        <div>
-          <span class="gn2-metric__label">Total na fila</span>
-          <strong class="gn2-metric__value">{{ allLista().length }}</strong>
-        </div>
-      </article>
-    </section>
+  @if (mainTab() === 'registos') {
+    @if (error()) {
+      <div class="nu-alert" role="alert">
+        <app-icon name="alert-circle" />
+        <span>{{ error() }}</span>
+      </div>
+    } @else if (loading()) {
+      <div class="nu-empty">
+        <span class="nu-spinner" aria-hidden="true"></span>
+        <p>A carregar utilizadores…</p>
+      </div>
+    } @else {
+      <section class="nu-section" aria-labelledby="users-title">
+        <header class="nu-section__head nu-section__head--row">
+          <div>
+            <h2 id="users-title">Registos de licença</h2>
+            <p>Aprovar com ID e-Mola (18 caracteres) ou rejeitar o registo.</p>
+          </div>
+          <nav class="nu-subtabs" aria-label="Filtrar lista">
+            <button type="button" class="nu-subtab" [class.nu-subtab--on]="tabFilter() === 'pendentes'" (click)="setTab('pendentes')">
+              Pendentes
+              @if (pendentes().length > 0) {
+                <span class="nu-tab__badge">{{ pendentes().length }}</span>
+              }
+            </button>
+            <button type="button" class="nu-subtab" [class.nu-subtab--on]="tabFilter() === 'rejeitados'" (click)="setTab('rejeitados')">
+              Rejeitados
+              @if (rejeitados().length > 0) {
+                <span class="nu-tab__badge">{{ rejeitados().length }}</span>
+              }
+            </button>
+          </nav>
+        </header>
 
-    <section class="gn2-card">
-      <div class="gn2-toolbar">
-        <nav class="gn2-tabs" aria-label="Filtrar lista">
-          <button
-            type="button"
-            class="gn2-tab"
-            [class.gn2-tab--on]="tabFilter() === 'pendentes'"
-            (click)="setTab('pendentes')">
-            <app-icon name="clock" />
-            Pendentes
-            @if (pendentes().length > 0) {
-              <span class="gn2-tab__badge">{{ pendentes().length }}</span>
-            }
-          </button>
-          <button
-            type="button"
-            class="gn2-tab"
-            [class.gn2-tab--on]="tabFilter() === 'rejeitados'"
-            (click)="setTab('rejeitados')">
-            <app-icon name="user-x" />
-            Rejeitados
-            @if (rejeitados().length > 0) {
-              <span class="gn2-tab__badge">{{ rejeitados().length }}</span>
-            }
-          </button>
-        </nav>
-        <label class="gn2-search">
+        <label class="nu-search">
           <app-icon name="list" />
           <input
             type="search"
@@ -158,82 +174,112 @@
             placeholder="Pesquisar nome, telefone, email…"
             aria-label="Pesquisar utilizadores" />
         </label>
-      </div>
 
-      @if (listaActual().length === 0) {
-        <div class="gn2-empty">
-          <app-icon name="user" />
-          <p class="gn2-empty__title">
-            @if (tabFilter() === 'pendentes') {
-              Nenhum utilizador a aguardar aprovação
-            } @else {
-              Nenhum utilizador rejeitado
-            }
-          </p>
-          <p class="gn2-empty__desc">
-            @if (tabFilter() === 'pendentes') {
-              Os novos registos aparecem aqui. Rejeitados podem ser aprovados na aba «Rejeitados» com o ID e-Mola.
-            } @else {
-              Aprove aqui quando tiverem o ID da transacção e-Mola (18 caracteres).
-            }
-          </p>
-        </div>
-      } @else if (filteredLista().length === 0) {
-        <div class="gn2-empty gn2-empty--sm">
-          <p>Nenhum resultado para «{{ searchQuery() }}».</p>
-        </div>
-      } @else {
-        <div class="nu-grid">
-          @for (u of filteredLista(); track u.id) {
-            <article class="nu-user-card" [class.nu-user-card--rejected]="!!u.rejectedAt">
-              <div class="nu-user-card__header">
-                <span class="nu-avatar" [class.nu-avatar--muted]="!!u.rejectedAt">{{ initials(u.fullName) }}</span>
-                <div class="nu-user-card__identity">
-                  <h3>{{ u.fullName }}</h3>
-                  <p><app-icon name="phone" /> {{ u.phone }}</p>
+        @if (listaActual().length === 0) {
+          <div class="nu-empty">
+            <app-icon name="user" />
+            <p class="nu-empty__title">
+              {{ tabFilter() === 'pendentes' ? 'Nenhum registo pendente' : 'Nenhum registo rejeitado' }}
+            </p>
+          </div>
+        } @else if (filteredLista().length === 0) {
+          <div class="nu-empty nu-empty--sm">
+            <p>Sem resultados para «{{ searchQuery() }}».</p>
+          </div>
+        } @else {
+          <div class="nu-grid">
+            @for (u of filteredLista(); track u.id) {
+              <article class="nu-card" [class.nu-card--rejected]="!!u.rejectedAt">
+                <div class="nu-card__top">
+                  <span class="nu-avatar" [class.nu-avatar--muted]="!!u.rejectedAt">{{ initials(u.fullName) }}</span>
+                  <div class="nu-card__who">
+                    <h3>{{ u.fullName }}</h3>
+                    <p>{{ u.phone }}</p>
+                  </div>
+                  <span class="nu-pill" [class.nu-pill--pending]="!u.rejectedAt" [class.nu-pill--muted]="!!u.rejectedAt">
+                    {{ u.rejectedAt ? 'Rejeitado' : 'Pendente' }}
+                  </span>
                 </div>
-                @if (u.rejectedAt) {
-                  <span class="nu-badge nu-badge--muted">Rejeitado</span>
-                } @else {
-                  <span class="nu-badge nu-badge--pending">Pendente</span>
-                }
-              </div>
-              <dl class="nu-details">
-                <div><dt>Província</dt><dd>{{ u.province || '—' }}</dd></div>
-                <div><dt>Email</dt><dd>{{ u.email || '—' }}</dd></div>
-                <div><dt>Registo</dt><dd>{{ formatDate(u.createdAt) }}</dd></div>
-                <div><dt>Valor licença</dt><dd class="nu-value">{{ formatAmount(u.licenseAmount) }}</dd></div>
-                <div><dt>Ref. pagamento</dt><dd><code>{{ u.licensePaymentReference || '—' }}</code></dd></div>
-              </dl>
-              <div class="nu-user-card__actions">
-                <button
-                  type="button"
-                  class="gn2-btn gn2-btn--primary"
-                  [disabled]="aprovandoId() === u.id || rejeitandoId() === u.id"
-                  (click)="abrirModalAprovar(u)">
-                  <app-icon name="check-circle" />
-                  {{ aprovandoId() === u.id ? 'A processar…' : 'Aprovar pagamento' }}
-                </button>
-                @if (!u.rejectedAt) {
+                <dl class="nu-card__meta">
+                  <div><dt>Província</dt><dd>{{ u.province || '—' }}</dd></div>
+                  <div><dt>Email</dt><dd>{{ u.email || '—' }}</dd></div>
+                  <div><dt>Registo</dt><dd>{{ formatDate(u.createdAt) }}</dd></div>
+                  <div><dt>Valor</dt><dd class="nu-card__amount">{{ formatAmount(u.licenseAmount) }}</dd></div>
+                </dl>
+                <div class="nu-card__actions">
                   <button
                     type="button"
-                    class="gn2-btn gn2-btn--ghost"
+                    class="nu-btn nu-btn--primary"
                     [disabled]="aprovandoId() === u.id || rejeitandoId() === u.id"
-                    (click)="rejeitar(u)">
-                    {{ rejeitandoId() === u.id ? '…' : 'Rejeitar' }}
+                    (click)="abrirModalAprovar(u)">
+                    <app-icon name="check-circle" />
+                    {{ aprovandoId() === u.id ? '…' : 'Aprovar' }}
                   </button>
-                }
-              </div>
-            </article>
-          }
-        </div>
-      }
-    </section>
+                  @if (!u.rejectedAt) {
+                    <button
+                      type="button"
+                      class="nu-btn nu-btn--ghost"
+                      [disabled]="aprovandoId() === u.id || rejeitandoId() === u.id"
+                      (click)="rejeitar(u)">
+                      Rejeitar
+                    </button>
+                  }
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    }
   }
 </div>
 
+@if (modalAprovarSim(); as p) {
+  <div
+    class="nu-overlay nu-overlay--locked"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="approve-sim-title"
+    (mousedown)="bloquearFecharBackdrop($event)"
+    (click)="bloquearFecharBackdrop($event)">
+    <div class="nu-modal nu-modal--compact" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
+      <h3 id="approve-sim-title" class="nu-modal__title-only">Confirmar recepção</h3>
+      <p class="nu-modal__sub">{{ p.userFullName }} · {{ formatAmount(p.amount) }}</p>
+      <label class="nu-field nu-field--compact">
+        <span>6 dígitos do SMS ({{ canalSimuladoLabel(p.simulationChannel) }})</span>
+        <input
+          type="text"
+          inputmode="numeric"
+          maxlength="6"
+          autocomplete="off"
+          placeholder="000000"
+          [ngModel]="approveOperatorRef"
+          (ngModelChange)="onApproveOperatorRefChange($event)"
+          (keydown.enter)="confirmarAprovarSimulado()"
+          [class.nu-field--error]="!!approveSimModalError()" />
+        <span class="nu-field__counter" [class.nu-field__counter--ok]="approveOperatorRef.length === operatorSmsDigits">
+          {{ approveOperatorRef.length }}/{{ operatorSmsDigits }} dígitos
+        </span>
+      </label>
+      @if (approveSimModalError()) {
+        <p class="nu-modal__error" role="alert">{{ approveSimModalError() }}</p>
+      }
+      <div class="nu-modal__actions">
+        <button type="button" class="nu-btn nu-btn--ghost" (click)="fecharAprovarSimulado()">Cancelar</button>
+        <button
+          type="button"
+          class="nu-btn nu-btn--primary"
+          [disabled]="aprovandoSimuladoId() === p.paymentId"
+          (click)="confirmarAprovarSimulado()">
+          {{ aprovandoSimuladoId() === p.paymentId ? 'A processar…' : 'Confirmar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
 @if (modalAprovar(); as u) {
-  <div class="nu-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title" (click)="fecharModalAprovar()">
+  <div class="nu-overlay nu-overlay--locked" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="nu-modal" (click)="$event.stopPropagation()">
       <button type="button" class="nu-modal__close" (click)="fecharModalAprovar()" aria-label="Fechar">×</button>
       <header class="nu-modal__head">
@@ -244,38 +290,87 @@
         </div>
       </header>
       <p class="nu-modal__hint">
-        Insira o ID da transacção e-Mola com exactamente <strong>18 caracteres alfanuméricos</strong>.
+        ID da transacção e-Mola com <strong>18 caracteres</strong> alfanuméricos.
       </p>
-      <label class="gn2-field">
-        <span>ID da transacção e-Mola</span>
+      <label class="nu-field">
+        <span>ID e-Mola</span>
         <input
-          id="modalTransactionId"
           type="text"
           maxlength="24"
           placeholder="Ex: EM1234567890123456"
           [(ngModel)]="modalTransactionId"
           (input)="modalError.set('')"
           (keydown.enter)="aprovar()"
-          [class.gn2-field--error]="!!modalError()" />
+          [class.nu-field--error]="!!modalError()" />
       </label>
-      <label class="gn2-field">
+      <label class="nu-field">
         <span>Duração (meses)</span>
-        <select id="modalMonths" [(ngModel)]="modalMonths">
+        <select [(ngModel)]="modalMonths">
           @for (m of durationOptions; track m) {
             <option [value]="m">{{ m }} {{ m === 1 ? 'mês' : 'meses' }}</option>
           }
         </select>
       </label>
       @if (modalError()) {
-        <p class="nu-modal__error" role="alert">
-          <app-icon name="alert-circle" />
-          {{ modalError() }}
-        </p>
+        <p class="nu-modal__error" role="alert">{{ modalError() }}</p>
       }
       <div class="nu-modal__actions">
-        <button type="button" class="gn2-btn gn2-btn--ghost" (click)="fecharModalAprovar()">Cancelar</button>
-        <button type="button" class="gn2-btn gn2-btn--primary" [disabled]="aprovandoId() === u.id" (click)="aprovar()">
-          {{ aprovandoId() === u.id ? 'A processar…' : 'Confirmar pagamento' }}
+        <button type="button" class="nu-btn nu-btn--ghost" (click)="fecharModalAprovar()">Cancelar</button>
+        <button type="button" class="nu-btn nu-btn--primary" [disabled]="aprovandoId() === u.id" (click)="aprovar()">
+          {{ aprovandoId() === u.id ? 'A processar…' : 'Confirmar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (modalRejeitarSim(); as p) {
+  <div
+    class="nu-overlay nu-overlay--locked"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="reject-sim-title"
+    (mousedown)="bloquearFecharBackdrop($event)"
+    (click)="bloquearFecharBackdrop($event)">
+    <div class="nu-modal nu-modal--compact nu-modal--reject" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
+      <h3 id="reject-sim-title" class="nu-modal__title-only">Não recebido</h3>
+      <p class="nu-modal__sub">{{ p.userFullName }} · {{ formatAmount(p.amount) }}</p>
+      <fieldset class="nu-reasons">
+        <legend>Motivo</legend>
+        @for (opt of rejectionReasons; track opt.id) {
+          <label class="nu-reasons__item">
+            <input
+              type="radio"
+              name="rejectReason"
+              [value]="opt.id"
+              [checked]="rejectReasonId() === opt.id"
+              (change)="selectRejectReason(opt.id)" />
+            <span>{{ opt.label }}</span>
+          </label>
+        }
+      </fieldset>
+      @if (rejectReasonId() === 'outro') {
+        <label class="nu-field">
+          <span>Descreva o motivo</span>
+          <textarea
+            rows="3"
+            maxlength="500"
+            placeholder="Ex.: valor diferente do pedido…"
+            [ngModel]="rejectReasonCustom()"
+            (ngModelChange)="rejectReasonCustom.set($event); rejectModalError.set('')"></textarea>
+        </label>
+      }
+      @if (rejectModalError()) {
+        <p class="nu-modal__error" role="alert">{{ rejectModalError() }}</p>
+      }
+      <div class="nu-modal__actions">
+        <button type="button" class="nu-btn nu-btn--ghost" (click)="fecharRejeitarSimulado()">Cancelar</button>
+        <button
+          type="button"
+          class="nu-btn nu-btn--danger"
+          [disabled]="rejeitandoSimuladoId() === p.paymentId"
+          (click)="confirmarRejeitarSimulado()">
+          {{ rejeitandoSimuladoId() === p.paymentId ? 'A processar…' : 'Confirmar rejeição' }}
         </button>
       </div>
     </div>

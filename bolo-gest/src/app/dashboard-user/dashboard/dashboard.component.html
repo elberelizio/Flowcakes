@@ -60,32 +60,53 @@
 
     @if (showLoginSummaryPopup()) {
     <div class="login-summary-overlay" role="dialog" aria-modal="true" aria-labelledby="login-summary-title">
-      <div class="login-summary-popup" [class.popup--good]="situationGood()" [class.popup--bad]="!situationGood()">
+      <div class="login-summary-popup popup--{{ profitMoodTier() }}">
         <div class="login-summary-popup__header">
           <h2 id="login-summary-title" class="login-summary-popup__title">Resumo da situação</h2>
           <button type="button" class="login-summary-popup__close" (click)="dismissLoginSummary()" aria-label="Fechar">×</button>
         </div>
 
-        <div class="login-summary-mood" [class.good]="situationGood()" [class.bad]="!situationGood()">
+        <div class="login-summary-mood mood--{{ profitMoodTier() }}">
           <div class="login-summary-mood__figure" aria-hidden="true">
-            @if (situationGood()) {
-              <span class="mood-emoji mood-emoji--good">😊</span>
-            } @else {
-              <span class="mood-emoji mood-emoji--bad">😔</span>
-            }
+            <span
+              class="mood-emoji"
+              [class.mood-emoji--pulse]="profitMoodTier() === 'excellent'"
+              [class.mood-emoji--shake]="profitMoodTier() === 'loss'">
+              {{ summaryMoodEmoji() }}
+            </span>
           </div>
           <p class="login-summary-mood__message">{{ summaryMoodMessage() }}</p>
         </div>
 
         <div class="login-summary-popup__finance">
-          @if (lucroFinal() >= 0) {
-            <span class="login-summary-popup__label">Lucro</span>
-            <span class="login-summary-popup__value value--good">{{ lucroFinal() | number:'1.0-0' }} MZN</span>
-          } @else {
-            <span class="login-summary-popup__label">Prejuízo</span>
-            <span class="login-summary-popup__value value--bad">{{ lucroFinal() | number:'1.0-0' }} MZN</span>
-          }
+          <span class="login-summary-popup__label">{{ profitFinanceLabel() }}</span>
+          <span
+            class="login-summary-popup__value"
+            [class.value--bad]="profitMoodTier() === 'loss'"
+            [class.value--neutral]="profitMoodTier() === 'zero'"
+            [class.value--modest]="profitMoodTier() === 'modest'"
+            [class.value--good]="profitMoodTier() === 'good'"
+            [class.value--excellent]="profitMoodTier() === 'excellent'">
+            {{ lucroFinal() | number:'1.0-0' }} MZN
+          </span>
         </div>
+
+        @if (loginSummaryLicenseWarning()) {
+          <div class="login-summary-license" role="alert">
+            <div class="login-summary-license__head">
+              <app-icon name="alert-circle" />
+              <h3>Licença a renovar</h3>
+            </div>
+            <p class="login-summary-license__text">{{ loginSummaryLicenseMessage() }}</p>
+            <a
+              routerLink="/license-payment"
+              class="btn login-summary-license__cta"
+              (click)="dismissLoginSummary()"
+            >
+              Pagar agora
+            </a>
+          </div>
+        }
 
         @if (loginSummaryDeliveries().length > 0 || upcomingRemindersWithDays().length > 0 || upcomingNationalHolidays().length > 0) {
           <div class="login-summary-ops">
@@ -151,6 +172,9 @@
         }
 
         <div class="login-summary-popup__actions">
+          @if (loginSummaryLicenseWarning()) {
+            <a routerLink="/license-payment" class="btn btn-primary login-summary-popup__btn" (click)="dismissLoginSummary()">Renovar licença</a>
+          }
           @if (upcomingRemindersWithDays().length > 0) {
             <a routerLink="/reminders" class="btn btn-secondary login-summary-popup__btn" (click)="dismissLoginSummary()">Ver lembretes</a>
           }
@@ -235,7 +259,7 @@
       @if (chartRenderError()) {
         <p class="chart-error" role="alert">{{ chartRenderError() }}</p>
       }
-      <div class="chart-container chart-line">
+      <div class="chart-container chart-line chart-line--wave">
         <canvas #chartProfitExpense aria-label="Gráfico lucro, despesa e dívidas"></canvas>
       </div>
       @if (!chartRenderError() && !chartHasValues() && ordersInRange().length === 0) {

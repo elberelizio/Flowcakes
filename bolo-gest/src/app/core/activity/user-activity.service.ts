@@ -14,7 +14,7 @@ const PAGE_LABELS: Record<string, string> = {
   '/variable-expenses': 'Despesas variáveis',
   '/debts': 'Gestão de dívidas',
   '/reminders': 'Lembretes',
-  '/notifications': 'Notificações',
+  '/notifications': 'Comunicado',
   '/reports': 'Relatórios',
   '/withdrawals': 'Retiradas',
   '/my-license': 'Minha licença',

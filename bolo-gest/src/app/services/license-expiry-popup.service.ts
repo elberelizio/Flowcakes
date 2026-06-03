@@ -8,8 +8,7 @@ export interface LicenseExpiryStatusHint {
 }
 
 /**
- * Aviso de licença a expirar em ≤10 dias — no máximo uma vez por sessão após carregar o estado da licença.
- * Aguarda a cadeia pós-login (manutenção → boas-vindas → resumo) antes de aparecer.
+ * Aviso de licença (legado). O aviso ≤5 dias está no popup «Resumo da situação» do dashboard.
  */
 @Injectable({ providedIn: 'root' })
 export class LicenseExpiryPopupService {

@@ -6,10 +6,12 @@ export const LicensePaymentStrings = {
   backToChoosePlan: '← Voltar a escolher plano',
   heading: 'Pagamento da licença',
   lead: 'Para pagar, crie conta primeiro e depois inicie sessão.',
-  leadLogged: 'Escolha M-Pesa ou e-Mola e confirme o número da carteira (84/85 ou 86/87).',
+  leadLogged:
+    'Transfira o valor para o número Chef Control (M-Pesa ou e-Mola), depois confirme abaixo. O estado fica pendente até o administrador validar.',
+  leadLoggedShort: 'Escolha a operadora, transfira o valor e confirme. Validação manual pelo administrador.',
 
   sessionHintPrefix: 'Sessão:',
-  sessionHintRest: 'confirme o número e a duração.',
+  sessionHintRest: 'escolha o canal, transfira e confirme.',
 
   guestCardTitle: 'Antes de pagar',
   guestCardText: 'Ainda não tem conta? Crie a conta e depois entre para concluir o pagamento da licença.',
@@ -18,30 +20,52 @@ export const LicensePaymentStrings = {
 
   summaryTitle: 'Resumo',
   lineItemName: 'Licença Chef Control',
-  lineItemMetaPerMonth: 'MZN / mês',
-  durationLabel: 'Duração',
-  totalDue: 'Total a pagar',
+  lineItemMetaPerMonth: 'MZN / 30 dias',
+  durationLabel: 'Validade',
+  totalDue: 'Total a transferir',
 
-  methodsTitle: 'Meio de pagamento',
+  methodsTitle: 'Como pagar',
   tablistAria: 'Escolher M-Pesa ou e-Mola',
 
-  walletNumberLabel: (channel: string) => `Número ${channel}`,
+  stepTransfer: '1. Faça a transferência',
+  stepTransferHint: (channel: string, amount: number, phone: string) =>
+    `Envie exactamente ${amount} MZN para o número ${channel} abaixo.`,
+  destinationLabel: (channel: string) => `Número ${channel} (Chef Control)`,
+  copyNumber: 'Copiar número',
+
+  stepConfirm: '2. Confirme o pedido',
+  walletNumberLabel: (channel: string) => `Número de onde enviou (${channel})`,
+  transferRefLabel: 'Referência da transferência (opcional)',
+  transferRefPlaceholder: 'Ex.: últimos dígitos do SMS M-Pesa / e-Mola',
+  transferRefHint: 'Opcional. Se o SMS tiver um número de transação, indique-o para ajudar a validação.',
   placeholderMpesa: '841234567 ou 851234567',
   placeholderEmola: '861234567 ou 871234567',
-  hintMpesa: 'M-Pesa em Moçambique: 9 dígitos começando por 84 ou 85.',
-  hintEmola: 'e-Mola: 9 dígitos começando por 86 ou 87.',
-  hintSimulated: 'Simulação: sem cobrança real. O administrador pode aprovar a licença manualmente.',
-
-  processing: 'A processar…',
-  submitSimulated: (total: number) => `Enviar pedido (${total} MZN)`,
+  hintMpesa: 'O número que usou na carteira M-Pesa (84 ou 85).',
+  hintEmola: 'O número que usou na carteira e-Mola (86 ou 87).',
+  processing: 'A registar…',
+  submitManual: (total: number) => `Confirmar transferência (${total} MZN)`,
   submitPay: (total: number) => `Pagar ${total} MZN`,
 
-  footSimulatedLogged: 'Depois do envio, aguarde a aprovação do administrador e volte ao painel.',
+  footManualLogged:
+    'O pedido fica com estado pendente. O administrador confirma quando o valor chegar à conta Chef Control.',
   footLiveLogged: 'Confirme no telemóvel, se aplicável, e volte ao painel para continuar.',
 
-  secureNote: 'Ligação segura ao servidor Chef Control.',
+  pendingPopupTitle: 'Pagamento pendente de validação',
+  pendingPopupText:
+    'Já registámos o seu pedido. Aguarde a confirmação do administrador ou contacte o suporte se demorar.',
+  pendingPopupBtn: 'Entendi',
+  pendingPanelNote: 'Pedido pendente — aguarda validação do administrador.',
+  rejectedBannerTitle: 'Pagamento não confirmado',
+  rejectedBannerHint: 'Pode efectuar uma nova transferência com os dados correctos.',
 
-  errWalletRequired: (channel: string) => `Introduza o número ${channel}.`,
+  supportTitle: 'Precisa de ajuda?',
+  supportText: 'WhatsApp ou chamada — indique o seu nome e o valor transferido.',
+  supportWhatsapp: 'WhatsApp suporte',
+  supportCall: 'Ligar',
+
+  secureNote: 'Pedido registado de forma segura no Chef Control.',
+
+  errWalletRequired: (channel: string) => `Indique o número ${channel} de onde enviou.`,
   errMpesaFormat: 'M-Pesa: use 9 dígitos começando por 84 ou 85 (ex.: 841234567).',
   errEmolaFormat: 'e-Mola: use 9 dígitos começando por 86 ou 87 (ex.: 861234567).',
   errNeedAccount: 'Crie conta e inicie sessão para efectuar o pagamento.',

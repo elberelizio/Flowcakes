@@ -275,7 +275,7 @@ public class AdminService {
     /**
      * Aprova licença a partir de um pagamento M-Pesa simulado (third_party_id SIM-...), sem callback Vodacom.
      */
-    public void approveSimulatedPayment(UUID adminUserId, UUID paymentId) {
+    public void approveSimulatedPayment(UUID adminUserId, UUID paymentId, String operatorTransactionRef) {
         requireAdmin(adminUserId);
         MpesaPaymentEntity p = mpesaPaymentRepository.findById(paymentId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pagamento não encontrado"));
@@ -285,13 +285,18 @@ public class AdminService {
         if (p.getThirdPartyId() == null || !p.getThirdPartyId().startsWith("SIM-")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Este pagamento não é um pedido simulado");
         }
+        String opRef = normalizeOperatorTransactionRef(operatorTransactionRef);
+        if (opRef.length() != 6) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Indique exactamente 6 dígitos numéricos (últimos do ID no SMS M-Pesa / e-Mola).");
+        }
         String tx = p.getTransactionId();
         if (tx == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Referência de pagamento simulado em falta");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Referência interna do pedido em falta");
         }
         String txNorm = tx.trim().replaceAll("[^A-Za-z0-9]", "").toUpperCase();
         if (txNorm.length() != 18) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Referência de pagamento simulado inválida");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Referência interna do pedido inválida");
         }
         UserEntity target = userRepository.findById(p.getUserId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizador não encontrado"));
@@ -301,8 +306,46 @@ public class AdminService {
         licenseService.findByUserId(p.getUserId())
             .orElseGet(() -> licenseService.createPendingLicenseForUser(p.getUserId()));
         licenseService.confirmPayment(p.getUserId(), txNorm, p.getDurationMonths());
+        p.setOperatorTransactionRef(opRef);
         p.setStatus("completed");
         p.setCompletedAt(Instant.now());
+        String channel = "emola".equalsIgnoreCase(p.getSimulationChannel()) ? "e-Mola" : "M-Pesa";
+        String extra = " Confirmado pelo admin. ID " + channel + " (operadora): " + opRef + ".";
+        String desc = p.getMpesaResponseDesc();
+        p.setMpesaResponseDesc(desc != null && !desc.isBlank() ? desc + extra : extra.trim());
+        mpesaPaymentRepository.save(p);
+    }
+
+    private static String normalizeOperatorTransactionRef(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        return raw.replaceAll("\\D", "").trim();
+    }
+
+    /**
+     * Rejeita transferência manual: o utilizador vê o motivo no perfil e pode enviar novo pedido.
+     */
+    public void rejectSimulatedPayment(UUID adminUserId, UUID paymentId, String reason) {
+        requireAdmin(adminUserId);
+        MpesaPaymentEntity p = mpesaPaymentRepository.findById(paymentId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pagamento não encontrado"));
+        if (!"pending".equals(p.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pagamento não está pendente");
+        }
+        if (p.getThirdPartyId() == null || !p.getThirdPartyId().startsWith("SIM-")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Este pagamento não é um pedido de transferência manual");
+        }
+        String trimmed = reason != null ? reason.trim() : "";
+        if (trimmed.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Indique o motivo da rejeição");
+        }
+        if (trimmed.length() > 500) {
+            trimmed = trimmed.substring(0, 500);
+        }
+        p.setStatus("rejected");
+        p.setAdminRejectionReason(trimmed);
+        p.setRejectedAt(Instant.now());
         mpesaPaymentRepository.save(p);
     }
 
@@ -319,6 +362,7 @@ public class AdminService {
         d.setAmount(p.getAmount());
         d.setDurationMonths(p.getDurationMonths());
         d.setTransactionRef(p.getTransactionId());
+        d.setUserTransferReference(p.getUserTransferReference());
         d.setCreatedAt(p.getCreatedAt() != null ? p.getCreatedAt().toString() : null);
         d.setSimulationChannel(p.getSimulationChannel());
         return d;

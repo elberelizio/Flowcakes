@@ -8,6 +8,7 @@ import { AuthService } from '@app/services/auth.service';
 import { API_URL } from '@app/core/config/api.config';
 import { PublicSiteNavComponent } from '../public-site-nav/public-site-nav.component';
 import { RegistrationFlowService } from '@app/core/registration/registration-flow.service';
+import { PublicPageMotionService } from '../public-page-motion.service';
 
 /** Página inicial pública (marketing). Parte do módulo de rotas `web-page`. */
 @Component({
@@ -25,7 +26,8 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private host = inject(ElementRef<HTMLElement>);
   private platformId = inject(PLATFORM_ID);
   private registrationFlow = inject(RegistrationFlowService);
-  private revealObserver: IntersectionObserver | null = null;
+  private motion = inject(PublicPageMotionService);
+  private teardownLandingMotion: (() => void) | null = null;
   private heroSlideTimer: ReturnType<typeof setInterval> | null = null;
 
   readonly currentYear = new Date().getFullYear();
@@ -37,6 +39,77 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     { src: '/t%20(2).jpg', alt: 'Croissants frescos — produto de confeitaria' },
   ] as const;
   heroSlideIndex = 0;
+
+  /** Depoimentos — slider vertical (6 confeiteiras; fotos locais em /public). */
+  readonly testimonials = [
+    {
+      id: 'ana',
+      quote:
+        'Finalmente parei de usar cadernos e folhas de cálculo desorganizadas. Agora sei quanto lucro em cada encomenda e quem ainda me deve!',
+      name: 'Ana Paula',
+      role: '@doces_da_ana',
+      stars: 5,
+      avatar: '/t.jpg',
+      avatarAlt: 'Ana Paula, confeiteira',
+    },
+    {
+      id: 'bruna',
+      quote:
+        'Ao registar os custos dos ingredientes por pedido, percebi que estava a cobrar muito barato pelos meus bolos personalizados.',
+      name: 'Bruna Silva',
+      role: 'Confeitaria Artesanal',
+      stars: 5,
+      avatar: '/t%20(1).jpg',
+      avatarAlt: 'Bruna Silva, confeiteira',
+    },
+    {
+      id: 'carla',
+      quote:
+        'Suporte incrível e sistema muito intuitivo. Consigo ver o meu lucro real no final do mês sem dores de cabeça.',
+      name: 'Carla Mendes',
+      role: 'Carla Cakes',
+      stars: 4.5,
+      avatar: '/t%20(2).jpg',
+      avatarAlt: 'Carla Mendes, confeiteira',
+    },
+    {
+      id: 'maria',
+      quote:
+        'Com o ChefControl organizo entregas e pagamentos no mesmo dia. Já não perco encomendas por esquecimento no caderno.',
+      name: 'Maria Fernandes',
+      role: 'Doces da Maria · Maputo',
+      stars: 5,
+      avatar: '/t%20(3).jpg',
+      avatarAlt: 'Maria Fernandes, confeiteira',
+    },
+    {
+      id: 'joana',
+      quote:
+        'Os relatórios em MZN ajudam-me a planear compras de ingredientes e a saber quando posso retirar dinheiro do negócio.',
+      name: 'Joana Costa',
+      role: 'Joana Sweet Atelier',
+      stars: 5,
+      avatar: '/cofeiro.jpg',
+      avatarAlt: 'Joana Costa, confeiteira',
+    },
+    {
+      id: 'patricia',
+      quote:
+        'Controlo dívidas dos clientes com clareza. Quem deve e quanto falta receber aparece logo — isso mudou a minha caixa.',
+      name: 'Patrícia Nhampossa',
+      role: 'Paty Confeitos',
+      stars: 5,
+      avatar: '/t.jpg',
+      avatarAlt: 'Patrícia Nhampossa, confeiteira',
+    },
+  ] as const;
+
+  /** Avatares que falharam ao carregar → iniciais no lugar da foto. */
+  readonly testimonialAvatarFailed = new Set<string>();
+
+  testimonialIndex = 0;
+  private testimonialTimer: ReturnType<typeof setInterval> | null = null;
+
   readonly maxSuggestionChars = 350;
   suggestionCharCount = 0;
   suggestionSending = false;
@@ -61,27 +134,96 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    this.initSectionReveals();
+    requestAnimationFrame(() => {
+      this.teardownLandingMotion = this.motion.initLandingMotion(this.host.nativeElement);
+    });
     this.startHeroSlideAutoplay();
+    this.startTestimonialAutoplay();
   }
 
   ngOnDestroy(): void {
-    this.revealObserver?.disconnect();
-    this.revealObserver = null;
+    this.teardownLandingMotion?.();
+    this.teardownLandingMotion = null;
     this.stopHeroSlideAutoplay();
+    this.stopTestimonialAutoplay();
   }
 
-  goToHeroSlide(index: number): void {
+  goToTestimonial(index: number): void {
+    const total = this.testimonials.length;
+    this.testimonialIndex = ((index % total) + total) % total;
+  }
+
+  nextTestimonial(): void {
+    this.goToTestimonial(this.testimonialIndex + 1);
+  }
+
+  prevTestimonial(): void {
+    this.goToTestimonial(this.testimonialIndex - 1);
+  }
+
+  isTestimonialStarFilled(stars: number, position: number): boolean {
+    return position <= Math.floor(stars);
+  }
+
+  isTestimonialStarHalf(stars: number, position: number): boolean {
+    return stars % 1 !== 0 && position === Math.ceil(stars);
+  }
+
+  testimonialStarsLabel(stars: number): string {
+    return Number.isInteger(stars) ? `${stars} estrelas` : `${stars} estrelas`;
+  }
+
+  testimonialInitials(name: string): string {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+
+  isTestimonialAvatarVisible(id: string): boolean {
+    return !this.testimonialAvatarFailed.has(id);
+  }
+
+  onTestimonialAvatarError(id: string): void {
+    this.testimonialAvatarFailed.add(id);
+  }
+
+  private startTestimonialAutoplay(): void {
+    this.stopTestimonialAutoplay();
+    if (!isPlatformBrowser(this.platformId)) return;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) return;
+    this.testimonialTimer = setInterval(() => this.nextTestimonial(), 6000);
+  }
+
+  private stopTestimonialAutoplay(): void {
+    if (this.testimonialTimer) {
+      clearInterval(this.testimonialTimer);
+      this.testimonialTimer = null;
+    }
+  }
+
+  onTestimonialNav(index: number): void {
+    this.goToTestimonial(index);
+    this.startTestimonialAutoplay();
+  }
+
+  onTestimonialPrev(): void {
+    this.prevTestimonial();
+    this.startTestimonialAutoplay();
+  }
+
+  onTestimonialNext(): void {
+    this.nextTestimonial();
+    this.startTestimonialAutoplay();
+  }
+
+  private goToHeroSlide(index: number): void {
     const total = this.heroSlides.length;
     this.heroSlideIndex = ((index % total) + total) % total;
   }
 
-  nextHeroSlide(): void {
+  private nextHeroSlide(): void {
     this.goToHeroSlide(this.heroSlideIndex + 1);
-  }
-
-  prevHeroSlide(): void {
-    this.goToHeroSlide(this.heroSlideIndex - 1);
   }
 
   private startHeroSlideAutoplay(): void {
@@ -96,36 +238,6 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
       clearInterval(this.heroSlideTimer);
       this.heroSlideTimer = null;
     }
-  }
-
-  private initSectionReveals(): void {
-    const root = this.host.nativeElement;
-    const targets = Array.from(root.querySelectorAll('[data-landing-reveal]')) as HTMLElement[];
-    if (!targets.length) return;
-
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReduced) {
-      targets.forEach((el) => el.classList.add('landing-reveal--visible'));
-      return;
-    }
-
-    this.revealObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          entry.target.classList.toggle('landing-reveal--visible', entry.isIntersecting);
-        });
-      },
-      { threshold: 0.14, rootMargin: '0px 0px -6% 0px' },
-    );
-
-    targets.forEach((el) => {
-      this.revealObserver!.observe(el);
-      const rect = el.getBoundingClientRect();
-      const inView = rect.top < window.innerHeight * 0.92 && rect.bottom > window.innerHeight * 0.08;
-      if (inView) {
-        el.classList.add('landing-reveal--visible');
-      }
-    });
   }
 
   private redirectIncompleteRegistration(): void {

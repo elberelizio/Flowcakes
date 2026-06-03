@@ -13,10 +13,70 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { Chart, ChartConfiguration } from 'chart.js/auto';
+import { Chart, ChartConfiguration, Plugin } from 'chart.js/auto';
+
+const PROFIT_WAVE_COLORS = {
+  lucro: { line: '#16a34a', top: 0.42 },
+  despesa: { line: '#dc2626', top: 0.35 },
+  dividas: { line: '#ca8a04', top: 0.32 },
+} as const;
+
+/** Etiquetas nos pontos (caixa colorida), estilo spline area / ondas. */
+const profitExpenseSplineLabelsPlugin: Plugin<'line'> = {
+  id: 'profitExpenseSplineLabels',
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    chart.data.datasets.forEach((dataset, datasetIndex) => {
+      const meta = chart.getDatasetMeta(datasetIndex);
+      if (meta.hidden) return;
+      const color =
+        typeof dataset.borderColor === 'string' ? dataset.borderColor : PROFIT_WAVE_COLORS.lucro.line;
+      meta.data.forEach((element, index) => {
+        const raw = dataset.data[index];
+        const value = typeof raw === 'number' ? raw : Number(raw);
+        if (!Number.isFinite(value) || value <= 0) return;
+        const prev = index > 0 ? Number(dataset.data[index - 1]) || 0 : 0;
+        const next =
+          index < dataset.data.length - 1 ? Number(dataset.data[index + 1]) || 0 : 0;
+        const isPeak = value >= prev && value >= next;
+        const isLast = index === dataset.data.length - 1;
+        if (!isPeak && !isLast) return;
+        const label = Math.round(value).toLocaleString('pt-MZ', { maximumFractionDigits: 0 });
+        const { x, y } = element.getProps(['x', 'y'], true);
+        ctx.save();
+        ctx.font = 'bold 10px "Segoe UI", system-ui, sans-serif';
+        const textW = ctx.measureText(label).width;
+        const padX = 6;
+        const boxW = textW + padX * 2;
+        const boxH = 16;
+        const boxX = x - boxW / 2;
+        const boxY = y - boxH - 10;
+        const r = 4;
+        ctx.beginPath();
+        ctx.moveTo(boxX + r, boxY);
+        ctx.lineTo(boxX + boxW - r, boxY);
+        ctx.quadraticCurveTo(boxX + boxW, boxY, boxX + boxW, boxY + r);
+        ctx.lineTo(boxX + boxW, boxY + boxH - r);
+        ctx.quadraticCurveTo(boxX + boxW, boxY + boxH, boxX + boxW - r, boxY + boxH);
+        ctx.lineTo(boxX + r, boxY + boxH);
+        ctx.quadraticCurveTo(boxX, boxY + boxH, boxX, boxY + boxH - r);
+        ctx.lineTo(boxX, boxY + r);
+        ctx.quadraticCurveTo(boxX, boxY, boxX + r, boxY);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, x, boxY + boxH / 2);
+        ctx.restore();
+      });
+    });
+  },
+};
 import { OrdersService } from '../../services/orders.service';
 import { ReminderService } from '../../services/reminder.service';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, LicenseStatusResponse } from '../../services/auth.service';
 import { Order, orderDisplayName, orderDisplaySize } from '../../models/order.model';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { NotificationService } from '../../services/notification.service';
@@ -40,6 +100,9 @@ const DASHBOARD_VISITED_KEY = 'chefcontrol_dashboard_visited';
 const LOGIN_SUMMARY_DISMISSED_KEY = 'chefcontrol_login_summary_dismissed';
 
 type ChartGranularity = 'day' | 'month' | 'year';
+
+/** Estado financeiro no popup «Resumo da situação». */
+export type ProfitMoodTier = 'loss' | 'zero' | 'modest' | 'good' | 'excellent';
 
 interface ProfitExpensePoint {
   date: string;
@@ -123,15 +186,70 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.totalValuePaid() - this.totalExpense() - this.totalWithdrawn()
   );
 
-  /** Situação boa = lucro final ≥ 0. Mau = prejuízo. */
-  situationGood = computed(() => this.lucroFinal() >= 0);
+  /** Limiares em MZN para mensagens do popup (valor arredondado). */
+  private static readonly PROFIT_MODEST_MAX = 4_999;
+  private static readonly PROFIT_EXCELLENT_MIN = 25_000;
+  private static readonly PROFIT_EXCELLENT_MARGIN = 0.25;
 
-  /** Mensagem de encorajamento ou alerta no popup (mostra despesas quando mau). */
-  summaryMoodMessage = computed(() =>
-    this.situationGood()
-      ? 'Continue assim! A empresa está a gerar bons resultados.'
-      : 'Despesas e retiradas a superar o valor recebido. Reveja os custos.'
-  );
+  /**
+   * Comportamento do popup conforme o lucro:
+   * prejuízo → alerta; zero → sem lucro, motivação; positivo → encorajamento; muito alto → destaque.
+   */
+  profitMoodTier = computed((): ProfitMoodTier => {
+    const lucro = Math.round(this.lucroFinal());
+    if (lucro < 0) return 'loss';
+    if (lucro === 0) return 'zero';
+
+    const revenue = this.totalValuePaid();
+    const margin = revenue > 0 ? lucro / revenue : 0;
+    if (lucro >= DashboardComponent.PROFIT_EXCELLENT_MIN || margin >= DashboardComponent.PROFIT_EXCELLENT_MARGIN) {
+      return 'excellent';
+    }
+    if (lucro <= DashboardComponent.PROFIT_MODEST_MAX) return 'modest';
+    return 'good';
+  });
+
+  summaryMoodEmoji = computed(() => {
+    switch (this.profitMoodTier()) {
+      case 'loss':
+        return '😰';
+      case 'zero':
+        return '💪';
+      case 'modest':
+        return '🙂';
+      case 'good':
+        return '😊';
+      case 'excellent':
+        return '🎉';
+    }
+  });
+
+  summaryMoodMessage = computed(() => {
+    switch (this.profitMoodTier()) {
+      case 'loss':
+        return 'Situação crítica: despesas e retiradas superam o que já recebeu. Revise custos, cobranças e evite novas retiradas até recuperar.';
+      case 'zero':
+        return 'Ainda não há lucro — o que entrou só cobre custos e retiradas. Feche encomendas, receba valores em falta e registe todas as despesas.';
+      case 'modest':
+        return 'Lucro positivo, ainda modesto. Bom sinal — continue a fechar encomendas e a controlar despesas para fazer o negócio crescer.';
+      case 'good':
+        return 'Bom trabalho! O negócio está a gerar lucro. Mantenha o registo em dia e acompanhe o dashboard.';
+      case 'excellent':
+        return 'Resultado excelente! O lucro está forte — considere reservar parte para reinvestir ou para épocas mais calmas.';
+    }
+  });
+
+  /** Rótulo do valor no popup (Lucro / Sem lucro / Prejuízo). */
+  profitFinanceLabel = computed(() => {
+    switch (this.profitMoodTier()) {
+      case 'loss':
+        return 'Prejuízo';
+      case 'zero':
+        return 'Sem lucro';
+      default:
+        return 'Lucro';
+    }
+  });
 
   /** Filtros do dashboard: painel fechado por defeito, campos zerados */
   showFilters = signal(false);
@@ -209,26 +327,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return `${gran} · últimos 30 dias`;
   });
 
+  /** Sempre 30 dias de calendário (hoje incluso), para o eixo X ter pontos suficientes para curvas suaves. */
   private getDefaultRange(): { from: string; to: string } {
     const end = new Date();
     end.setHours(0, 0, 0, 0);
     const start = new Date(end);
     start.setDate(start.getDate() - 29);
-
-    const keys = this.orders
-      .allOrders()
-      .map((o) => this.orderDateKey(o))
-      .filter(Boolean)
-      .sort();
-    if (keys.length > 0) {
-      const to = keys[keys.length - 1];
-      const fromD = this.parseLocalDate(to);
-      fromD.setDate(fromD.getDate() - 29);
-      const fromByData = this.toLocalDateKey(fromD);
-      const from = fromByData < keys[0] ? keys[0] : fromByData;
-      return { from, to };
-    }
-
     return {
       from: this.toLocalDateKey(start),
       to: this.toLocalDateKey(end),
@@ -572,6 +676,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Total de lembretes (para o card) */
   reminderCount = computed(() => this.reminders.reminders().length);
 
+  /** Estado da licença (aviso ≤5 dias no resumo pós-login). */
+  licenseStatus = signal<LicenseStatusResponse | null>(null);
+
   /** Card de resumo ao entrar: mostrado após login até o utilizador fechar. Persiste em sessionStorage até logout. */
   loginSummaryDismissed = signal(false);
 
@@ -579,6 +686,24 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   showLoginSummaryPopup = computed(
     () => !this.loginSummaryDismissed() && this.loginChain.activeStep() === null
   );
+
+  /** Teste ou licença paga com ≤5 dias até expirar. */
+  loginSummaryLicenseWarning = computed(() => {
+    const lic = this.licenseStatus();
+    return !!lic?.showLicenseExpiryWarning && lic.daysRemaining != null;
+  });
+
+  loginSummaryLicenseMessage = computed(() => {
+    const lic = this.licenseStatus();
+    if (!lic?.showLicenseExpiryWarning || lic.daysRemaining == null) return '';
+    const days = lic.daysRemaining;
+    const kind = lic.status === 'trial' ? 'período de teste' : 'licença';
+    if (days <= 0) {
+      return `O seu ${kind} terminou. Pague agora para continuar a usar o Chef Control.`;
+    }
+    const dayWord = days === 1 ? 'dia' : 'dias';
+    return `Faltam ${days} ${dayWord} para o ${kind} terminar. Pague agora para não perder o acesso.`;
+  });
 
   /** Janela de dias para encomendas por entregar (alinhada às configurações). */
   deliveryWindowDays = computed(() => Math.max(7, this.userSettings.getReminderDaysBefore()));
@@ -761,6 +886,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Carregar pedidos e lembretes quando o dashboard inicializar (se o utilizador estiver autenticado)
     if (this.auth.isLoggedIn()) {
+      void this.auth.getLicenseStatus().then((s) => this.licenseStatus.set(s));
       void this.orders.loadOrders().then(() => this.scheduleChartRefresh());
       this.reminders.loadReminders();
       this.withdrawalService.loadWithdrawals();
@@ -881,7 +1007,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.chartProfitExpense.destroy();
         this.chartProfitExpense = null;
       }
-      this.chartProfitExpense = new Chart(canvas, this.buildProfitExpenseChartConfig(data));
+      this.chartProfitExpense = new Chart(canvas, this.buildProfitExpenseChartConfig(data, canvas));
       this.chartRenderError.set(null);
     } catch (err) {
       console.error('Erro ao desenhar gráfico do dashboard:', err);
@@ -889,8 +1015,25 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  private waveAreaGradient(
+    ctx: CanvasRenderingContext2D,
+    height: number,
+    hex: string,
+    topAlpha: number
+  ): CanvasGradient {
+    const g = ctx.createLinearGradient(0, 0, 0, height);
+    const r = parseInt(hex.slice(1, 3), 16);
+    const gr = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    g.addColorStop(0, `rgba(${r}, ${gr}, ${b}, ${topAlpha})`);
+    g.addColorStop(0.55, `rgba(${r}, ${gr}, ${b}, ${topAlpha * 0.35})`);
+    g.addColorStop(1, `rgba(${r}, ${gr}, ${b}, 0)`);
+    return g;
+  }
+
   private buildProfitExpenseChartConfig(
-    data: ProfitExpensePoint[]
+    data: ProfitExpensePoint[],
+    canvas: HTMLCanvasElement
   ): ChartConfiguration<'line'> {
     const labels = data.map((d) => d.label);
     const profitData = data.map((d) => d.profit);
@@ -899,92 +1042,73 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const allValues = [...profitData, ...expenseData, ...debtData];
     const maxValue = allValues.length > 0 ? Math.max(0, ...allValues) : 0;
-    
-    // Arredondar para cima para o próximo múltiplo de 100 ou 1000
+
     let maxYAxis: number;
     if (maxValue === 0) {
-      maxYAxis = 1000; // Valor padrão se não houver dados
+      maxYAxis = 1000;
     } else if (maxValue < 100) {
-      maxYAxis = 100; // Se máximo é menor que 100, vai até 100
+      maxYAxis = 100;
     } else if (maxValue < 1000) {
-      // Arredondar para o próximo múltiplo de 100
       maxYAxis = Math.ceil(maxValue / 100) * 100;
     } else {
-      // Arredondar para o próximo múltiplo de 1000
       maxYAxis = Math.ceil(maxValue / 1000) * 1000;
     }
-    
-    // Calcular step size para distribuir os valores de forma equilibrada
-    // Dividir em aproximadamente 5 intervalos
+
     let stepSize: number;
     if (maxYAxis <= 100) {
-      stepSize = 20; // Para valores até 100, intervalos de 20
+      stepSize = 20;
     } else if (maxYAxis <= 1000) {
-      // Para valores até 1000, dividir em 5 partes e arredondar para múltiplo de 50
       stepSize = Math.ceil(maxYAxis / 5 / 50) * 50;
     } else {
-      // Para valores maiores que 1000, dividir em 5 partes e arredondar para múltiplo de 200
       stepSize = Math.ceil(maxYAxis / 5 / 200) * 200;
     }
 
     const g = this.chartGranularity();
+    const ctx = canvas.getContext('2d');
+    const chartH = canvas.parentElement?.clientHeight ?? 360;
+    const gradLucro = ctx
+      ? this.waveAreaGradient(ctx, chartH, PROFIT_WAVE_COLORS.lucro.line, PROFIT_WAVE_COLORS.lucro.top)
+      : 'rgba(22, 163, 74, 0.25)';
+    const gradDespesa = ctx
+      ? this.waveAreaGradient(ctx, chartH, PROFIT_WAVE_COLORS.despesa.line, PROFIT_WAVE_COLORS.despesa.top)
+      : 'rgba(220, 38, 38, 0.2)';
+    const gradDividas = ctx
+      ? this.waveAreaGradient(ctx, chartH, PROFIT_WAVE_COLORS.dividas.line, PROFIT_WAVE_COLORS.dividas.top)
+      : 'rgba(202, 138, 4, 0.2)';
+
+    const waveDataset = (
+      label: string,
+      seriesData: number[],
+      lineColor: string,
+      bg: string | CanvasGradient,
+      order: number
+    ) => ({
+      label,
+      data: seriesData,
+      borderColor: lineColor,
+      backgroundColor: bg,
+      borderWidth: 2.5,
+      tension: 0.5,
+      cubicInterpolationMode: 'monotone' as const,
+      fill: true,
+      pointRadius: 0,
+      pointHoverRadius: 5,
+      pointBackgroundColor: lineColor,
+      pointBorderColor: '#ffffff',
+      pointBorderWidth: 2,
+      pointHitRadius: 14,
+      order,
+    });
 
     return {
       type: 'line',
+      plugins: [profitExpenseSplineLabelsPlugin],
       data: {
         labels,
         datasets: [
-          {
-            label: 'Lucro',
-            data: profitData,
-            borderColor: '#059669', // Verde do sistema (--success)
-            backgroundColor: 'rgba(5, 150, 105, 0.08)',
-            borderWidth: 3,
-            tension: 0.4, // Linha suave
-            fill: false,
-            pointRadius: data.length <= 31 ? 3 : 0,
-            pointHoverRadius: 6,
-            pointBackgroundColor: '#059669',
-            pointBorderColor: '#ffffff',
-            pointBorderWidth: 2,
-            pointHoverBackgroundColor: '#047857',
-            pointHoverBorderColor: '#ffffff',
-            pointHoverBorderWidth: 2,
-          },
-          {
-            label: 'Despesa',
-            data: expenseData,
-            borderColor: '#dc2626', // Vermelho do sistema (--danger)
-            backgroundColor: 'rgba(220, 38, 38, 0.08)',
-            borderWidth: 3,
-            tension: 0.4, // Linha suave
-            fill: false,
-            pointRadius: data.length <= 31 ? 3 : 0,
-            pointHoverRadius: 6,
-            pointBackgroundColor: '#dc2626',
-            pointBorderColor: '#ffffff',
-            pointBorderWidth: 2,
-            pointHoverBackgroundColor: '#b91c1c',
-            pointHoverBorderColor: '#ffffff',
-            pointHoverBorderWidth: 2,
-          },
-          {
-            label: 'Dívidas',
-            data: debtData,
-            borderColor: '#d97706', // Laranja (--warning)
-            backgroundColor: 'rgba(217, 119, 6, 0.08)',
-            borderWidth: 3,
-            tension: 0.4,
-            fill: false,
-            pointRadius: data.length <= 31 ? 3 : 0,
-            pointHoverRadius: 6,
-            pointBackgroundColor: '#d97706',
-            pointBorderColor: '#ffffff',
-            pointBorderWidth: 2,
-            pointHoverBackgroundColor: '#b45309',
-            pointHoverBorderColor: '#ffffff',
-            pointHoverBorderWidth: 2,
-          },
+          waveDataset('Dívidas', debtData, PROFIT_WAVE_COLORS.dividas.line, gradDividas, 1),
+          waveDataset('Despesa', expenseData, PROFIT_WAVE_COLORS.despesa.line, gradDespesa, 2),
+          waveDataset('Lucro', profitData, PROFIT_WAVE_COLORS.lucro.line, gradLucro, 3),
         ],
       },
       options: {
@@ -994,18 +1118,29 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           intersect: false,
           mode: 'index',
         },
+        elements: {
+          line: {
+            capBezierPoints: true,
+            tension: 0.5,
+            cubicInterpolationMode: 'monotone' as const,
+          },
+        },
         plugins: {
           legend: {
             display: true,
-            position: 'top',
-            align: 'end',
+            position: 'bottom',
+            align: 'center',
             labels: {
               usePointStyle: true,
-              padding: 15,
+              pointStyle: 'circle',
+              padding: 18,
+              boxWidth: 10,
+              boxHeight: 10,
               font: {
-                size: 13,
+                size: 12,
+                weight: 'bold',
               },
-              color: '#334155',
+              color: '#475569',
             },
           },
           tooltip: {
@@ -1046,62 +1181,51 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         scales: {
           x: {
             display: true,
-            grid: {
-              display: true,
-              color: 'rgba(148, 163, 184, 0.1)',
-            },
-            border: {
-              display: false,
-            },
+            grid: { display: false },
+            border: { display: false },
             ticks: {
               maxRotation: 0,
               minRotation: 0,
               maxTicksLimit: g === 'day' ? 16 : g === 'month' ? 12 : 8,
               autoSkip: true,
-              font: {
-                size: 11,
-              },
-              color: '#64748b',
+              font: { size: 11, weight: 'bold' },
+              color: '#475569',
             },
           },
           y: {
             beginAtZero: true,
             max: maxYAxis,
+            border: { display: false },
+            grid: {
+              display: true,
+              color: 'rgba(148, 163, 184, 0.22)',
+              drawTicks: false,
+            },
             ticks: {
-              stepSize: stepSize,
-              font: {
-                size: 11,
-              },
+              stepSize,
+              font: { size: 10 },
               color: '#64748b',
+              padding: 8,
               callback: (value) => {
                 const num = Number(value);
                 if (num >= 1000) {
-                  // Formatar valores maiores que 1000 de forma mais clara
-                  const thousands = Math.floor(num / 1000);
-                  const remainder = num % 1000;
-                  if (remainder === 0) {
-                    // Valor exato em milhares: mostrar "1 mil MZN", "2 mil MZN", etc.
-                    return thousands + ' mil MZN';
-                  } else {
-                    // Valor com decimais: mostrar "1,5 mil MZN", "2,3 mil MZN", etc.
-                    return (num / 1000).toFixed(1).replace('.', ',') + ' mil MZN';
-                  }
+                  return (num / 1000).toFixed(num % 1000 === 0 ? 0 : 1).replace('.', ',') + 'k';
                 }
-                // Valores menores que 1000: mostrar normalmente
-                return num.toFixed(0) + ' MZN';
+                return num.toLocaleString('pt-MZ', { maximumFractionDigits: 0 });
               },
             },
-            grid: {
+            title: {
               display: true,
-              color: 'rgba(226, 232, 240, 0.6)', // Grid mais suave harmonizado com --border
-            },
-            border: {
-              display: false,
+              text: 'MZN',
+              color: '#94a3b8',
+              font: { size: 10, weight: 'bold' },
+              padding: { bottom: 6 },
             },
           },
         },
         animation: {
-          duration: 600,
+          duration: 750,
+          easing: 'easeOutQuart',
         },
       },
     };

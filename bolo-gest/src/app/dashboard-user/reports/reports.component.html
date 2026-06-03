@@ -14,6 +14,44 @@
     </div>
   </header>
 
+  @if (canExport()) {
+    <section class="export-toolbar" aria-label="Exportar relatório">
+      <div class="export-toolbar__text">
+        <span class="export-toolbar__label">Exportar relatório</span>
+        <span class="export-toolbar__hint">PDF, Word ou Excel com resumo e tabela de receita</span>
+      </div>
+      <div class="export-toolbar__actions">
+        <button
+          type="button"
+          class="export-btn export-btn--pdf"
+          [disabled]="exportBusy()"
+          (click)="exportPdf()"
+        >
+          <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
+          PDF
+        </button>
+        <button
+          type="button"
+          class="export-btn export-btn--word"
+          [disabled]="exportBusy()"
+          (click)="exportWord()"
+        >
+          <i class="fa-solid fa-file-word" aria-hidden="true"></i>
+          Word
+        </button>
+        <button
+          type="button"
+          class="export-btn export-btn--excel"
+          [disabled]="exportBusy()"
+          (click)="exportExcel()"
+        >
+          <i class="fa-solid fa-file-excel" aria-hidden="true"></i>
+          Excel
+        </button>
+      </div>
+    </section>
+  }
+
   @if (!isAdmin) {
     <section class="profit-kpis" aria-label="Lucro por período">
       <article class="profit-card profit-card--day">

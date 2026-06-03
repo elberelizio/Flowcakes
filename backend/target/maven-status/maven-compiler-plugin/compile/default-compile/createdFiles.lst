@@ -64,6 +64,7 @@ com\chefcontrol\mpesa\MpesaService$C2BResult.class
 com\chefcontrol\dto\LicenseStatusResponse.class
 com\chefcontrol\service\SystemNotificationService.class
 com\chefcontrol\dto\UserFeedbackDto.class
+com\chefcontrol\dto\FeedbackPromptStatusDto.class
 com\chefcontrol\service\SecurityEventService.class
 com\chefcontrol\service\OrderService.class
 com\chefcontrol\dto\StoreSettingsRequest.class

@@ -303,25 +303,112 @@
   }
 }
 
-/* Botões com efeitos melhorados */
-button {
+.register-actions .register-submit-btn {
   position: relative;
   overflow: hidden;
+}
+
+.register-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  width: 100%;
+  min-height: 3.35rem;
+  padding: 0.95rem 1.5rem;
+  border: none;
+  border-radius: 0.875rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 42%, #0f766e 100%);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 10px 28px -6px rgba(13, 148, 136, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
 
   &::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.1);
-    transition: left 0.3s ease;
+    inset: 0;
     border-radius: inherit;
+    background: linear-gradient(
+      105deg,
+      transparent 35%,
+      rgba(255, 255, 255, 0.18) 50%,
+      transparent 65%
+    );
+    opacity: 0;
+    transition: opacity 0.25s ease;
   }
 
-  &:hover::before {
-    left: 100%;
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+    box-shadow:
+      0 4px 10px rgba(15, 23, 42, 0.08),
+      0 16px 36px -8px rgba(13, 148, 136, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.28);
+
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    filter: brightness(0.98);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 3px #fff,
+      0 0 0 5px rgba(13, 148, 136, 0.5),
+      0 10px 28px -6px rgba(13, 148, 136, 0.45);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    transform: none;
+    filter: grayscale(0.15);
+    box-shadow: none;
+  }
+
+  &--loading {
+    pointer-events: none;
+  }
+}
+
+.register-submit-btn__icon {
+  font-size: 0.9rem;
+  transition: transform 0.25s ease;
+}
+
+.register-submit-btn:hover:not(:disabled) .register-submit-btn__icon {
+  transform: translateX(3px);
+}
+
+.register-submit-btn__spinner {
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: registerSubmitSpin 0.65s linear infinite;
+}
+
+@keyframes registerSubmitSpin {
+  to {
+    transform: rotate(360deg);
   }
 }
 

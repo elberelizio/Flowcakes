@@ -2,7 +2,6 @@ import { Injectable, inject, Injector, signal } from '@angular/core';
 import { AuthService } from './auth.service';
 import { SystemNotificationsService } from './system-notifications.service';
 import { WelcomeOnboardingPopupService } from './welcome-onboarding-popup.service';
-import { LicenseExpiryPopupService } from './license-expiry-popup.service';
 import { SatisfactionPromptService } from './satisfaction-prompt.service';
 
 export type LoginPopupStep = 'aviso' | 'welcome' | 'license' | 'satisfaction';
@@ -12,9 +11,7 @@ export type LoginPopupStep = 'aviso' | 'welcome' | 'license' | 'satisfaction';
  * 1. Manutenção / aviso do sistema
  * 2. Boas-vindas (primeiro login)
  * 3. Satisfação (primeiro login, se elegível)
- * 4. Licença a expirar (se aplicável)
- *
- * O resumo financeiro + encomendas por entregar fica no popup do dashboard.
+ * O aviso de licença a expirar (≤5 dias) fica no popup «Resumo da situação» do dashboard.
  */
 @Injectable({ providedIn: 'root' })
 export class LoginPopupOrchestratorService {
@@ -130,20 +127,10 @@ export class LoginPopupOrchestratorService {
   }
 
   private async trySatisfactionThenLicense(): Promise<void> {
-    const shown = await this.satisfactionPrompt.tryShowAfterLoginChain();
-    if (shown) {
-      this.activeStep.set('satisfaction');
-      return;
-    }
     this.showLicenseOrEnd();
   }
 
   private showLicenseOrEnd(): void {
-    const licensePopup = this.injector.get(LicenseExpiryPopupService);
-    if (licensePopup.showPendingIfAny()) {
-      this.activeStep.set('license');
-      return;
-    }
     this.activeStep.set(null);
   }
 }

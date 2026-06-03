@@ -9,8 +9,10 @@ public class SimulatedPaymentPendingDto {
     private String userPhone;
     private BigDecimal amount;
     private int durationMonths;
-    /** Referência de 18 caracteres para confirmar licença (compatível com e-Mola). */
+    /** Referência interna Chef Control (gerada automaticamente ao registar o pedido). */
     private String transactionRef;
+    /** Referência opcional indicada pelo cliente no formulário. */
+    private String userTransferReference;
     private String createdAt;
     /** mpesa ou emola (só simulação). */
     private String simulationChannel;
@@ -29,6 +31,8 @@ public class SimulatedPaymentPendingDto {
     public void setDurationMonths(int durationMonths) { this.durationMonths = durationMonths; }
     public String getTransactionRef() { return transactionRef; }
     public void setTransactionRef(String transactionRef) { this.transactionRef = transactionRef; }
+    public String getUserTransferReference() { return userTransferReference; }
+    public void setUserTransferReference(String userTransferReference) { this.userTransferReference = userTransferReference; }
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
     public String getSimulationChannel() { return simulationChannel; }

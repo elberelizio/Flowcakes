@@ -1,5 +1,17 @@
+.public-site-nav {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid transparent;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    padding 0.25s ease;
+}
+
 .public-site-nav--scrolled {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(14px);
+  border-bottom-color: rgba(226, 232, 240, 0.9);
+  box-shadow: 0 4px 24px -8px rgba(15, 23, 42, 0.1);
 }

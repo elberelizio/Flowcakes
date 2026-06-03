@@ -8,7 +8,9 @@ import com.chefcontrol.exception.LicenseLoginBlockedException;
 import com.chefcontrol.entity.LicenseTransactionEntity;
 import com.chefcontrol.entity.UserEntity;
 import com.chefcontrol.entity.UserLicenseEntity;
+import com.chefcontrol.entity.MpesaPaymentEntity;
 import com.chefcontrol.repository.LicenseTransactionRepository;
+import com.chefcontrol.repository.MpesaPaymentRepository;
 import com.chefcontrol.repository.UserLicenseRepository;
 import com.chefcontrol.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +22,7 @@ import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
@@ -37,9 +40,13 @@ public class LicenseService {
     /** EN: Paid subscription. PT: Subscrição paga. */
     public static final String STATUS_PAID = "paid";
 
+    /** Aviso de renovação quando faltam ≤ este número de dias (teste ou paga). */
+    public static final int LICENSE_EXPIRY_WARNING_DAYS = 5;
+
     private final UserLicenseRepository licenseRepository;
     private final LicenseTransactionRepository licenseTransactionRepository;
     private final UserRepository userRepository;
+    private final MpesaPaymentRepository mpesaPaymentRepository;
 
     @Value("${app.license-amount:500}")
     private BigDecimal licenseAmount;
@@ -47,12 +54,20 @@ public class LicenseService {
     @Value("${app.e-mola-phone:871964887}")
     private String eMolaPhone;
 
+    @Value("${app.mpesa-phone:846746170}")
+    private String mpesaPhone;
+
+    @Value("${app.support-whatsapp:871964887}")
+    private String supportWhatsapp;
+
     public LicenseService(UserLicenseRepository licenseRepository,
                           LicenseTransactionRepository licenseTransactionRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          MpesaPaymentRepository mpesaPaymentRepository) {
         this.licenseRepository = licenseRepository;
         this.licenseTransactionRepository = licenseTransactionRepository;
         this.userRepository = userRepository;
+        this.mpesaPaymentRepository = mpesaPaymentRepository;
     }
 
     /**
@@ -206,7 +221,7 @@ public class LicenseService {
             Long days = computeDaysRemaining(lic);
             if (days != null) {
                 resp.setLicenseDaysRemaining(days);
-                boolean warn = days > 0 && days <= 10 && hasActiveLicenseAccess(userId);
+                boolean warn = days > 0 && days <= LICENSE_EXPIRY_WARNING_DAYS && hasActiveLicenseAccess(userId);
                 resp.setShowLicenseExpiryWarning(warn);
             }
         });
@@ -227,6 +242,8 @@ public class LicenseService {
     public void fillLicenseStatusResponse(UUID userId, LicenseStatusResponse r) {
         r.setAmount(licenseAmount);
         r.setEMolaPhone(eMolaPhone);
+        r.setMpesaPhone(mpesaPhone);
+        r.setSupportWhatsapp(supportWhatsapp);
         r.setAccountFinalized(hasActiveLicenseAccess(userId));
         licenseRepository.findByUserId(userId).ifPresent(lic -> {
             r.setStatus(lic.getStatus());
@@ -235,11 +252,31 @@ public class LicenseService {
             Long days = computeDaysRemaining(lic);
             if (days != null) {
                 r.setDaysRemaining(days);
-                r.setShowLicenseExpiryWarning(days > 0 && days <= 10 && hasActiveLicenseAccess(userId));
+                r.setShowLicenseExpiryWarning(days > 0 && days <= LICENSE_EXPIRY_WARNING_DAYS && hasActiveLicenseAccess(userId));
             }
         });
         if (r.getStatus() == null) {
             r.setStatus(STATUS_PENDING);
+        }
+        applyLatestManualPaymentStatus(userId, r);
+    }
+
+    private void applyLatestManualPaymentStatus(UUID userId, LicenseStatusResponse r) {
+        List<MpesaPaymentEntity> payments = mpesaPaymentRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        if (payments.isEmpty()) {
+            return;
+        }
+        MpesaPaymentEntity latest = payments.get(0);
+        if (!"rejected".equals(latest.getStatus())) {
+            return;
+        }
+        r.setLastPaymentRejected(true);
+        r.setPaymentRejectedAt(latest.getRejectedAt());
+        String reason = latest.getAdminRejectionReason();
+        if (reason != null && !reason.isBlank()) {
+            r.setPaymentRejectionReason(reason.trim());
+        } else {
+            r.setPaymentRejectionReason("O pagamento não foi confirmado. Pode efectuar uma nova transferência.");
         }
     }
 
@@ -253,15 +290,7 @@ public class LicenseService {
         }
         UserLicenseEntity lic = opt.get();
         return licenseTransactionRepository.findByUserLicenseIdOrderByCreatedAtDesc(lic.getId()).stream()
-            .map(tx -> {
-                LicensePaymentDto d = new LicensePaymentDto();
-                d.setId(tx.getId() != null ? tx.getId().toString() : null);
-                d.setCreatedAt(tx.getCreatedAt() != null ? tx.getCreatedAt().toString() : null);
-                d.setAmount(tx.getAmount() != null ? tx.getAmount() : licenseAmount);
-                d.setDurationMonths(tx.getDurationMonths() != null ? tx.getDurationMonths() : 1);
-                d.setEMolaTransactionId(tx.getEMolaTransactionId());
-                return d;
-            })
+            .map(this::toLicensePaymentDto)
             .collect(Collectors.toList());
     }
 
@@ -291,7 +320,9 @@ public class LicenseService {
             .collect(Collectors.toList());
     }
 
-    private static final int DAYS_PER_MONTH = 30;
+    /** Cada unidade paga da licença = 30 dias de validade. */
+    public static final int DAYS_PER_LICENSE_PAYMENT_UNIT = 30;
+    private static final int DAYS_PER_MONTH = DAYS_PER_LICENSE_PAYMENT_UNIT;
 
     /**
      * Confirma pagamento da licença com o ID da transacção e-Mola e duração em meses.
@@ -319,16 +350,9 @@ public class LicenseService {
         UserLicenseEntity lic = licenseRepository.findByUserId(userId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Licença não encontrada"));
         Instant now = Instant.now();
-        LicenseTransactionEntity tx = new LicenseTransactionEntity();
-        tx.setUserLicenseId(lic.getId());
-        tx.setEMolaTransactionId(txId);
-        tx.setAmount(licenseAmount.multiply(BigDecimal.valueOf(durationMonths)));
-        tx.setDurationMonths(durationMonths);
-        licenseTransactionRepository.save(tx);
 
         if ((STATUS_PAID.equals(lic.getStatus()) || STATUS_TRIAL.equals(lic.getStatus()))
                 && lic.getValidUntil() != null && lic.getValidUntil().isAfter(now)) {
-            // Renovação: soma tempo restante + nova duração (em dias)
             long extraDays = durationMonths * DAYS_PER_MONTH;
             lic.setValidUntil(lic.getValidUntil().plus(extraDays, ChronoUnit.DAYS));
             if (lic.getLicenseToken() == null || lic.getLicenseToken().isBlank()) {
@@ -337,22 +361,66 @@ public class LicenseService {
             if (lic.getActivationToken() == null || lic.getActivationToken().isBlank()) {
                 lic.setActivationToken(generateActivationToken());
             }
-            return licenseRepository.save(lic);
+        } else {
+            lic.setStatus(STATUS_PAID);
+            lic.setPaidAt(lic.getPaidAt() != null ? lic.getPaidAt() : now);
+            lic.setPaymentReference(txId);
+            lic.setRejectedAt(null);
+            if (lic.getLicenseToken() == null || lic.getLicenseToken().isBlank()) {
+                lic.setLicenseToken(generateLicenseToken());
+            }
+            if (lic.getActivationToken() == null || lic.getActivationToken().isBlank()) {
+                lic.setActivationToken(generateActivationToken());
+            }
+            lic.setValidUntil(now.plus((long) durationMonths * DAYS_PER_MONTH, ChronoUnit.DAYS));
         }
 
-        // Primeira vez pago ou licença expirada: valid_until = now + duração
-        lic.setStatus(STATUS_PAID);
-        lic.setPaidAt(lic.getPaidAt() != null ? lic.getPaidAt() : now);
-        lic.setPaymentReference(txId);
-        lic.setRejectedAt(null); // Limpar rejeição ao aprovar
-        if (lic.getLicenseToken() == null || lic.getLicenseToken().isBlank()) {
-            lic.setLicenseToken(generateLicenseToken());
+        lic = licenseRepository.save(lic);
+
+        LicenseTransactionEntity tx = new LicenseTransactionEntity();
+        tx.setUserLicenseId(lic.getId());
+        tx.setEMolaTransactionId(txId);
+        tx.setAmount(licenseAmount.multiply(BigDecimal.valueOf(durationMonths)));
+        tx.setDurationMonths(durationMonths);
+        tx.setValidUntilAfter(lic.getValidUntil());
+        licenseTransactionRepository.save(tx);
+        tx.setReceiptNumber(buildReceiptNumber(tx));
+        licenseTransactionRepository.save(tx);
+
+        return lic;
+    }
+
+    private LicensePaymentDto toLicensePaymentDto(LicenseTransactionEntity tx) {
+        LicensePaymentDto d = new LicensePaymentDto();
+        d.setId(tx.getId() != null ? tx.getId().toString() : null);
+        d.setCreatedAt(tx.getCreatedAt() != null ? tx.getCreatedAt().toString() : null);
+        d.setAmount(tx.getAmount() != null ? tx.getAmount() : licenseAmount);
+        int months = tx.getDurationMonths() != null ? tx.getDurationMonths() : 1;
+        d.setDurationMonths(months);
+        d.setDurationDays(months * DAYS_PER_LICENSE_PAYMENT_UNIT);
+        d.setEMolaTransactionId(tx.getEMolaTransactionId());
+        d.setReceiptNumber(resolveReceiptNumber(tx));
+        d.setValidUntilAfter(tx.getValidUntilAfter() != null ? tx.getValidUntilAfter().toString() : null);
+        d.setPaymentStatus("confirmed");
+        return d;
+    }
+
+    private String resolveReceiptNumber(LicenseTransactionEntity tx) {
+        if (tx.getReceiptNumber() != null && !tx.getReceiptNumber().isBlank()) {
+            return tx.getReceiptNumber();
         }
-        if (lic.getActivationToken() == null || lic.getActivationToken().isBlank()) {
-            lic.setActivationToken(generateActivationToken());
-        }
-        lic.setValidUntil(now.plus((long) durationMonths * DAYS_PER_MONTH, ChronoUnit.DAYS));
-        return licenseRepository.save(lic);
+        return buildReceiptNumber(tx);
+    }
+
+    private String buildReceiptNumber(LicenseTransactionEntity tx) {
+        Instant created = tx.getCreatedAt() != null ? tx.getCreatedAt() : Instant.now();
+        String date = DateTimeFormatter.ofPattern("yyyyMMdd")
+            .withZone(ZoneId.of("Africa/Maputo"))
+            .format(created);
+        String suffix = tx.getId() != null
+            ? tx.getId().toString().replace("-", "").substring(0, 8).toUpperCase()
+            : "00000000";
+        return "RC-" + date + "-" + suffix;
     }
 
     /**
@@ -399,6 +467,14 @@ public class LicenseService {
 
     public String getEMolaPhone() {
         return eMolaPhone;
+    }
+
+    public String getMpesaPhone() {
+        return mpesaPhone;
+    }
+
+    public String getSupportWhatsapp() {
+        return supportWhatsapp;
     }
 
     public BigDecimal getLicenseAmount() {
