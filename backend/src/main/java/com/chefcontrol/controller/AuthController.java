@@ -6,6 +6,7 @@ import com.chefcontrol.config.SessionInfo;
 import com.chefcontrol.dto.*;
 import com.chefcontrol.service.AuthService;
 import com.chefcontrol.service.LicenseService;
+import com.chefcontrol.service.PasswordResetService;
 import com.chefcontrol.service.StoreSettingsService;
 import com.chefcontrol.service.UserActivityService;
 import jakarta.servlet.http.Cookie;
@@ -19,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -29,17 +31,20 @@ public class AuthController {
     private final LicenseService licenseService;
     private final UserActivityService userActivityService;
     private final StoreSettingsService storeSettingsService;
+    private final PasswordResetService passwordResetService;
 
     public AuthController(
         AuthService authService,
         LicenseService licenseService,
         UserActivityService userActivityService,
-        StoreSettingsService storeSettingsService
+        StoreSettingsService storeSettingsService,
+        PasswordResetService passwordResetService
     ) {
         this.authService = authService;
         this.licenseService = licenseService;
         this.userActivityService = userActivityService;
         this.storeSettingsService = storeSettingsService;
+        this.passwordResetService = passwordResetService;
     }
 
     @PostMapping(value = {"/login", "/login/"}, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -139,6 +144,35 @@ public class AuthController {
             @Valid @RequestBody ChangePasswordRequest request) {
         authService.changePassword(userId, request);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/recover-password/request-otp")
+    public ResponseEntity<RecoverPasswordRequestOtpResponse> recoverPasswordRequestOtp(
+            @Valid @RequestBody RecoverPasswordRequestOtpDto body,
+            HttpServletRequest httpRequest) {
+        return ResponseEntity.ok(passwordResetService.requestOtp(
+                body.getPhone(),
+                getClientIp(httpRequest),
+                httpRequest.getHeader("User-Agent")));
+    }
+
+    @PostMapping("/recover-password/verify-otp")
+    public ResponseEntity<RecoverPasswordVerifyOtpResponse> recoverPasswordVerifyOtp(
+            @Valid @RequestBody RecoverPasswordVerifyOtpDto body,
+            HttpServletRequest httpRequest) {
+        return ResponseEntity.ok(passwordResetService.verifyOtp(
+                body.getPhone(),
+                body.getOtp(),
+                getClientIp(httpRequest),
+                httpRequest.getHeader("User-Agent")));
+    }
+
+    @PostMapping("/recover-password/reset")
+    public ResponseEntity<Map<String, String>> recoverPasswordReset(
+            @Valid @RequestBody RecoverPasswordResetDto body,
+            HttpServletRequest httpRequest) {
+        passwordResetService.resetPassword(body, getClientIp(httpRequest), httpRequest.getHeader("User-Agent"));
+        return ResponseEntity.ok(Map.of("message", "Senha alterada com sucesso. Já pode entrar com a nova senha."));
     }
 
     @PutMapping("/change-phone")

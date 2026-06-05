@@ -24,6 +24,9 @@ public class SecurityEventService {
     public static final String EVENT_PHONE_CHANGE_REJECTED_REGISTERED = "PHONE_CHANGE_REJECTED_REGISTERED";
     public static final String EVENT_ACCOUNT_AUTO_BLOCKED = "ACCOUNT_AUTO_BLOCKED";
     public static final String EVENT_ACCOUNT_UNBLOCKED = "ACCOUNT_UNBLOCKED";
+    public static final String EVENT_PASSWORD_RESET_OTP_REQUESTED = "PASSWORD_RESET_OTP_REQUESTED";
+    public static final String EVENT_PASSWORD_RESET_OTP_VERIFIED = "PASSWORD_RESET_OTP_VERIFIED";
+    public static final String EVENT_PASSWORD_RESET_COMPLETED = "PASSWORD_RESET_COMPLETED";
 
     public static final String BLOCK_REASON_PASSWORD_ATTEMPTS = "PASSWORD_ATTEMPTS";
     public static final String BLOCK_REASON_MANUAL = "MANUAL";

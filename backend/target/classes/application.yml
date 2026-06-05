@@ -28,6 +28,11 @@ app:
   mpesa-phone: "846746170"
   support-whatsapp: "871964887"
   trial-days: 14
+  password-reset:
+    otp-expiry-minutes: 10
+    reset-token-expiry-minutes: 15
+    # Dev/simulação: devolve OTP na resposta JSON para mostrar no ecrã
+    simulation-expose-otp: ${APP_PASSWORD_RESET_SIMULATION:true}
   # SMS (operador nacional) e WhatsApp via Twilio
   # Confirmação de conta (registo) + código de licença (após admin confirmar pagamento)
   twilio-account-sid: ${TWILIO_ACCOUNT_SID:}

@@ -1,15 +1,18 @@
 com\chefcontrol\dto\TestNotificationRequest.class
 com\chefcontrol\service\UserFeedbackService.class
 com\chefcontrol\config\SessionConfig.class
+com\chefcontrol\repository\PasswordResetOtpRepository.class
 com\chefcontrol\dto\ConfirmPaymentRequest.class
 com\chefcontrol\dto\LandingSuggestionDto.class
 com\chefcontrol\repository\PhoneChangeRequestRepository.class
 com\chefcontrol\dto\UserResponse.class
 com\chefcontrol\repository\UserStoreSettingsRepository.class
 com\chefcontrol\dto\AdminRankingRowDto.class
+com\chefcontrol\dto\RecoverPasswordVerifyOtpResponse.class
 com\chefcontrol\dto\RegisterRequest.class
 com\chefcontrol\dto\ReminderRequest.class
 com\chefcontrol\dto\RejectSimulatedPaymentRequest.class
+com\chefcontrol\dto\RecoverPasswordVerifyOtpDto.class
 com\chefcontrol\dto\LicenseInfoPublicDto.class
 com\chefcontrol\repository\SecurityEventRepository.class
 com\chefcontrol\dto\UserActivityHistoryPageDto.class
@@ -29,8 +32,10 @@ com\chefcontrol\controller\WithdrawalController.class
 com\chefcontrol\dto\AdminLoginSummaryDto.class
 com\chefcontrol\repository\UserNotificationDismissalRepository.class
 com\chefcontrol\service\AccountSecurityService.class
+com\chefcontrol\dto\RecoverPasswordRequestOtpResponse.class
 com\chefcontrol\dto\OperationalExpenseRequest.class
 com\chefcontrol\service\ReminderService.class
+com\chefcontrol\dto\RecoverPasswordRequestOtpDto.class
 com\chefcontrol\dto\LicenseExpiringUserDto.class
 com\chefcontrol\dto\SystemNotificationDto.class
 com\chefcontrol\ChefControlApplication.class
@@ -43,6 +48,7 @@ com\chefcontrol\service\AccessLogService.class
 com\chefcontrol\exception\InvalidPasswordException.class
 com\chefcontrol\repository\MpesaPaymentRepository.class
 com\chefcontrol\service\AuthService.class
+com\chefcontrol\entity\PasswordResetOtpEntity.class
 com\chefcontrol\dto\OperationalExpenseDto.class
 com\chefcontrol\repository\AccessLogRepository.class
 com\chefcontrol\dto\UserFeedbackRequest.class
@@ -105,6 +111,7 @@ com\chefcontrol\dto\ChangePasswordRequest.class
 com\chefcontrol\dto\AdminAlertItemDto.class
 com\chefcontrol\entity\SystemNotificationEntity.class
 com\chefcontrol\dto\AdminAlertsDto.class
+com\chefcontrol\service\PasswordResetService.class
 com\chefcontrol\dto\TreasuryBillingPeriodDto.class
 com\chefcontrol\dto\TestNotificationResponse.class
 com\chefcontrol\service\LicenseService.class
@@ -134,6 +141,7 @@ com\chefcontrol\dto\StoreSettingsDto.class
 com\chefcontrol\entity\LandingSuggestionEntity.class
 com\chefcontrol\entity\MpesaPaymentEntity.class
 com\chefcontrol\repository\OperationalExpenseRepository.class
+com\chefcontrol\dto\RecoverPasswordResetDto.class
 com\chefcontrol\entity\UserActivityLogEntity.class
 com\chefcontrol\repository\UserFeedbackRepository.class
 com\chefcontrol\controller\AdminController.class
