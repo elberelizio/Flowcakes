@@ -4,7 +4,7 @@ import com.chefcontrol.dto.LicenseInfoPublicDto;
 import com.chefcontrol.dto.LicensePaymentDto;
 import com.chefcontrol.dto.LicenseStatusResponse;
 import com.chefcontrol.dto.LicenseExpiringUserDto;
-import com.chefcontrol.exception.LicenseLoginBlockedException;
+import com.chefcontrol.dto.UserResponse;
 import com.chefcontrol.entity.LicenseTransactionEntity;
 import com.chefcontrol.entity.UserEntity;
 import com.chefcontrol.entity.UserLicenseEntity;
@@ -164,43 +164,105 @@ public class LicenseService {
     }
 
     /**
-     * Se a licença não permite sessão (não-admin), lança excepção com código e data para o ecrã de login.
+     * Código de restrição para UI (login permitido, app bloqueada até pagamento aprovado).
      */
-    public void assertLicenseAllowsLogin(UUID userId, boolean isAdmin) {
-        if (isAdmin || hasActiveLicenseAccess(userId)) {
-            return;
-        }
+    public String resolveRestrictionCode(UUID userId) {
         Optional<UserLicenseEntity> opt = licenseRepository.findByUserId(userId);
         Instant now = Instant.now();
         if (opt.isEmpty()) {
-            throw new LicenseLoginBlockedException(
-                "LICENSE_PENDING",
-                "Não existe licença associada à sua conta. Efectue o pagamento ou contacte o suporte.",
-                null);
+            return "LICENSE_PENDING";
         }
         UserLicenseEntity lic = opt.get();
         if (STATUS_PENDING.equals(lic.getStatus())) {
-            throw new LicenseLoginBlockedException(
-                "LICENSE_PENDING",
-                "A sua licença ainda não foi activada. Efectue o pagamento via M-Pesa para continuar.",
-                null);
+            return "LICENSE_PENDING";
         }
         if (lic.getValidUntil() != null && lic.getValidUntil().isBefore(now)) {
             if (!hasCompletedPaidSubscriptionBeyondTrial(lic)) {
-                throw new LicenseLoginBlockedException(
-                    "LICENSE_TRIAL_ENDED",
-                    "O seu período de teste terminou. Renove a licença via M-Pesa para voltar a aceder.",
-                    lic.getValidUntil());
+                return "LICENSE_TRIAL_ENDED";
             }
-            throw new LicenseLoginBlockedException(
-                "LICENSE_EXPIRED",
-                "A sua licença expirou. Renove via M-Pesa para voltar a aceder.",
-                lic.getValidUntil());
+            return "LICENSE_EXPIRED";
         }
-        throw new LicenseLoginBlockedException(
-            "LICENSE_PENDING",
-            "Não é possível iniciar sessão. Efectue o pagamento da licença ou contacte o suporte.",
-            lic.getValidUntil());
+        return "LICENSE_PENDING";
+    }
+
+    /** Preenche accountFinalized, código de restrição e aviso de expiração no perfil/sessão. */
+    public void enrichUserAccessFlags(UUID userId, UserResponse resp) {
+        if (Boolean.TRUE.equals(resp.getAdmin())) {
+            resp.setAccountFinalized(true);
+            resp.setLicenseRestrictedCode(null);
+            return;
+        }
+        boolean active = hasActiveLicenseAccess(userId);
+        resp.setAccountFinalized(active);
+        resp.setLicenseRestrictedCode(active ? null : resolveRestrictionCode(userId));
+        applyLicenseExpiryToUserResponse(userId, resp);
+        applyPaymentRejectionLoginHint(userId, resp);
+        if (resp.getSupportWhatsapp() == null || resp.getSupportWhatsapp().isBlank()) {
+            resp.setSupportWhatsapp(supportWhatsapp);
+        }
+    }
+
+    /**
+     * Regras de login:
+     * <ul>
+     *   <li>Licença activa (teste ou paga) → acesso completo ({@code accountFinalized=true}).</li>
+     *   <li>Sem licença activa (teste expirado, licença expirada, pendente, transferência pendente/rejeitada)
+     *       → permite iniciar sessão; o front restringe a {@code /license-payment} até o admin confirmar o pagamento.</li>
+     * </ul>
+     */
+    public void assertLoginAllowed(UUID userId, boolean isAdmin) {
+        if (isAdmin || hasActiveLicenseAccess(userId)) {
+            return;
+        }
+        // Utilizador entra com accountFinalized=false; flags em enrichUserAccessFlags.
+    }
+
+    /** @deprecated Use {@link #assertLoginAllowed(UUID, boolean)}. */
+    @Deprecated
+    public void assertLicenseAllowsLogin(UUID userId, boolean isAdmin) {
+        assertLoginAllowed(userId, isAdmin);
+    }
+
+    public boolean hasPendingManualPayment(UUID userId) {
+        return mpesaPaymentRepository.findFirstByUserIdAndStatusOrderByCreatedAtDesc(userId, "pending")
+            .filter(LicenseService::isManualTransferPayment)
+            .isPresent();
+    }
+
+    public Optional<MpesaPaymentEntity> findLatestRejectedManualPayment(UUID userId) {
+        List<MpesaPaymentEntity> payments = mpesaPaymentRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        if (payments.isEmpty()) {
+            return Optional.empty();
+        }
+        MpesaPaymentEntity latest = payments.get(0);
+        if ("rejected".equals(latest.getStatus()) && isManualTransferPayment(latest)) {
+            return Optional.of(latest);
+        }
+        return Optional.empty();
+    }
+
+    private static boolean isManualTransferPayment(MpesaPaymentEntity p) {
+        return p.getThirdPartyId() != null && p.getThirdPartyId().startsWith("SIM-");
+    }
+
+    private void applyPaymentRejectionLoginHint(UUID userId, UserResponse resp) {
+        if (Boolean.TRUE.equals(resp.getAdmin()) || Boolean.TRUE.equals(resp.getAccountFinalized())) {
+            return;
+        }
+        if (hasPendingManualPayment(userId)) {
+            return;
+        }
+        findLatestRejectedManualPayment(userId).ifPresent(p -> {
+            resp.setShowPaymentRejectionPopup(true);
+            String reason = p.getAdminRejectionReason();
+            if (reason != null && !reason.isBlank()) {
+                resp.setPaymentRejectionReason(reason.trim());
+            } else {
+                resp.setPaymentRejectionReason(
+                    "O pagamento não foi confirmado. Verifique o valor, a referência e a operadora, ou contacte o suporte.");
+            }
+            resp.setSupportWhatsapp(supportWhatsapp);
+        });
     }
 
     /** True se já existe pagamento real (referência não-TRIAL ou transacção registada). */
@@ -213,7 +275,7 @@ public class LicenseService {
         return licenseTransactionRepository.existsByUserLicenseId(lic.getId());
     }
 
-    public void applyLicenseExpiryToUserResponse(UUID userId, com.chefcontrol.dto.UserResponse resp) {
+    public void applyLicenseExpiryToUserResponse(UUID userId, UserResponse resp) {
         if (userRepository.findById(userId).map(UserEntity::isAdmin).orElse(false)) {
             return;
         }

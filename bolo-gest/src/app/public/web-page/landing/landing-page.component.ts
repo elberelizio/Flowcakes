@@ -249,8 +249,8 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     if (this.registrationFlow.isFinalizePaid()) {
-      void this.router.navigate(['/license-payment'], {
-        queryParams: phone ? { phone, from: 'register' } : { from: 'register' },
+      void this.router.navigate(['/login'], {
+        queryParams: phone ? { phone, finalize: '1' } : { finalize: '1' },
       });
       return;
     }

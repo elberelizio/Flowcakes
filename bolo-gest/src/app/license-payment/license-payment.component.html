@@ -1,13 +1,34 @@
 <div
-  class="license-web-shell landing-page-root font-sans text-gray-800"
+  class="license-web-shell"
   [class.license-web-shell--in-app]="inAppShell()"
+  [class.license-web-shell--restricted]="accessRestricted()"
   [class.license-web-shell--register]="inRegistrationFlow && !inAppShell()">
-  @if (!inAppShell()) {
+  @if (accessRestricted()) {
+    <header class="pay-topbar" aria-label="Renovação de licença">
+      <a class="pay-topbar__brand" routerLink="/license-payment" title="Pagamento da licença">
+        <img src="/logotipo.png" alt="" class="pay-topbar__logo" width="40" height="40" decoding="async" />
+        <span class="pay-topbar__app">Chef Control</span>
+      </a>
+      <div class="pay-topbar__end">
+        <div class="pay-topbar__user" [attr.aria-label]="'Sessão de ' + userDisplayName()">
+          <span class="pay-topbar__avatar" aria-hidden="true">{{ userInitials() }}</span>
+          <div class="pay-topbar__user-text">
+            <span class="pay-topbar__user-name">{{ userDisplayName() }}</span>
+            <span class="pay-topbar__user-phone">{{ userDisplayPhone() }}</span>
+          </div>
+        </div>
+        <button type="button" class="pay-topbar__logout" (click)="logout()" title="Terminar sessão">
+          <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+        </button>
+      </div>
+    </header>
+  } @else if (!inAppShell()) {
     <app-public-site-nav />
+    <div class="license-web-shell__bg" aria-hidden="true"></div>
   }
 
-  @if (!inAppShell()) {
-    <div class="license-web-shell__bg" aria-hidden="true"></div>
+  @if (accessRestricted()) {
+    <div class="license-web-shell__mesh" aria-hidden="true"></div>
   }
 
   <main class="license-web-shell__main">
@@ -15,126 +36,99 @@
       <app-registration-progress [currentStep]="registrationProgressStep" class="license-web-shell__progress" />
     }
 
-    @if (inAppShell()) {
-      <div class="pay-layout">
-        <header class="pay-layout__header">
-          <a routerLink="/my-license" class="pay-layout__back">
-            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
-            Voltar à minha licença
-          </a>
-          <div class="pay-layout__intro">
-            <h1>{{ str.heading }}</h1>
-            <p>{{ str.leadLoggedShort }}</p>
+    @if (sessionActive()) {
+      @if (accessRestricted()) {
+        <div class="pay-urgent" role="alert">
+          <div class="pay-urgent__icon" aria-hidden="true"><i class="fa-solid fa-lock"></i></div>
+          <div class="pay-urgent__copy">
+            <p class="pay-urgent__title">{{ restrictionTitle() }}</p>
+            <p class="pay-urgent__text">{{ restrictionMessage() }}</p>
           </div>
-        </header>
+        </div>
+        <nav class="pay-pills" aria-label="Passos">
+          <span class="pay-pills__item" [class.pay-pills__item--on]="currentPayStep() >= 1">1 · Operadora</span>
+          <span class="pay-pills__item" [class.pay-pills__item--on]="currentPayStep() >= 2">2 · Transferir</span>
+          <span class="pay-pills__item" [class.pay-pills__item--on]="currentPayStep() >= 3">3 · Confirmar</span>
+        </nav>
 
-        <div class="pay-layout__grid">
-          <aside class="pay-order-panel" aria-label="Resumo do pedido">
-            <p class="pay-order-panel__eyebrow">Resumo</p>
-            <div class="pay-order-panel__product">
-              <span class="pay-order-panel__name">{{ str.lineItemName }}</span>
-              <span class="pay-order-panel__rate">{{ licenseMonthAmountMzn() }} MZN / 30 dias</span>
-            </div>
-            <label class="pay-order-panel__field" for="payMonthsApp">
-              <span>{{ str.durationLabel }}</span>
+      @if (payModeLoading()) {
+        <div class="pay-loading" aria-busy="true"><span class="pay-loading__spinner"></span></div>
+      }
+
+      <div class="pay-checkout" [class.pay-checkout--loading]="payModeLoading()">
+        <aside class="pay-summary" aria-label="Resumo">
+          <div class="pay-summary__card">
+            <span class="pay-summary__label">{{ str.summaryTitle }}</span>
+            <p class="pay-summary__product">{{ str.lineItemName }}</p>
+            <label class="pay-summary__field" for="payMonthsApp">
+              <span>Duração</span>
               <select id="payMonthsApp" [(ngModel)]="payMonths" [disabled]="payLoading || hasPendingPayment()">
                 @for (m of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; track m) {
                   <option [ngValue]="m">{{ monthOptionLabel(m) }}</option>
                 }
               </select>
             </label>
-            <div class="pay-order-panel__total">
-              <span>{{ str.totalDue }}</span>
+            <div class="pay-summary__total">
+              <span>Total</span>
               <strong>{{ totalMzn() }} <small>MZN</small></strong>
             </div>
             @if (hasPendingPayment()) {
-              <p class="pay-order-panel__pending" role="status">
-                <i class="fa-solid fa-clock" aria-hidden="true"></i>
-                {{ str.pendingPanelNote }}
+              <p class="pay-summary__status pay-summary__status--wait">
+                <i class="fa-solid fa-clock"></i> Aguarda validação
               </p>
             }
             @if (hasRejectedPayment() && !hasPendingPayment()) {
-              <div class="pay-order-panel__rejected" role="alert">
-                <strong>{{ str.rejectedBannerTitle }}</strong>
-                <p>{{ rejectionReason() || str.rejectedBannerHint }}</p>
-              </div>
+              <p class="pay-summary__status pay-summary__status--err">{{ str.rejectedBannerTitle }}</p>
             }
-            <ol class="pay-steps-hint" aria-label="Passos">
-              <li [class.pay-steps-hint__item--done]="true">Escolher operadora</li>
-              <li [class.pay-steps-hint__item--active]="manualTransfer()">Transferir valor</li>
-              <li>Confirmar pedido</li>
-            </ol>
-          </aside>
+          </div>
+        </aside>
 
-          <section class="pay-flow-panel" aria-labelledby="pay-flow-title">
-            <h2 id="pay-flow-title" class="pay-flow-panel__title">{{ str.methodsTitle }}</h2>
-            <p class="pay-flow-panel__lead">Seleccione onde vai enviar o dinheiro</p>
-
-            <div class="pay-operator-grid" role="tablist" [attr.aria-label]="str.tablistAria">
+        <section class="pay-main" aria-label="Pagamento">
+          <div class="pay-main__card">
+            <div class="pay-operators" role="tablist">
               <button
                 type="button"
-                class="pay-operator pay-operator--vodacom"
-                [class.pay-operator--active]="selectedTab() === 'mpesa'"
+                class="pay-op pay-op--mpesa"
+                [class.pay-op--on]="selectedTab() === 'mpesa'"
                 role="tab"
-                [attr.aria-selected]="selectedTab() === 'mpesa'"
-                (click)="selectTab('mpesa')">
-                @if (selectedTab() === 'mpesa') {
-                  <span class="pay-operator__badge" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
-                }
-                <span class="pay-operator__logo">
-                  <img [src]="brandImg.mpesa" [alt]="brandAlt.mpesa" width="88" height="88" loading="lazy" />
-                </span>
-                <span class="pay-operator__brand">Vodacom</span>
-                <span class="pay-operator__channel">M-Pesa</span>
+                (click)="selectTab('mpesa')"
+                [disabled]="payLoading || hasPendingPayment()">
+                <img [src]="brandImg.mpesa" alt="M-Pesa" width="72" height="72" loading="lazy" />
+                <span>M-Pesa</span>
               </button>
-
               <button
                 type="button"
-                class="pay-operator pay-operator--movitel"
-                [class.pay-operator--active]="selectedTab() === 'emola'"
+                class="pay-op pay-op--emola"
+                [class.pay-op--on]="selectedTab() === 'emola'"
                 role="tab"
-                [attr.aria-selected]="selectedTab() === 'emola'"
-                (click)="selectTab('emola')">
-                @if (selectedTab() === 'emola') {
-                  <span class="pay-operator__badge" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
-                }
-                <span class="pay-operator__logo">
-                  <img [src]="brandImg.emola" [alt]="brandAlt.emola" class="pay-operator__logo--movitel" width="88" height="56" loading="lazy" />
-                </span>
-                <span class="pay-operator__brand">Movitel</span>
-                <span class="pay-operator__channel">e-Mola</span>
+                (click)="selectTab('emola')"
+                [disabled]="payLoading || hasPendingPayment()">
+                <img [src]="brandImg.emola" alt="e-Mola" class="pay-op__emola-img" width="72" height="48" loading="lazy" />
+                <span>e-Mola</span>
               </button>
             </div>
 
-            @if (manualTransfer()) {
+            @if (showTransferUi()) {
               <div
-                class="pay-transfer-hero"
-                [class.pay-transfer-hero--vodacom]="selectedTab() === 'mpesa'"
-                [class.pay-transfer-hero--movitel]="selectedTab() === 'emola'">
-                <div class="pay-transfer-hero__top">
-                  <span class="pay-transfer-hero__step">Transferir</span>
-                  <p class="pay-transfer-hero__amount">
-                    <strong>{{ totalMzn() }} MZN</strong>
-                    <span>para {{ operatorLabel() }}</span>
-                  </p>
-                </div>
-                <div class="pay-transfer-hero__number-wrap">
-                  <span class="pay-transfer-hero__number">{{ formatDisplayPhone(destinationPhone()) }}</span>
-                  <button type="button" class="pay-transfer-hero__copy" (click)="copyDestination()">
-                    <i class="fa-regular fa-copy" aria-hidden="true"></i>
-                    Copiar número
+                class="pay-dest"
+                [class.pay-dest--mpesa]="selectedTab() === 'mpesa'"
+                [class.pay-dest--emola]="selectedTab() === 'emola'">
+                <div class="pay-dest__row">
+                  <span class="pay-dest__amount">{{ totalMzn() }} MZN</span>
+                  <span class="pay-dest__num">{{ formatDisplayPhone(destinationPhone()) }}</span>
+                  <button type="button" class="pay-dest__copy" (click)="copyDestination()" [disabled]="hasPendingPayment()">
+                    <i class="fa-regular fa-copy"></i>
                   </button>
                 </div>
                 @if (copyHint) {
-                  <p class="pay-transfer-hero__copied">{{ copyHint }}</p>
+                  <span class="pay-dest__hint">{{ copyHint }}</span>
                 }
               </div>
             }
 
-            <div class="pay-form-grid">
-              <label class="pay-field" for="payWalletPhone">
-                <span class="pay-field__label">Número de origem</span>
-                <span class="pay-field__hint">Carteira {{ walletChannelLabel() }} usada no envio</span>
+            <div class="pay-fields">
+              <label class="pay-input" for="payWalletPhone">
+                <span>Telefone de envio</span>
                 <input
                   id="payWalletPhone"
                   type="tel"
@@ -143,143 +137,145 @@
                   [attr.placeholder]="walletPlaceholder()"
                   inputmode="numeric"
                   maxlength="9"
-                  autocomplete="tel-national"
                   [disabled]="payLoading || hasPendingPayment()" />
-                <span class="pay-field__hint pay-field__hint--below">{{ walletFormatHint() }}</span>
               </label>
-
-              @if (manualTransfer()) {
-                <label class="pay-field" for="payTransferRef">
-                  <span class="pay-field__label">{{ str.transferRefLabel }}</span>
+              @if (showTransferUi()) {
+                <label class="pay-input" for="payTransferRef">
+                  <span>Ref. SMS <em>(opcional)</em></span>
                   <input
                     id="payTransferRef"
                     type="text"
                     [(ngModel)]="transferReference"
-                    [attr.placeholder]="str.transferRefPlaceholder"
+                    placeholder="Ex.: 123456"
                     maxlength="120"
                     [disabled]="payLoading || hasPendingPayment()" />
-                  <span class="pay-field__hint pay-field__hint--below">{{ str.transferRefHint }}</span>
                 </label>
               }
             </div>
 
             @if (payMessage && !hasPendingPayment()) {
-              <p class="pay-feedback" [class.pay-feedback--ok]="paySuccess" [class.pay-feedback--err]="!paySuccess">{{ payMessage }}</p>
+              <p class="pay-msg" [class.pay-msg--ok]="paySuccess" [class.pay-msg--err]="!paySuccess">{{ payMessage }}</p>
             }
 
             <button
               type="button"
-              class="pay-submit-btn"
+              class="pay-cta"
               (click)="submitPayment()"
-              [disabled]="payLoading || hasPendingPayment()">
+              [disabled]="payLoading || hasPendingPayment() || payModeLoading()">
               @if (payLoading) {
-                <span class="pay-submit-btn__spinner" aria-hidden="true"></span>
                 {{ str.processing }}
+              } @else if (hasPendingPayment()) {
+                A aguardar confirmação
               } @else {
-                <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
-                Confirmar transferência · {{ totalMzn() }} MZN
+                Confirmar · {{ totalMzn() }} MZN
               }
             </button>
 
-            <footer class="pay-layout__support">
-              <span class="pay-layout__support-label">Dúvidas ou atraso na validação?</span>
-              <div class="pay-layout__support-actions">
-                <a [href]="whatsappUrl()" class="pay-support-chip pay-support-chip--wa" target="_blank" rel="noopener noreferrer">
-                  <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
-                  WhatsApp
-                </a>
-                <a [href]="telUrl()" class="pay-support-chip">
-                  <i class="fa-solid fa-phone" aria-hidden="true"></i>
-                  {{ formatDisplayPhone(supportWhatsapp()) }}
-                </a>
-              </div>
-            </footer>
-          </section>
-        </div>
-
-        @if (showPendingPopup()) {
-          <div
-            class="pay-pending-overlay"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="pay-pending-popup-title">
-            <div class="pay-pending-popup">
-              <div class="pay-pending-popup__icon" aria-hidden="true">
-                <i class="fa-solid fa-circle-check"></i>
-              </div>
-              <h2 id="pay-pending-popup-title" class="pay-pending-popup__title">{{ str.pendingPopupTitle }}</h2>
-              <p class="pay-pending-popup__text">{{ str.pendingPopupText }}</p>
-              <div class="pay-pending-popup__actions">
-                <a
-                  [href]="whatsappUrl()"
-                  class="pay-pending-popup__support"
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
-                  WhatsApp
-                </a>
-                <button type="button" class="pay-pending-popup__btn" (click)="dismissPendingPopup()">
-                  {{ str.pendingPopupBtn }}
-                </button>
-              </div>
-            </div>
+            <a [href]="whatsappUrl()" class="pay-help" target="_blank" rel="noopener noreferrer">
+              <i class="fa-brands fa-whatsapp"></i> Ajuda · {{ formatDisplayPhone(supportWhatsapp()) }}
+            </a>
           </div>
-        }
+        </section>
       </div>
-    } @else {
-      <div class="login-wrap">
-        <div class="login-card">
-          <section class="card-panel card-welcome pay-welcome">
-            <div class="pay-back-row">
-              <button type="button" class="pay-back pay-back--btn" (click)="backFromPayment()">
-                @if (inRegistrationFlow) {
-                  {{ str.backToChoosePlan }}
-                } @else {
-                  {{ str.backToHome }}
-                }
-              </button>
+      }
+
+      @if (!accessRestricted()) {
+        <!-- Renovação com licença activa: layout anterior -->
+        <div class="pay-layout" [class.pay-layout--loading]="payModeLoading()">
+          <header class="pay-layout__header">
+            <a routerLink="/my-license" class="pay-layout__back">
+              <i class="fa-solid fa-arrow-left"></i> Voltar à minha licença
+            </a>
+            <div class="pay-layout__intro">
+              <h1>{{ str.heading }}</h1>
+              <p>{{ str.leadLoggedShort }}</p>
             </div>
-            <img src="/logotipo.png" alt="Chef Control" class="card-logo pay-logo" />
-            <h1 class="welcome-title">{{ str.heading }}</h1>
-            <p class="pay-subtitle">{{ leadText() }}</p>
-
-            @if (inRegistrationFlow) {
-              <p class="pay-session-hint pay-session-hint--register">
-                Passo 3: efectue o pagamento. Depois <strong>inicie sessão manualmente</strong> com o contacto e a senha do registo.
-              </p>
-            }
-
-            <div class="pay-order-card" aria-labelledby="pay-summary-title-guest">
-              <h2 id="pay-summary-title-guest" class="pay-order-card__title">{{ str.summaryTitle }}</h2>
-              <div class="pay-order-line">
-                <div>
-                  <span class="pay-order-line__name">{{ str.lineItemName }}</span>
-                  <span class="pay-order-line__meta">{{ licenseMonthAmountMzn() }}&nbsp;{{ str.lineItemMetaPerMonth }}</span>
-                </div>
-                <span class="pay-order-line__price">{{ totalMzn() }}&nbsp;MZN</span>
+          </header>
+          <div class="pay-layout__grid">
+            <aside class="pay-order-panel" aria-label="Resumo">
+              <p class="pay-order-panel__eyebrow">{{ str.summaryTitle }}</p>
+              <div class="pay-order-panel__product">
+                <span class="pay-order-panel__name">{{ str.lineItemName }}</span>
+                <span class="pay-order-panel__rate">{{ licenseMonthAmountMzn() }} MZN / 30 dias</span>
               </div>
-              <div class="field pay-order-field">
-                <label for="payMonthsGuest">{{ str.durationLabel }}</label>
-                <select id="payMonthsGuest" [(ngModel)]="payMonths" [disabled]="payLoading">
+              <label class="pay-order-panel__field" for="payMonthsRenew">
+                <span>{{ str.durationLabel }}</span>
+                <select id="payMonthsRenew" [(ngModel)]="payMonths" [disabled]="payLoading || hasPendingPayment()">
                   @for (m of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; track m) {
                     <option [ngValue]="m">{{ monthOptionLabel(m) }}</option>
                   }
                 </select>
-              </div>
-              <div class="pay-order-total">
+              </label>
+              <div class="pay-order-panel__total">
                 <span>{{ str.totalDue }}</span>
-                <strong>{{ totalMzn() }}&nbsp;MZN</strong>
+                <strong>{{ totalMzn() }} <small>MZN</small></strong>
               </div>
-            </div>
-          </section>
-
-          <section class="card-panel card-form pay-form-panel">
-            <h2 class="form-title pay-form-heading">{{ str.methodsTitle }}</h2>
-            <p class="pay-guest-pay-hint">Crie conta e inicie sessão para ver os números de pagamento e confirmar a transferência.</p>
-            <button type="button" class="btn btn-switch" (click)="goToLoginAfterPayment()">Ir para iniciar sessão</button>
-          </section>
+            </aside>
+            <section class="pay-flow-panel">
+              <div class="pay-operator-grid" role="tablist">
+                <button type="button" class="pay-operator pay-operator--vodacom" [class.pay-operator--active]="selectedTab() === 'mpesa'" (click)="selectTab('mpesa')">
+                  <img [src]="brandImg.mpesa" alt="" width="88" height="88" />
+                  <span class="pay-operator__channel">M-Pesa</span>
+                </button>
+                <button type="button" class="pay-operator pay-operator--movitel" [class.pay-operator--active]="selectedTab() === 'emola'" (click)="selectTab('emola')">
+                  <img [src]="brandImg.emola" alt="" class="pay-operator__logo--movitel" width="88" height="56" />
+                  <span class="pay-operator__channel">e-Mola</span>
+                </button>
+              </div>
+              @if (showTransferUi()) {
+                <div class="pay-transfer-hero" [class.pay-transfer-hero--vodacom]="selectedTab() === 'mpesa'" [class.pay-transfer-hero--movitel]="selectedTab() === 'emola'">
+                  <p class="pay-transfer-hero__amount"><strong>{{ totalMzn() }} MZN</strong></p>
+                  <div class="pay-transfer-hero__number-wrap">
+                    <span class="pay-transfer-hero__number">{{ formatDisplayPhone(destinationPhone()) }}</span>
+                    <button type="button" class="pay-transfer-hero__copy" (click)="copyDestination()">Copiar</button>
+                  </div>
+                </div>
+              }
+              <div class="pay-form-grid">
+                <label class="pay-field" for="payWalletRenew">
+                  <span class="pay-field__label">Telefone de envio</span>
+                  <input id="payWalletRenew" type="tel" [ngModel]="walletPhone" (ngModelChange)="onWalletPhoneChange($event)" maxlength="9" />
+                </label>
+                @if (showTransferUi()) {
+                  <label class="pay-field" for="payRefRenew">
+                    <span class="pay-field__label">Ref. SMS (opcional)</span>
+                    <input id="payRefRenew" type="text" [(ngModel)]="transferReference" maxlength="120" />
+                  </label>
+                }
+              </div>
+              <button type="button" class="pay-submit-btn" (click)="submitPayment()" [disabled]="payLoading || hasPendingPayment()">
+                Confirmar · {{ totalMzn() }} MZN
+              </button>
+            </section>
+          </div>
         </div>
+      }
+
+      @if (showRejectedPopup()) {
+        <div class="pay-pending-overlay pay-pending-overlay--rejected" role="alertdialog" aria-modal="true">
+          <div class="pay-pending-popup pay-pending-popup--rejected">
+            <h2 class="pay-pending-popup__title">{{ str.rejectedPopupTitle }}</h2>
+            <p class="pay-pending-popup__reason">{{ rejectionReason() || str.rejectedBannerHint }}</p>
+            <button type="button" class="pay-pending-popup__btn" (click)="dismissRejectedPopup()">{{ str.rejectedPopupBtn }}</button>
+          </div>
+        </div>
+      }
+      @if (showPendingPopup()) {
+        <div class="pay-pending-overlay" role="dialog" aria-modal="true">
+          <div class="pay-pending-popup">
+            <h2 class="pay-pending-popup__title">{{ str.pendingPopupTitle }}</h2>
+            <p class="pay-pending-popup__text">{{ str.pendingPopupText }}</p>
+            <button type="button" class="pay-pending-popup__btn" (click)="dismissPendingPopup()">OK</button>
+          </div>
+        </div>
+      }
+    } @else {
+      <div class="pay-session-required">
+        <p>Inicie sessão para renovar a licença.</p>
+        <a routerLink="/login" [queryParams]="{ returnUrl: '/license-payment?renewed=1' }" class="pay-session-required__btn">Entrar</a>
       </div>
     }
   </main>
 </div>
+
+<app-snackbar />

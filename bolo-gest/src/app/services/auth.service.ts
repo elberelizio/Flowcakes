@@ -31,13 +31,6 @@ export interface RegisterRequest {
   email?: string;
 }
 
-/** Corpo 403 do login quando a licença não permite sessão. */
-export interface LoginLicenseBlock {
-  code: string;
-  validUntil?: string;
-  message?: string;
-}
-
 /** Resposta da API (utilizador sem senha) */
 export interface UserResponse {
   id: string;
@@ -49,10 +42,14 @@ export interface UserResponse {
   email?: string;
   licenseStatus?: string;
   accountFinalized?: boolean;
+  licenseRestrictedCode?: string;
   admin?: boolean;
   licenseDaysRemaining?: number;
   showLicenseExpiryWarning?: boolean;
   showWelcomeOnboarding?: boolean;
+  showPaymentRejectionPopup?: boolean;
+  paymentRejectionReason?: string;
+  supportWhatsapp?: string;
   createdAt?: string;
 }
 
@@ -66,10 +63,14 @@ export interface CurrentUser {
   province?: string;
   email?: string;
   accountFinalized?: boolean;
+  licenseRestrictedCode?: string;
   admin?: boolean;
   licenseDaysRemaining?: number;
   showLicenseExpiryWarning?: boolean;
   showWelcomeOnboarding?: boolean;
+  showPaymentRejectionPopup?: boolean;
+  paymentRejectionReason?: string;
+  supportWhatsapp?: string;
   createdAt?: string;
 }
 
@@ -158,10 +159,14 @@ export class AuthService {
       province: u.province,
       email: u.email,
       accountFinalized: u.accountFinalized ?? false,
+      licenseRestrictedCode: u.licenseRestrictedCode,
       admin: u.admin ?? false,
       licenseDaysRemaining: u.licenseDaysRemaining,
       showLicenseExpiryWarning: u.showLicenseExpiryWarning,
       showWelcomeOnboarding: u.showWelcomeOnboarding ?? false,
+      showPaymentRejectionPopup: u.showPaymentRejectionPopup === true,
+      paymentRejectionReason: u.paymentRejectionReason,
+      supportWhatsapp: u.supportWhatsapp,
       createdAt: u.createdAt,
     };
   }
@@ -173,6 +178,7 @@ export class AuthService {
     message?: string;
     code?: string;
     validUntil?: string;
+    supportWhatsapp?: string;
     remainingAttempts?: number;
   } {
     if (!(err instanceof HttpErrorResponse)) {
@@ -196,10 +202,12 @@ export class AuthService {
       try {
         const o = JSON.parse(raw) as Record<string, unknown>;
         const remaining = o['remainingAttempts'];
+        const wa = o['supportWhatsapp'];
         return {
           message: typeof o['message'] === 'string' ? o['message'] : undefined,
           code: typeof o['code'] === 'string' ? o['code'] : undefined,
           validUntil: typeof o['validUntil'] === 'string' ? o['validUntil'] : undefined,
+          supportWhatsapp: typeof wa === 'string' ? wa : undefined,
           remainingAttempts: typeof remaining === 'number' ? remaining : undefined,
         };
       } catch {
@@ -217,9 +225,8 @@ export class AuthService {
     | { ok: true; user: UserResponse }
     | {
         ok: false;
-        code: 'ACCOUNT_NOT_FOUND' | 'INVALID_CREDENTIALS' | 'LICENSE_BLOCKED' | 'ACCOUNT_BLOCKED';
+        code: 'ACCOUNT_NOT_FOUND' | 'INVALID_CREDENTIALS' | 'ACCOUNT_BLOCKED';
         message?: string;
-        licenseBlock?: LoginLicenseBlock;
         remainingAttempts?: number;
       }
   > {
@@ -245,18 +252,6 @@ export class AuthService {
       const status = httpErr?.status ?? 0;
       const body = AuthService.loginErrorPayload(e);
       const msg = body.message;
-      if (status === 403 && typeof body.code === 'string' && body.code.startsWith('LICENSE_')) {
-        return {
-          ok: false,
-          code: 'LICENSE_BLOCKED',
-          message: msg,
-          licenseBlock: {
-            code: body.code,
-            validUntil: body.validUntil,
-            message: msg,
-          },
-        };
-      }
       if (status === 403 && body.code === 'ACCOUNT_BLOCKED') {
         return { ok: false, code: 'ACCOUNT_BLOCKED', message: msg };
       }
@@ -312,43 +307,6 @@ export class AuthService {
       }
       return { ok: false, code: 'INVALID_CREDENTIALS', message: msg };
     }
-  }
-
-  /** Pagamento de licença sem sessão (contacto e senha da conta). */
-  payMpesaWithCredentials(
-    loginPhone: string,
-    password: string,
-    mpesaPhone: string,
-    months: number,
-    simulatedChannel: 'mpesa' | 'emola' = 'mpesa'
-  ): Promise<{
-    success: boolean;
-    message: string;
-    paymentId?: string;
-    simulated?: boolean;
-    simulatedChannel?: string;
-  }> {
-    const normalizedLogin = normalizeMzPhoneDigits(loginPhone);
-    return this.http
-      .post<{
-        success: boolean;
-        message: string;
-        paymentId?: string;
-        simulated?: boolean;
-        simulatedChannel?: string;
-      }>(`${API_URL}/mpesa/pay-with-credentials`, {
-        loginPhone: normalizedLogin,
-        password,
-        mpesaPhone,
-        months,
-        simulatedChannel,
-      })
-      .toPromise()
-      .then((r) => r ?? { success: false, message: 'Sem resposta do servidor.' })
-      .catch((err) => ({
-        success: false,
-        message: err?.error?.message || err?.message || 'Erro ao iniciar pagamento.',
-      }));
   }
 
   register(data: RegisterRequest): Promise<{ ok: true; data: RegisterResponse } | { ok: false; message: string }> {
@@ -510,6 +468,43 @@ export class AuthService {
     return this.currentUser()?.accountFinalized ?? false;
   }
 
+  licenseRestrictedCode(): string | undefined {
+    return this.currentUser()?.licenseRestrictedCode;
+  }
+
+  shouldShowPaymentRejectionPopup(): boolean {
+    return this.currentUser()?.showPaymentRejectionPopup === true;
+  }
+
+  paymentRejectionReason(): string | undefined {
+    return this.currentUser()?.paymentRejectionReason?.trim() || undefined;
+  }
+
+  supportWhatsapp(): string {
+    const wa = this.currentUser()?.supportWhatsapp?.replace(/\D/g, '') ?? '';
+    return wa.length >= 9 ? wa : '871964887';
+  }
+
+  clearPaymentRejectionPopupFlag(): void {
+    const u = this.currentUser();
+    if (u?.showPaymentRejectionPopup) {
+      this.currentUser.set({ ...u, showPaymentRejectionPopup: false });
+    }
+  }
+
+  /** Actualiza estado de acesso após aprovação da licença (poll ou recibo). */
+  applyLicenseAccessFromStatus(status: LicenseStatusResponse | null): boolean {
+    if (!status?.accountFinalized) return false;
+    const u = this.currentUser();
+    if (!u || u.accountFinalized) return status.accountFinalized;
+    this.currentUser.set({
+      ...u,
+      accountFinalized: true,
+      licenseRestrictedCode: undefined,
+    });
+    return true;
+  }
+
   isAdmin(): boolean {
     return this.currentUser()?.admin ?? false;
   }
@@ -617,6 +612,7 @@ export class AuthService {
     amount?: number;
     rejectionReason?: string;
     rejectedAt?: string;
+    supportWhatsapp?: string;
   }> {
     return this.http
       .get<{
@@ -626,6 +622,7 @@ export class AuthService {
         amount?: number;
         rejectionReason?: string;
         rejectedAt?: string;
+        supportWhatsapp?: string;
       }>(`${API_URL}/mpesa/status`)
       .toPromise()
       .then((r) => r ?? { hasPending: false })

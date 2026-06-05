@@ -87,38 +87,4 @@
       </div>
     </div>
   </div>
-
-  @if (licenseBlock) {
-    <div class="license-modal-backdrop" aria-hidden="true"></div>
-    <div class="license-modal" role="dialog" aria-modal="true" aria-labelledby="license-modal-title" (click)="$event.stopPropagation()">
-      <div class="license-modal__header">
-        <div>
-          <div class="license-modal__badge" aria-hidden="true">Licença</div>
-          <h3 id="license-modal-title" class="license-modal__title">{{ assistantTitle() }}</h3>
-        </div>
-        <button type="button" class="license-modal__close" (click)="dismissAssistant()">Fechar</button>
-      </div>
-      <div class="license-modal__body license-modal__body--compact">
-        <p class="license-modal__alert">{{ primaryAlertText() }}</p>
-        @if (formatValidUntil()) {
-          <p class="license-modal__date">Validade de referência: <strong>{{ formatValidUntil() }}</strong></p>
-        }
-
-        <div class="license-modal__price-box" aria-labelledby="license-price-label">
-          <p id="license-price-label" class="license-modal__price-label">Valor da licença</p>
-          <p class="license-modal__price-amount">{{ licenseMonthAmountMzn }}&nbsp;<span class="license-modal__price-currency">MZN</span></p>
-          <p class="license-modal__price-per">por mês · escolha a duração na página de pagamento</p>
-        </div>
-
-        <a routerLink="/license-payment" class="license-modal__btn-paypage">Ir para pagamento da licença</a>
-        <p class="license-modal__hint-inline">
-          Na página pública escolha <strong>M-Pesa</strong> (84 ou 85) ou <strong>e-Mola</strong> (86 ou 87), indique o número da carteira e, se pedido, o contacto e a senha da conta.
-        </p>
-        <p class="license-modal__footer-short">
-          Se o login continuar bloqueado por licença, o pagamento com contacto/senha na mesma página pode resolver; caso contrário, contacte o administrador do Chef Control.
-        </p>
-      </div>
-    </div>
-  }
-
 </div>

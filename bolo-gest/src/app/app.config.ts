@@ -1,11 +1,12 @@
 import { ApplicationConfig, APP_INITIALIZER, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter, withInMemoryScrolling, withViewTransitions } from '@angular/router';
+import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 import { routes } from './app.routes';
 import { credentialsInterceptor } from './core/http/credentials.interceptor';
 import { activityInterceptor } from './core/http/activity.interceptor';
+import { licenseAccessInterceptor } from './core/interceptors/license-access.interceptor';
 import { AuthService } from './services/auth.service';
 import { UserActivityService } from './core/activity/user-activity.service';
 // import { ThemeService } from './services/theme.service';
@@ -16,7 +17,6 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(
       routes,
-      withViewTransitions(),
       withInMemoryScrolling({
         scrollPositionRestoration: 'enabled',
         anchorScrolling: 'enabled',
@@ -24,7 +24,9 @@ export const appConfig: ApplicationConfig = {
     ),
     // Sem withFetch(): o backend Fetch pode não completar o fluxo em 403/401 e o login ficava
     // eternamente a carregar sem mensagem (ex.: licença expirada).
-    provideHttpClient(withInterceptors([credentialsInterceptor, activityInterceptor])),
+    provideHttpClient(
+      withInterceptors([credentialsInterceptor, activityInterceptor, licenseAccessInterceptor])
+    ),
     provideAnimationsAsync(),
     providePrimeNG(),
     {

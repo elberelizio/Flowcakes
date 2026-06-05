@@ -5,18 +5,14 @@ export const LicensePaymentStrings = {
   backToPanel: '← Voltar ao painel',
   backToChoosePlan: '← Voltar a escolher plano',
   heading: 'Pagamento da licença',
-  lead: 'Para pagar, crie conta primeiro e depois inicie sessão.',
-  leadLogged:
-    'Transfira o valor para o número Chef Control (M-Pesa ou e-Mola), depois confirme abaixo. O estado fica pendente até o administrador validar.',
   leadLoggedShort: 'Escolha a operadora, transfira o valor e confirme. Validação manual pelo administrador.',
-
-  sessionHintPrefix: 'Sessão:',
-  sessionHintRest: 'escolha o canal, transfira e confirme.',
-
-  guestCardTitle: 'Antes de pagar',
-  guestCardText: 'Ainda não tem conta? Crie a conta e depois entre para concluir o pagamento da licença.',
-  guestCreateAccount: 'Criar conta',
-  guestSignIn: 'Já tenho conta · Entrar',
+  restrictedLockNote: 'O resto do sistema fica bloqueado até o administrador confirmar o pagamento.',
+  stepNavChoose: 'Operadora',
+  stepNavTransfer: 'Transferir',
+  stepNavConfirm: 'Confirmar',
+  sectionOperator: 'Passo 1 · Operadora',
+  sectionTransfer: 'Passo 2 · Transferência',
+  sectionConfirm: 'Passo 3 · Confirmação',
 
   summaryTitle: 'Resumo',
   lineItemName: 'Licença Chef Control',
@@ -57,6 +53,9 @@ export const LicensePaymentStrings = {
   pendingPanelNote: 'Pedido pendente — aguarda validação do administrador.',
   rejectedBannerTitle: 'Pagamento não confirmado',
   rejectedBannerHint: 'Pode efectuar uma nova transferência com os dados correctos.',
+  rejectedPopupTitle: 'Pagamento não confirmado',
+  rejectedPopupLead: 'O administrador não validou a sua última transferência:',
+  rejectedPopupBtn: 'Tentar novo pagamento',
 
   supportTitle: 'Precisa de ajuda?',
   supportText: 'WhatsApp ou chamada — indique o seu nome e o valor transferido.',
@@ -68,5 +67,12 @@ export const LicensePaymentStrings = {
   errWalletRequired: (channel: string) => `Indique o número ${channel} de onde enviou.`,
   errMpesaFormat: 'M-Pesa: use 9 dígitos começando por 84 ou 85 (ex.: 841234567).',
   errEmolaFormat: 'e-Mola: use 9 dígitos começando por 86 ou 87 (ex.: 861234567).',
-  errNeedAccount: 'Crie conta e inicie sessão para efectuar o pagamento.',
+
+  toastCopyNumber: 'Número copiado.',
+  toastPendingRegistered: 'Pedido registado. Aguarde a confirmação do administrador.',
+  toastPaymentApproved:
+    'Pagamento aprovado. Obrigado! Já pode usar todos os serviços do Chef Control.',
+  toastPaymentRejected: 'Pagamento não confirmado. Pode enviar uma nova transferência.',
+  toastSubmitError: 'Não foi possível registar o pedido. Tente novamente.',
+  toastLoadError: 'Não foi possível carregar os dados de pagamento.',
 } as const;

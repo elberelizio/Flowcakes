@@ -1,4 +1,5 @@
 @use '../login/auth-login-shell' as *;
+@use '../core/styles/license-payment-lock';
 
 :host {
   display: block;
@@ -36,6 +37,30 @@
   max-width: 60rem;
   margin: 0 auto;
   padding: 6.5rem 1.25rem 3.5rem;
+}
+
+.license-web-shell--restricted {
+  min-height: 100vh;
+  background: #e8edf2;
+  position: relative;
+
+  .license-web-shell__mesh {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 80% 50% at 100% 0%, rgba(13, 148, 136, 0.14), transparent 55%),
+      radial-gradient(ellipse 60% 40% at 0% 100%, rgba(220, 38, 38, 0.06), transparent 50%);
+  }
+
+  .license-web-shell__main {
+    position: relative;
+    z-index: 1;
+    max-width: 56rem;
+    margin: 0 auto;
+    padding: 1rem clamp(0.85rem, 3vw, 1.5rem) 2rem;
+  }
 }
 
 .license-web-shell--in-app {
@@ -267,20 +292,133 @@
     color: var(--text);
   }
 
-  &__lead {
-    margin: -0.65rem 0 0;
-    font-size: 0.88rem;
+  &__head {
+    margin: 0;
+
+    &--spaced {
+      padding-top: 0.75rem;
+      margin-top: 0.25rem;
+      border-top: 1px solid var(--border);
+    }
+  }
+
+  &__section-title {
+    margin: 0 0 0.2rem;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  &__section-desc {
+    margin: 0;
+    font-size: 0.86rem;
+    line-height: 1.45;
     color: var(--text-muted);
+  }
+
+  &__section-label {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--primary-dark);
+
+    &--spaced {
+      margin-top: 0.35rem;
+      padding-top: 0.85rem;
+      border-top: 1px dashed var(--border);
+    }
+  }
+
+  &__lead {
+    margin: -0.35rem 0 0;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--text-muted);
+
+    &--tight {
+      margin-top: -0.5rem;
+    }
+  }
+
+  &__footnote {
+    margin: -0.35rem 0 0;
+    padding: 0.75rem 0.9rem;
+    border-radius: 0.65rem;
+    background: #f0fdfa;
+    border: 1px solid #99f6e4;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: #0f766e;
+  }
+}
+
+.pay-layout--loading {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.pay-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.75rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-muted);
+
+  &__spinner {
+    width: 1.1rem;
+    height: 1.1rem;
+    border: 2px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: pay-spin 0.7s linear infinite;
+  }
+}
+
+@keyframes pay-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pay-session-required {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  border-radius: 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+
+  p {
+    margin: 0 0 1rem;
+    color: var(--text-muted);
+  }
+
+  &__btn {
+    display: inline-flex;
+    padding: 0.65rem 1.25rem;
+    border-radius: 0.65rem;
+    background: var(--primary);
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
   }
 }
 
 .pay-operator-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.85rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
   width: 100%;
 
-  @media (max-width: 480px) {
+  @media (max-width: 520px) {
     grid-template-columns: 1fr;
   }
 }
@@ -357,12 +495,12 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    min-height: 4.5rem;
-    padding: 0.25rem;
+    min-height: 3.75rem;
+    padding: 0.2rem;
 
     img {
-      max-width: 5.5rem;
-      max-height: 4.25rem;
+      max-width: 4.5rem;
+      max-height: 3.5rem;
       width: auto;
       height: auto;
       object-fit: contain;
@@ -527,29 +665,55 @@
 .pay-form-grid {
   width: 100%;
   display: grid;
-  gap: 0.85rem;
+  gap: 1rem;
 
-  @media (min-width: 640px) {
+  @media (min-width: 720px) {
     grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+
+  .pay-field--emphasis {
+    @media (min-width: 720px) {
+      grid-column: 1 / -1;
+    }
   }
 }
 
 .pay-field {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.35rem;
   min-width: 0;
 
+  &--emphasis .pay-field__input {
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+
   &__label {
-    font-size: 0.82rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.88rem;
     font-weight: 700;
     color: var(--text);
+
+    i {
+      color: var(--primary);
+      font-size: 0.9rem;
+    }
   }
 
   &__hint {
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     color: var(--text-muted);
     margin-top: -0.1rem;
+    line-height: 1.4;
+
+    &--below {
+      margin-top: 0.15rem;
+    }
   }
 
   &__optional {
@@ -557,19 +721,32 @@
     color: var(--text-muted);
   }
 
+  &__input,
   input {
     width: 100%;
-    padding: 0.6rem 0.75rem;
-    border: 1px solid var(--border);
-    border-radius: 0.55rem;
-    font-size: 0.95rem;
+    min-height: 2.75rem;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.65rem;
+    font-size: 1rem;
     font-family: inherit;
+    background: #fff;
     transition: border-color 0.15s, box-shadow 0.15s;
+
+    &::placeholder {
+      color: #94a3b8;
+    }
 
     &:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.18);
+    }
+
+    &:disabled {
+      background: #f8fafc;
+      color: var(--text-muted);
+      cursor: not-allowed;
     }
   }
 }
@@ -1176,6 +1353,27 @@
     background: rgba(13, 148, 136, 0.12);
     color: var(--primary, #0d9488);
     font-size: 1.5rem;
+
+    &--warn {
+      background: rgba(220, 38, 38, 0.1);
+      color: #b91c1c;
+    }
+  }
+
+  &--rejected {
+    max-width: 24rem;
+  }
+
+  &__reason {
+    margin: 0 0 1rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 0.5rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #991b1b;
+    text-align: left;
   }
 
   &__title {
@@ -1216,6 +1414,14 @@
     &:hover {
       background: #ccfbf1;
     }
+  }
+
+  &__lock-hint {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: #64748b;
+    text-align: center;
   }
 
   &__btn {

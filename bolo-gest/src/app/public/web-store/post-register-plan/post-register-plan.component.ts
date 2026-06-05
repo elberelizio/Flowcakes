@@ -74,10 +74,11 @@ export class PostRegisterPlanComponent implements OnInit {
   choosePaidPro(): void {
     if (!this.proPlanUiEnabled) return;
     this.registrationFlow.markPaidChosen();
-    const queryParams: Record<string, string> = { from: 'register' };
-    if (this.phoneDigits) {
-      queryParams['phone'] = this.phoneDigits;
-    }
-    void this.router.navigate(['/license-payment'], { queryParams });
+    void this.router.navigate(['/login'], {
+      queryParams: {
+        ...(this.phoneDigits ? { phone: this.phoneDigits } : {}),
+        finalize: '1',
+      },
+    });
   }
 }

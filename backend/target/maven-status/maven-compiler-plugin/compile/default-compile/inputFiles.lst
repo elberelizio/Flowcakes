@@ -67,6 +67,7 @@ C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontro
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\entity\SystemNotificationEntity.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\repository\UserActivityLogRepository.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\controller\FeedbackController.java
+C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\RejectSimulatedPaymentRequest.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\entity\PlatformAdminSettingEntity.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\service\TreasuryService.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\repository\SecurityEventRepository.java
@@ -130,7 +131,6 @@ C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontro
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\AdminAlertsDto.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\VariableExpense.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\entity\UserActivityLogEntity.java
-C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\exception\LicenseLoginBlockedException.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\UserFeedbackRequest.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\entity\OperationalExpenseEntity.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\repository\TreasuryAllocationSuggestionRepository.java
@@ -142,6 +142,7 @@ C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontro
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\UserFeedbackDto.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\TreasuryCategoryAmountDto.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\entity\UserNotificationDismissalEntity.java
+C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\ApproveSimulatedPaymentRequest.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\service\NotificationService.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\SecurityEventDto.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\config\PaymentSimulationProperties.java

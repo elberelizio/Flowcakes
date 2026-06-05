@@ -1,7 +1,6 @@
 package com.chefcontrol.controller;
 
 import com.chefcontrol.exception.InvalidPasswordException;
-import com.chefcontrol.exception.LicenseLoginBlockedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -20,17 +19,6 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-
-    @ExceptionHandler(LicenseLoginBlockedException.class)
-    public ResponseEntity<Map<String, Object>> handleLicenseLoginBlocked(LicenseLoginBlockedException ex) {
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("message", ex.getMessage());
-        body.put("code", ex.getCode());
-        if (ex.getValidUntil() != null) {
-            body.put("validUntil", ex.getValidUntil().toString());
-        }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
-    }
 
     @ExceptionHandler(InvalidPasswordException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidPassword(InvalidPasswordException ex) {

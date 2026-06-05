@@ -1,21 +1,12 @@
-@use './core/styles/sidebar';
-@use './core/styles/navbar';
-@use './core/styles/dropdowns';
-@use './core/styles/layout';
-@use './core/styles/admin-shell';
-@use './core/styles/order-alerts-popup';
-@use './core/styles/system-notifications';
-@use './core/styles/responsive';
-@use './core/styles/mobile-responsive';
+// Estilos do shell (sidebar, navbar, etc.) estão em src/styles.scss (globais).
+// Aqui só regras mínimas do host.
 
-// Garantir que a raiz ocupe o ecrã (também quando só há router-outlet, ex. login)
 :host {
   display: block;
   min-height: 100vh;
   background: var(--secondary, #f8fafc);
 }
 
-/* Safe area para dispositivos com notch (Android/iOS) */
 .app-shell {
   min-height: 100vh;
   min-height: calc(100vh - env(safe-area-inset-bottom));

@@ -25,6 +25,8 @@ app:
   cors-allowed-origins: http://localhost:4200
   license-amount: 500
   e-mola-phone: "871964887"
+  mpesa-phone: "846746170"
+  support-whatsapp: "871964887"
   trial-days: 14
   # SMS (operador nacional) e WhatsApp via Twilio
   # Confirmação de conta (registo) + código de licença (após admin confirmar pagamento)

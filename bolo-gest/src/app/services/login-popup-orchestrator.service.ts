@@ -56,18 +56,15 @@ export class LoginPopupOrchestratorService {
     this.tryStartChain();
   }
 
-  /** Continua a cadeia quando o shell já está visível (ex.: após navegação). */
+  /** Continua a cadeia quando o shell já está visível (ex.: após navegação inicial). */
   continueChainAfterShell(): void {
     if (!this.auth().isLoggedIn() || this.auth().isAdmin()) return;
+    if (!this.auth().isAccountFinalized()) return;
     if (!this.notificationsReady || !this.userDataReady) return;
     if (this.activeStep() !== null) return;
+    if (this.chainStarted) return;
 
-    if (!this.chainStarted) {
-      this.tryStartChain();
-      return;
-    }
-
-    this.showWelcomeOrFinish();
+    this.tryStartChain();
   }
 
   confirmAviso(): void {
@@ -95,6 +92,7 @@ export class LoginPopupOrchestratorService {
   private tryStartChain(): void {
     if (this.chainStarted || !this.notificationsReady || !this.userDataReady) return;
     if (!this.auth().isLoggedIn() || this.auth().isAdmin()) return;
+    if (!this.auth().isAccountFinalized()) return;
 
     this.chainStarted = true;
     this.satisfactionPrompt.markLoginSessionContext();

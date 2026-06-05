@@ -37,7 +37,7 @@ export const routes: Routes = [
   { path: 'pagamento-licenca', redirectTo: '/license-payment', pathMatch: 'full' },
   {
     path: 'license-payment',
-    canActivate: [redirectAdminGuard, registrationPaymentGuard],
+    canActivate: [authGuard, redirectAdminGuard, registrationPaymentGuard],
     loadComponent: () =>
       import('./license-payment/license-payment.component').then((m) => m.LicensePaymentComponent),
   },
@@ -165,7 +165,7 @@ export const routes: Routes = [
   {
     path: 'profile',
     loadComponent: () => import('./dashboard-user/profile/profile.component').then((m) => m.ProfileComponent),
-    canActivate: [authGuard],
+    canActivate: [authGuard, licenseGuard],
   },
   { path: 'perfil', redirectTo: 'profile', pathMatch: 'full' },
   {

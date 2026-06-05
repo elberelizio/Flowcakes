@@ -125,15 +125,10 @@ public class AuthService {
         );
 
         boolean isAdmin = user.isAdmin();
-        licenseService.assertLicenseAllowsLogin(user.getId(), isAdmin);
+        licenseService.assertLoginAllowed(user.getId(), isAdmin);
         String licenseStatus = isAdmin ? "paid" : licenseService.findByUserId(user.getId()).map(l -> l.getStatus()).orElse("pending");
         UserResponse resp = UserResponse.fromEntity(user, licenseStatus);
-        if (!isAdmin) {
-            resp.setAccountFinalized(licenseService.isLicensePaid(user.getId()));
-            licenseService.applyLicenseExpiryToUserResponse(user.getId(), resp);
-        } else {
-            resp.setAccountFinalized(true);
-        }
+        licenseService.enrichUserAccessFlags(user.getId(), resp);
         return resp;
     }
 
@@ -160,8 +155,7 @@ public class AuthService {
 
         String licStatus = licenseService.findByUserId(user.getId()).map(l -> l.getStatus()).orElse("pending");
         UserResponse resp = UserResponse.fromEntity(user, licStatus);
-        resp.setAccountFinalized(licenseService.isLicensePaid(user.getId()));
-        licenseService.applyLicenseExpiryToUserResponse(user.getId(), resp);
+        licenseService.enrichUserAccessFlags(user.getId(), resp);
         return RegisterResponse.of(resp, messageSent);
     }
 
@@ -275,12 +269,7 @@ public class AuthService {
         boolean isAdmin = user.isAdmin();
         String licenseStatus = isAdmin ? "paid" : licenseService.findByUserId(userId).map(l -> l.getStatus()).orElse("pending");
         UserResponse resp = UserResponse.fromEntity(user, licenseStatus);
-        if (!isAdmin) {
-            resp.setAccountFinalized(licenseService.isLicensePaid(userId));
-            licenseService.applyLicenseExpiryToUserResponse(userId, resp);
-        } else {
-            resp.setAccountFinalized(true);
-        }
+        licenseService.enrichUserAccessFlags(userId, resp);
         return resp;
     }
 
@@ -290,12 +279,7 @@ public class AuthService {
         boolean isAdmin = user.isAdmin();
         String licenseStatus = isAdmin ? "paid" : licenseService.findByUserId(userId).map(l -> l.getStatus()).orElse("pending");
         UserResponse resp = UserResponse.fromEntity(user, licenseStatus);
-        if (!isAdmin) {
-            resp.setAccountFinalized(licenseService.isLicensePaid(userId));
-            licenseService.applyLicenseExpiryToUserResponse(userId, resp);
-        } else {
-            resp.setAccountFinalized(true);
-        }
+        licenseService.enrichUserAccessFlags(userId, resp);
         return resp;
     }
 
@@ -326,12 +310,7 @@ public class AuthService {
         boolean isAdmin = user.isAdmin();
         String licenseStatus = isAdmin ? "paid" : licenseService.findByUserId(userId).map(l -> l.getStatus()).orElse("pending");
         UserResponse resp = UserResponse.fromEntity(user, licenseStatus);
-        if (!isAdmin) {
-            resp.setAccountFinalized(licenseService.isLicensePaid(userId));
-            licenseService.applyLicenseExpiryToUserResponse(userId, resp);
-        } else {
-            resp.setAccountFinalized(true);
-        }
+        licenseService.enrichUserAccessFlags(userId, resp);
         return resp;
     }
 }

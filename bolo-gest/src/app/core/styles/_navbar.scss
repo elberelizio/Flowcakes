@@ -220,6 +220,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  overflow: visible;
 }
 
 .navbar-link {
@@ -239,6 +240,7 @@
 .navbar-dropdown-wrap {
   position: relative;
   z-index: 1;
+  overflow: visible;
 
   &:has(.navbar-dropdown),
   &:has(.navbar-icon-btn.active),
@@ -249,6 +251,7 @@
 
 .navbar-icon-btn {
   position: relative;
+  overflow: visible;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -285,22 +288,61 @@
 
 .navbar-icon-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 1rem;
-  height: 1rem;
-  padding: 0 0.25rem;
+  top: -5px;
+  right: -5px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.125rem;
+  height: 1.125rem;
+  padding: 0 0.3rem;
   border-radius: 9999px;
   background: v.$primary;
   color: #fff;
-  font-size: 0.62rem;
+  font-size: 0.7rem;
   font-weight: 800;
-  line-height: 1rem;
+  line-height: 1;
+  letter-spacing: -0.02em;
   text-align: center;
   border: 2px solid v.$card-bg;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.28);
+  pointer-events: none;
 
   &--alert {
     background: #dc2626;
+  }
+
+  &--comunicado {
+    top: -6px;
+    right: -6px;
+    min-width: 1.35rem;
+    height: 1.35rem;
+    padding: 0 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 900;
+    background: #b91c1c;
+    color: #fff;
+    border: 2px solid #fff;
+    box-shadow:
+      0 0 0 1px rgba(185, 28, 28, 0.35),
+      0 2px 8px rgba(185, 28, 28, 0.45);
+    animation: comunicadoNavbarBadgePulse 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes comunicadoNavbarBadgePulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(185, 28, 28, 0.35),
+      0 2px 8px rgba(185, 28, 28, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(185, 28, 28, 0.5),
+      0 2px 12px rgba(220, 38, 38, 0.65),
+      0 0 0 5px rgba(220, 38, 38, 0.12);
   }
 }
 

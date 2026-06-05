@@ -41,8 +41,22 @@ export class PublicPageMotionService {
     return path === '/' || path === '/contacto' || path === '/termos' || path === '/privacidade';
   }
 
-  /** Chave de shell para animar só mudanças de «ecrã» (marketing vs login vs registo). */
+  /** Rotas da app autenticada — sem GSAP de entrada/saída (evita travamentos). */
+  private isAppRoute(url: string): boolean {
+    const path = this.marketingRoutePath(url);
+    if (this.isMarketingRoute(url)) return false;
+    if (path === '/login' || path.startsWith('/recover-password') || path === '/recuperar-senha') return false;
+    if (path === '/register' || path === '/registro' || path === '/choose-plan' || path === '/escolher-plano') {
+      return false;
+    }
+    if (path === '/license-payment' || path.startsWith('/pagamento')) return false;
+    if (path.startsWith('/store') || path.startsWith('/loja')) return false;
+    return true;
+  }
+
+  /** Chave de shell para transições entre ecrãs públicos (não inclui dashboard/admin). */
   private routeShellKey(url: string): string {
+    if (this.isAppRoute(url)) return 'app';
     const path = this.marketingRoutePath(url);
     if (this.isMarketingRoute(url)) return 'marketing';
     if (path === '/login' || path.startsWith('/recover-password') || path === '/recuperar-senha') return 'auth';
@@ -50,7 +64,14 @@ export class PublicPageMotionService {
       return 'register';
     }
     if (path === '/license-payment' || path.startsWith('/pagamento')) return 'license-payment';
-    return path;
+    return 'public';
+  }
+
+  /** Só anima transições entre páginas de marketing (início ↔ contacto, etc.). */
+  private shouldAnimateShellTransition(fromShell: string, toShell: string): boolean {
+    if (fromShell === 'app' || toShell === 'app') return false;
+    if (fromShell === toShell) return false;
+    return fromShell === 'marketing' && toShell === 'marketing';
   }
 
   /** Transições dramáticas entre shells públicos (início ↔ login ↔ registo, etc.). */
@@ -68,18 +89,26 @@ export class PublicPageMotionService {
         if (event instanceof NavigationStart) {
           const fromShell = this.routeShellKey(this.previousUrl);
           const toShell = this.routeShellKey(event.url);
-          if (fromShell !== toShell) {
+          if (this.shouldAnimateShellTransition(fromShell, toShell)) {
             const leaving = this.findActivePublicHost();
-            if (leaving) this.animatePageExit(leaving);
+            if (leaving) this.animateMarketingPageExit(leaving);
+          } else {
+            const leaving = this.findActivePublicHost();
+            if (leaving) this.preparePublicHostEnter(leaving);
           }
           return;
         }
         const fromShell = this.routeShellKey(this.previousUrl);
         const toShell = this.routeShellKey(event.url);
-        if (fromShell !== toShell) {
+        if (this.shouldAnimateShellTransition(fromShell, toShell)) {
           requestAnimationFrame(() => {
             const entering = this.findActivePublicHost();
-            if (entering) this.animatePageEnter(entering);
+            if (entering) this.animateMarketingPageEnter(entering);
+          });
+        } else {
+          requestAnimationFrame(() => {
+            const entering = this.findActivePublicHost();
+            if (entering) this.preparePublicHostEnter(entering);
           });
         }
         this.previousUrl = event.url;
@@ -87,7 +116,7 @@ export class PublicPageMotionService {
 
     requestAnimationFrame(() => {
       const host = this.findActivePublicHost();
-      if (host) this.animatePageEnter(host);
+      if (host) this.preparePublicHostEnter(host);
     });
   }
 
@@ -130,7 +159,7 @@ export class PublicPageMotionService {
             previousPath !== nextPath
           ) {
             const host = this.findOutletPageHost(containerEl);
-            if (host) this.animatePageExit(host);
+            if (host) this.animateMarketingPageExit(host);
           }
           return;
         }
@@ -142,54 +171,63 @@ export class PublicPageMotionService {
         ) {
           requestAnimationFrame(() => {
             const next = this.findOutletPageHost(containerEl);
-            if (next) this.animatePageEnter(next);
+            if (next) this.animateMarketingPageEnter(next);
           });
         }
         previousPath = nextPath;
       });
   }
 
-  animatePageEnter(host: HTMLElement): void {
+  /** Login, registo e app: sem animação GSAP (evita página presa). */
+  resetHostVisible(host: HTMLElement): void {
+    gsap.killTweensOf(host);
+    host.style.opacity = '1';
+    host.style.transform = '';
+    host.style.filter = '';
+  }
+
+  /**
+   * Prepara o host ao entrar: login usa fade-in CSS (não forçar opacity inline).
+   */
+  preparePublicHostEnter(host: HTMLElement): void {
+    gsap.killTweensOf(host);
+    host.style.transform = '';
+    host.style.filter = '';
+    if (host.tagName === 'APP-LOGIN') {
+      host.style.removeProperty('opacity');
+      return;
+    }
+    host.style.opacity = '1';
+  }
+
+  /** Transição suave só entre páginas do site público (landing ↔ contacto). */
+  animateMarketingPageEnter(host: HTMLElement): void {
     if (!this.ensureGsap()) {
-      host.style.opacity = '1';
+      this.resetHostVisible(host);
       return;
     }
     gsap.killTweensOf(host);
     gsap.fromTo(
       host,
-      {
-        opacity: 0,
-        y: 72,
-        scale: 0.94,
-        rotateX: 6,
-        filter: 'blur(14px)',
-        transformOrigin: '50% 20%',
-      },
+      { opacity: 0, y: 16 },
       {
         opacity: 1,
         y: 0,
-        scale: 1,
-        rotateX: 0,
-        filter: 'blur(0px)',
-        duration: 0.95,
-        ease: 'power4.out',
-        clearProps: 'filter,transform',
+        duration: 0.35,
+        ease: 'power2.out',
+        clearProps: 'transform',
       },
     );
   }
 
-  animatePageExit(host: HTMLElement): void {
+  animateMarketingPageExit(host: HTMLElement): void {
     if (!this.ensureGsap()) return;
     gsap.killTweensOf(host);
     gsap.to(host, {
       opacity: 0,
-      y: -56,
-      scale: 0.96,
-      rotateX: -4,
-      filter: 'blur(10px)',
-      duration: 0.42,
-      ease: 'power3.in',
-      transformOrigin: '50% 30%',
+      y: -10,
+      duration: 0.22,
+      ease: 'power2.in',
     });
   }
 
@@ -227,7 +265,7 @@ export class PublicPageMotionService {
       });
       tweens.push(...heroTl.getChildren() as gsap.core.Tween[]);
 
-      const mock = hero.querySelector('.lp-dashboard-mock');
+      const mock = hero.querySelector('.landing-hero__mock, .lp-dashboard-mock');
       if (mock) {
         gsap.to(mock, {
           y: -10,

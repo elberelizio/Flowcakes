@@ -9,7 +9,7 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { AuthService, LoginLicenseBlock } from '../services/auth.service';
+import { AuthService } from '../services/auth.service';
 import { OrdersService } from '../services/orders.service';
 import { ReminderService } from '../services/reminder.service';
 import { LoginPopupOrchestratorService } from '../services/login-popup-orchestrator.service';
@@ -34,10 +34,6 @@ export class LoginComponent implements OnInit {
   /** Banner simples após escolher teste grátis (sem barra de passos 1-2-3). */
   showTrialLoginBanner = false;
   form!: FormGroup;
-
-  licenseBlock: LoginLicenseBlock | null = null;
-  /** Valor mensal (MZN), alinhado ao backend `app.license-amount`. */
-  readonly licenseMonthAmountMzn = 500;
 
   constructor(
     private fb: FormBuilder,
@@ -68,9 +64,6 @@ export class LoginComponent implements OnInit {
     }
     input.value = v;
     this.form.get('phone')?.setValue(v, { emitEvent: true });
-    if (this.licenseBlock) {
-      this.licenseBlock = null;
-    }
   }
 
   ngOnInit(): void {
@@ -89,8 +82,8 @@ export class LoginComponent implements OnInit {
       }
       if (this.registrationFlow.isFinalizePaid() && !finalizeQuery && !trialQuery) {
         const phone = this.registrationFlow.getPhone();
-        void this.router.navigate(['/license-payment'], {
-          queryParams: phone ? { phone, from: 'register' } : { from: 'register' },
+        void this.router.navigate(['/login'], {
+          queryParams: phone ? { phone, finalize: '1' } : { finalize: '1' },
           replaceUrl: true,
         });
         return;
@@ -101,6 +94,8 @@ export class LoginComponent implements OnInit {
     } else if (this.auth.isLoggedIn()) {
       if (this.auth.isAdmin()) {
         void this.router.navigate(['/admin-dashboard']);
+      } else if (!this.auth.isAccountFinalized()) {
+        void this.router.navigate(['/license-payment'], { queryParams: { renewed: '1' }, replaceUrl: true });
       } else {
         void this.router.navigate(['/dashboard']);
       }
@@ -126,49 +121,9 @@ export class LoginComponent implements OnInit {
     document.getElementById('login-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  /** Uma única mensagem principal (evita duplicar texto do servidor com frases genéricas). */
-  primaryAlertText(): string {
-    const msg = this.licenseBlock?.message?.trim();
-    if (msg) {
-      return msg;
-    }
-    const c = this.licenseBlock?.code;
-    if (c === 'LICENSE_PENDING') {
-      return 'A licença ainda não está activa. É necessário pagamento ou aprovação pelo administrador.';
-    }
-    if (c === 'LICENSE_TRIAL_ENDED') {
-      return 'O período de teste gratuito terminou. Renove a licença para voltar a usar o sistema.';
-    }
-    if (c === 'LICENSE_EXPIRED') {
-      return 'A validade da sua licença terminou. Renove para voltar a iniciar sessão.';
-    }
-    return 'Não é possível iniciar sessão até a licença estar em dia.';
-  }
-
-  assistantTitle(): string {
-    const c = this.licenseBlock?.code;
-    if (c === 'LICENSE_PENDING') return 'Licença por activar';
-    if (c === 'LICENSE_TRIAL_ENDED') return 'Período de teste terminado';
-    if (c === 'LICENSE_EXPIRED') return 'Licença expirada';
-    return 'Não é possível iniciar sessão';
-  }
-
-  formatValidUntil(): string {
-    const iso = this.licenseBlock?.validUntil;
-    if (!iso) return '';
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return iso;
-    return d.toLocaleDateString('pt-MZ', { day: '2-digit', month: 'long', year: 'numeric' });
-  }
-
-  dismissAssistant(): void {
-    this.licenseBlock = null;
-  }
-
   async submit(): Promise<void> {
     this.error = '';
     this.showLoginDiagHint = false;
-    this.licenseBlock = null;
     const phone = this.form.get('phone')?.value;
     const password = this.form.get('password')?.value;
     if (!phone || !password || this.form.get('phone')?.invalid) {
@@ -184,16 +139,6 @@ export class LoginComponent implements OnInit {
         if (result.code === 'ACCOUNT_NOT_FOUND') {
           this.error = result.message?.trim() || '';
           this.showNoAccountInfo = true;
-          this.showLoginDiagHint = false;
-        } else if (result.code === 'LICENSE_BLOCKED') {
-          this.licenseBlock =
-            result.licenseBlock ??
-            ({
-              code: 'LICENSE_PENDING',
-              message: result.message,
-            } as LoginLicenseBlock);
-          this.showNoAccountInfo = false;
-          this.error = '';
           this.showLoginDiagHint = false;
         } else if (result.code === 'ACCOUNT_BLOCKED') {
           this.error =
@@ -213,6 +158,12 @@ export class LoginComponent implements OnInit {
         void this.orders.loadOrders();
         this.adminLoginSummaryPopup.requestShowAfterLogin();
         await this.router.navigate(['/admin-dashboard']);
+      } else if (!this.auth.isAccountFinalized()) {
+        const qp: Record<string, string> = { renewed: '1' };
+        if (this.auth.shouldShowPaymentRejectionPopup()) {
+          qp['rejected'] = '1';
+        }
+        await this.router.navigate(['/license-payment'], { queryParams: qp });
       } else {
         this.loginPopupOrchestrator.reset();
         await Promise.all([this.orders.loadOrders(), this.reminders.loadReminders()]);
@@ -235,7 +186,6 @@ export class LoginComponent implements OnInit {
   goToForgotPassword(): void {
     this.error = '';
     this.showNoAccountInfo = false;
-    this.licenseBlock = null;
     this.router.navigate(['/recover-password']);
   }
 }

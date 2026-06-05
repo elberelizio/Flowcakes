@@ -22,6 +22,7 @@ import { SatisfactionSurveyModalComponent } from './core/satisfaction/satisfacti
 import { orderDisplayName } from './models/order.model';
 import { isPaidOrTrialStatus } from './core/license/license-status';
 import { PublicPageMotionService } from './public/web-page/public-page-motion.service';
+import { LicensePaymentLockService } from './services/license-payment-lock.service';
 
 @Component({
   selector: 'app-root',
@@ -65,6 +66,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private orders = inject(OrdersService);
   private reminders = inject(ReminderService);
+  private sessionNotificationsBootstrapped = false;
   orderAlertsPopup = inject(OrderAlertsPopupService);
   adminStats = inject(AdminStatsService);
   licenseExpiryPopup = inject(LicenseExpiryPopupService);
@@ -73,6 +75,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   satisfactionPrompt = inject(SatisfactionPromptService);
   loginPopupOrchestrator = inject(LoginPopupOrchestratorService);
   private publicPageMotion = inject(PublicPageMotionService);
+  private licensePaymentLock = inject(LicensePaymentLockService);
   displayName = orderDisplayName;
 
   /** Nome do ícone para o item Retiradas (evita erro de tipo no template). */
@@ -101,10 +104,15 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     effect(() => {
       const logged = this.auth.isLoggedIn();
       if (logged) {
-        this.systemNotifications.load();
+        if (!this.sessionNotificationsBootstrapped) {
+          this.sessionNotificationsBootstrapped = true;
+          const triggerLoginChain = this.auth.isAdmin() || this.auth.isAccountFinalized();
+          this.systemNotifications.load({ triggerLoginChain });
+        }
       } else {
-        this.systemNotifications.items.set([]);
-        this.systemNotifications.closeLoginModal();
+        this.sessionNotificationsBootstrapped = false;
+        this.systemNotifications.resetForLogout();
+        this.loginPopupOrchestrator.reset();
       }
     });
 
@@ -123,13 +131,21 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     });
 
     this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => {
+      if (this.licensePaymentLock.active()) {
+        const path = this.router.url.split('?')[0];
+        if (!this.licensePaymentLock.isLicensePaymentUrl(path)) {
+          void this.router.navigate(['/license-payment'], { queryParams: { renewed: '1' } });
+        }
+        return;
+      }
       if (this.auth.isLoggedIn() && !this.auth.isAdmin() && !this.isPublicPage()) {
         queueMicrotask(() => this.loginPopupOrchestrator.continueChainAfterShell());
       }
     });
 
     effect(() => {
-      const lock = this.loginPopupOrchestrator.activeStep() === 'welcome';
+      const step = this.loginPopupOrchestrator.activeStep();
+      const lock = step === 'welcome' || step === 'aviso';
       document.body.classList.toggle('login-popup-scroll-lock', lock);
     });
   }
@@ -145,6 +161,11 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.auth.isLoggedIn()) {
       if (this.auth.isAdmin()) {
         this.adminStats.loadStats();
+      } else if (!this.auth.isAccountFinalized()) {
+        const path = this.router.url.split('?')[0];
+        if (!this.licensePaymentLock.isLicensePaymentUrl(path)) {
+          void this.router.navigate(['/license-payment'], { queryParams: { renewed: '1' }, replaceUrl: true });
+        }
       } else {
         void Promise.all([this.orders.loadOrders(), this.reminders.loadReminders()]).then(() => {
           this.loginPopupOrchestrator.markUserDataReady();
@@ -283,7 +304,8 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     if (url.startsWith('/store') || url.startsWith('/loja')) return true;
     if (url.startsWith('/recover-password')) return true;
     if (url === '/license-payment') {
-      return !this.auth.isLoggedIn();
+      if (!this.auth.isLoggedIn()) return true;
+      return !this.auth.isAdmin() && !this.auth.isAccountFinalized();
     }
     return false;
   }

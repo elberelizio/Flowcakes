@@ -1,3 +1,15 @@
+/* Shell da app (sidebar, navbar) — global */
+@use './app/core/styles/sidebar';
+@use './app/core/styles/navbar';
+@use './app/core/styles/dropdowns';
+@use './app/core/styles/layout';
+@use './app/core/styles/admin-shell';
+@use './app/core/styles/order-alerts-popup';
+@use './app/core/styles/system-notifications';
+@use './app/core/styles/responsive';
+@use './app/core/styles/mobile-responsive';
+@use './app/core/styles/license-payment-lock';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -95,25 +107,7 @@ button {
   }
 }
 
-/* View Transitions API – suavidade ao navegar */
-@supports (view-transition-name: none) {
-  ::view-transition-old(root) {
-    animation: fade-out 0.2s ease-out;
-  }
-  ::view-transition-new(root) {
-    animation: fade-in 0.25s ease-in;
-  }
-}
-
-@keyframes fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+/* View Transitions desactivadas na app (login/dashboard) — causavam fade global e travamentos. */
 
 .sys-aviso-popup__emphasis {
   color: #dc2626;

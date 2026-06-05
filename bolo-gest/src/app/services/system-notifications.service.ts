@@ -35,26 +35,50 @@ export class SystemNotificationsService {
 
   readonly unreadCount = computed(() => this.items().filter((n) => !n.dismissed).length);
 
+  /** Total de comunicados activos (sidebar e navbar). */
+  readonly comunicadoCount = computed(() => this.items().length);
+
   /** Avisos visíveis ao utilizador (manutenção expirada já filtrada no backend). */
   readonly visibleItems = computed(() => this.items());
 
-  load(): void {
+  /** Evita novo SafeHtml em cada change detection (congela a página com [innerHTML]). */
+  private readonly messageHtmlCache = new Map<string, SafeHtml>();
+
+  /** Só a primeira carga após login dispara a cadeia de popups. */
+  private loginChainHookSent = false;
+
+  resetForLogout(): void {
+    this.loginChainHookSent = false;
+    this.messageHtmlCache.clear();
+    this.items.set([]);
+    this.closeLoginModal();
+  }
+
+  load(opts?: { triggerLoginChain?: boolean }): void {
     if (!this.auth.isLoggedIn()) {
-      this.items.set([]);
-      this.closeLoginModal();
+      this.resetForLogout();
       return;
     }
+    const hookLoginChain = opts?.triggerLoginChain === true && !this.loginChainHookSent;
     this.loading.set(true);
     this.http.get<SystemNotification[]>(`${API_URL}/notifications`).subscribe({
       next: (list) => {
         this.items.set(list ?? []);
+        this.messageHtmlCache.clear();
         this.loading.set(false);
-        this.injector.get(LoginPopupOrchestratorService).markNotificationsReady();
+        if (hookLoginChain) {
+          this.loginChainHookSent = true;
+          this.injector.get(LoginPopupOrchestratorService).markNotificationsReady();
+        }
       },
       error: () => {
         this.items.set([]);
+        this.messageHtmlCache.clear();
         this.loading.set(false);
-        this.injector.get(LoginPopupOrchestratorService).markNotificationsReady();
+        if (hookLoginChain) {
+          this.loginChainHookSent = true;
+          this.injector.get(LoginPopupOrchestratorService).markNotificationsReady();
+        }
       },
     });
   }
@@ -73,7 +97,7 @@ export class SystemNotificationsService {
 
   /** Popup de login: manutenção ou comunicado aos clientes. */
   tryShowLoginAvisoModal(): boolean {
-    if (!this.auth.isLoggedIn() || this.auth.isAdmin()) return false;
+    if (!this.auth.isLoggedIn() || this.auth.isAdmin() || !this.auth.isAccountFinalized()) return false;
 
     const unread = this.items().filter((n) => !n.dismissed);
     const pick =
@@ -131,8 +155,19 @@ export class SystemNotificationsService {
     return msg;
   }
 
-  /** Mensagem com destaques a vermelho para popup e listagens. */
+  /** Mensagem com destaques a vermelho para popup e listagens (resultado em cache). */
   messageHtml(n: SystemNotification): SafeHtml {
+    const cacheKey = [
+      n.id,
+      n.message,
+      n.maintenanceStartAt ?? '',
+      n.maintenanceEndAt ?? '',
+      n.category ?? '',
+    ].join('|');
+    const hit = this.messageHtmlCache.get(cacheKey);
+    if (hit) {
+      return hit;
+    }
     const text = this.displayMessage(n);
     let html = this.escapeHtml(text);
 
@@ -141,17 +176,38 @@ export class SystemNotificationsService {
         new Date(iso).toLocaleDateString('pt-MZ', { day: 'numeric', month: 'long', year: 'numeric' });
       const start = fmt(n.maintenanceStartAt);
       const end = fmt(n.maintenanceEndAt);
-      html = html.replace(this.escapeHtml(`${start} a ${end}`), this.emphasis(`${start} a ${end}`));
-      html = html.replace(this.escapeHtml(`${start} — ${end}`), this.emphasis(`${start} — ${end}`));
+      html = this.replacePlainText(html, `${start} a ${end}`, this.emphasis(`${start} a ${end}`));
+      html = this.replacePlainText(html, `${start} — ${end}`, this.emphasis(`${start} — ${end}`));
     }
 
     const keywords = ['manutenção', 'indisponível', 'indisponíveis', 'novas funcionalidades', 'interrupção'];
     for (const word of keywords) {
       const re = new RegExp(`(${this.escapeRegex(word)})`, 'gi');
-      html = html.replace(re, (m) => this.emphasis(m));
+      html = this.replacePlainTextRegex(html, re);
     }
 
-    return this.sanitizer.bypassSecurityTrustHtml(html);
+    const safe = this.sanitizer.bypassSecurityTrustHtml(html);
+    this.messageHtmlCache.set(cacheKey, safe);
+    return safe;
+  }
+
+  /** Substitui só texto fora de tags HTML (evita HTML aninhado infinito). */
+  private replacePlainText(html: string, search: string, replacement: string): string {
+    const escaped = this.escapeHtml(search);
+    if (!html.includes(escaped)) {
+      return html;
+    }
+    return this.replacePlainTextRegex(html, new RegExp(`(${this.escapeRegex(escaped)})`, 'gi'), replacement);
+  }
+
+  private replacePlainTextRegex(html: string, re: RegExp, replacement?: string): string {
+    return html.replace(re, (match, _g1, offset) => {
+      const before = html.slice(0, offset);
+      if (before.lastIndexOf('<') > before.lastIndexOf('>')) {
+        return match;
+      }
+      return replacement ?? this.emphasis(match);
+    });
   }
 
   private emphasis(text: string): string {

@@ -113,12 +113,17 @@
             routerLink="/notifications"
             routerLinkActive="active"
             class="nav-item"
-            [class.nav-item--comunicado-pending]="systemNotifications.unreadCount() > 0"
+            [class.nav-item--comunicado-pending]="systemNotifications.comunicadoCount() > 0"
+            [attr.aria-label]="
+              systemNotifications.comunicadoCount() > 0
+                ? 'Comunicado, ' + systemNotifications.comunicadoCount() + ' avisos activos'
+                : 'Comunicado'
+            "
           >
             <app-icon name="alert-circle" />
             <span class="nav-label">Comunicado</span>
-            @if (systemNotifications.unreadCount() > 0) {
-              <span class="nav-badge nav-badge--alert">{{ systemNotifications.unreadCount() }}</span>
+            @if (systemNotifications.comunicadoCount() > 0) {
+              <span class="nav-badge nav-badge--comunicado" aria-hidden="true">{{ systemNotifications.comunicadoCount() }}</span>
             }
           </a>
           <div class="nav-group">
@@ -241,10 +246,20 @@
             </button>
           </div>
           <div class="navbar-dropdown-wrap">
-            <button type="button" class="navbar-icon-btn" (click)="toggleNotifications($event); $event.stopPropagation()" aria-label="Comunicados" [class.active]="notificationsOpen()">
+            <button
+              type="button"
+              class="navbar-icon-btn navbar-icon-btn--comunicado"
+              (click)="toggleNotifications($event); $event.stopPropagation()"
+              [class.active]="notificationsOpen()"
+              [attr.aria-label]="
+                systemNotifications.comunicadoCount() > 0
+                  ? 'Comunicados, ' + systemNotifications.comunicadoCount() + ' avisos activos'
+                  : 'Comunicados'
+              "
+            >
               <app-icon name="bell" />
-              @if (systemNotifications.unreadCount() > 0) {
-                <span class="navbar-icon-badge navbar-icon-badge--alert">{{ systemNotifications.unreadCount() }}</span>
+              @if (systemNotifications.comunicadoCount() > 0) {
+                <span class="navbar-icon-badge navbar-icon-badge--comunicado" aria-hidden="true">{{ systemNotifications.comunicadoCount() }}</span>
               }
             </button>
             @if (notificationsOpen()) {
@@ -337,9 +352,13 @@
 }
 
 <!-- Popups pós-login: um de cada vez; não fecha ao clicar fora -->
-@if (auth.isLoggedIn()) {
+@if (auth.isLoggedIn() && (auth.isAdmin() || auth.isAccountFinalized())) {
   @if (loginPopupOrchestrator.activeStep() === 'aviso' && systemNotifications.loginModalNotification(); as n) {
-    <div class="login-popup-overlay" role="dialog" aria-modal="true" [attr.aria-label]="n.title">
+    <div
+      class="login-popup-overlay login-popup-overlay--locked"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="n.title">
       <div class="sys-aviso-popup" [attr.data-type]="n.type" [attr.data-category]="n.category">
         <div class="sys-aviso-popup__top">
           <div class="sys-aviso-popup__badge">
@@ -452,7 +471,7 @@
   }
 }
 
-@if (auth.isLoggedIn() && !auth.isAdmin() && satisfactionPrompt.visible()) {
+@if (auth.isLoggedIn() && !auth.isAdmin() && auth.isAccountFinalized() && satisfactionPrompt.visible()) {
   <app-satisfaction-survey-modal />
 }
 

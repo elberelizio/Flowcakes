@@ -9,6 +9,7 @@ com\chefcontrol\repository\UserStoreSettingsRepository.class
 com\chefcontrol\dto\AdminRankingRowDto.class
 com\chefcontrol\dto\RegisterRequest.class
 com\chefcontrol\dto\ReminderRequest.class
+com\chefcontrol\dto\RejectSimulatedPaymentRequest.class
 com\chefcontrol\dto\LicenseInfoPublicDto.class
 com\chefcontrol\repository\SecurityEventRepository.class
 com\chefcontrol\dto\UserActivityHistoryPageDto.class
@@ -123,11 +124,11 @@ com\chefcontrol\entity\UserLicenseEntity.class
 com\chefcontrol\dto\AccessLogUserSummaryDto.class
 com\chefcontrol\controller\MpesaController.class
 com\chefcontrol\service\SmsService.class
+com\chefcontrol\dto\ApproveSimulatedPaymentRequest.class
 com\chefcontrol\dto\OrderResponse.class
 com\chefcontrol\entity\TreasuryAllocationSuggestionEntity.class
 com\chefcontrol\entity\UserEntity.class
 com\chefcontrol\service\StoreSettingsService.class
-com\chefcontrol\exception\LicenseLoginBlockedException.class
 com\chefcontrol\dto\TreasuryMonthRowDto.class
 com\chefcontrol\dto\StoreSettingsDto.class
 com\chefcontrol\entity\LandingSuggestionEntity.class

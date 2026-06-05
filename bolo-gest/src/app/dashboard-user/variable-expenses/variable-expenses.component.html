@@ -1,113 +1,122 @@
-<div class="despesas-variaveis-page">
+<div class="vex-page">
   <header class="page-hero">
     <a routerLink="/dashboard" class="btn-back">← Voltar</a>
     <div class="page-hero__main">
       <p class="page-hero__eyebrow">Custos</p>
-      <h1>Despesas extras</h1>
+      <h1 class="page-hero__title">Despesas extras</h1>
       <p class="page-hero__sub">
-        Registe custos adicionais por encomenda (material, embalagem, descontos, etc.). Pedidos entregues ou cancelados não aparecem na lista.
+        Custos adicionais por encomenda (material, embalagem, delivery, descontos). Só aparecem pedidos em curso — entregues ou
+        cancelados ficam de fora.
       </p>
     </div>
   </header>
 
-  <section class="add-expense-card card">
-    <h2 class="section-title">Adicionar despesa rápida</h2>
-    <p class="form-hint">Para registo rápido: escolha a encomenda, informe o tipo de despesa e o valor em MZN.</p>
-    <form [formGroup]="expenseForm" (ngSubmit)="submitExpense()" class="expense-form">
-      <div class="form-grid">
-        <div class="form-group">
-          <label for="order-select">Encomenda</label>
-          <select
-            id="order-select"
-            formControlName="orderId"
-            (change)="onOrderSelectChange()"
-            class="form-select">
-            <option [ngValue]="null">Seleccionar encomenda…</option>
-            @for (o of filteredOrders(); track o.id) {
-              <option [value]="o.id">
-                Nr. {{ getOrderNumber(o) }} — {{ o.clientName }} — {{ displayName(o) }} ({{ formatDate(o.deliveryDate || o.createdAt) }})
-              </option>
-            }
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="expense-name">Tipo de despesa</label>
-          <input
-            id="expense-name"
-            type="text"
-            formControlName="name"
-            placeholder="Ex.: Papel decorativo, embalagem"
-            class="form-input"
-            maxlength="80" />
-          <span class="field-hint">Exemplos: Delivery, embalagem, ajudante, desconto concedido.</span>
-        </div>
-        <div class="form-group">
-          <label for="expense-amount">Valor (MZN)</label>
-          <input
-            id="expense-amount"
-            type="number"
-            formControlName="amount"
-            min="0"
-            step="0.01"
-            class="form-input"
-            placeholder="0" />
-        </div>
-        <div class="form-group form-actions">
-          <button type="submit" class="btn btn-primary" [disabled]="expenseForm.invalid || saving()">
-            {{ saving() ? 'A guardar…' : 'Adicionar rápida' }}
-          </button>
-        </div>
-      </div>
-    </form>
-  </section>
-
-  <section class="orders-section card">
-    <div class="section-header-row">
-      <h2 class="section-title">Encomendas activas</h2>
-      <div class="filter-row">
-        <input
-          type="text"
-          class="filter-input"
-          placeholder="Filtrar por cliente ou produto…"
-          [value]="filterText()"
-          (input)="filterText.set($any($event.target).value)" />
-      </div>
+  @if (filteredOrders().length === 0) {
+    <div class="vex-empty card">
+      <span class="vex-empty__icon" aria-hidden="true"><i class="fa-solid fa-clipboard-list"></i></span>
+      <p class="vex-empty__title">Nenhuma encomenda em curso</p>
+      <p class="vex-empty__text">Crie uma encomenda ou aguarde pedidos activos para registar despesas extras.</p>
+      <a routerLink="/new-order" class="btn btn-primary">
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+        Criar encomenda
+      </a>
     </div>
-    <p class="section-help">
-      <strong>Adicionar</strong>: encomenda sem despesas extras. <strong>Gerir</strong>: editar/remover despesas já registadas.
-    </p>
+  } @else {
+    <section class="kpi-strip" aria-label="Resumo de despesas extras">
+      <article class="kpi-card">
+        <span class="kpi-card__icon" aria-hidden="true"><i class="fa-solid fa-box-open"></i></span>
+        <div>
+          <span class="kpi-card__label">Encomendas activas</span>
+          <p class="kpi-card__value">{{ activeOrderCount() }}</p>
+        </div>
+      </article>
+      <article class="kpi-card kpi-card--accent">
+        <span class="kpi-card__icon" aria-hidden="true"><i class="fa-solid fa-receipt"></i></span>
+        <div>
+          <span class="kpi-card__label">Com despesas registadas</span>
+          <p class="kpi-card__value">{{ ordersWithExpensesCount() }}</p>
+        </div>
+      </article>
+      <article class="kpi-card kpi-card--total">
+        <span class="kpi-card__icon" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
+        <div>
+          <span class="kpi-card__label">Total em despesas</span>
+          <p class="kpi-card__value">{{ totalExtrasMzn() | number:'1.0-0' }} <small>MZN</small></p>
+          <span class="kpi-card__meta">soma das encomendas visíveis</span>
+        </div>
+      </article>
+    </section>
 
-    @if (filteredOrders().length === 0) {
-      <p class="empty">Nenhuma encomenda em curso. <a routerLink="/new-order">Criar encomenda</a>.</p>
-    } @else {
+    <section class="vex-panel card">
+      <div class="panel-head">
+        <div class="panel-head__text">
+          <span class="panel-icon" aria-hidden="true"><i class="fa-solid fa-list-check"></i></span>
+          <div>
+            <h2 class="panel-title">Encomendas em curso</h2>
+            <p class="panel-desc">Seleccione uma linha ou use <strong>Gerir</strong> para adicionar e editar despesas.</p>
+          </div>
+        </div>
+        <label class="panel-search">
+          <span class="visually-hidden">Filtrar encomendas</span>
+          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+          <input
+            type="search"
+            class="panel-search__input"
+            placeholder="Cliente ou produto…"
+            [value]="filterText()"
+            (input)="filterText.set($any($event.target).value)" />
+        </label>
+      </div>
+
       <div class="table-wrap">
-        <table class="orders-table">
+        <table class="vex-table">
           <thead>
             <tr>
               <th>Nº</th>
               <th>Cliente</th>
               <th>Produto</th>
               <th>Entrega</th>
-              <th>Despesas extras</th>
-              <th></th>
+              <th>Despesas</th>
+              <th class="vex-table__actions-col">Acção</th>
             </tr>
           </thead>
           <tbody>
             @for (o of filteredOrders(); track o.id) {
-              <tr>
-                <td class="order-no-cell" data-label="Nº">{{ getOrderNumber(o) }}</td>
-                <td data-label="Cliente">{{ o.clientName }}</td>
-                <td data-label="Produto">{{ displayName(o) }} · {{ displaySize(o) }}</td>
-                <td data-label="Entrega">{{ formatDate(o.deliveryDate || o.createdAt) }}</td>
-                <td data-label="Despesas extras">
-                  <span class="variable-expenses-display">{{ getVariableExpensesDisplay(o) }}</span>
+              <tr
+                class="vex-table__row"
+                [class.vex-table__row--has-expenses]="hasVariableExpenses(o)"
+                tabindex="0"
+                (click)="openModalForOrder(o)"
+                (keydown.enter)="openModalForOrder(o)"
+                (keydown.space)="$event.preventDefault(); openModalForOrder(o)">
+                <td class="vex-table__no" data-label="Nº">{{ getOrderNumber(o) }}</td>
+                <td data-label="Cliente">
+                  <span class="vex-table__client">
+                    <span class="vex-table__avatar" aria-hidden="true">{{ (o.clientName || '?').charAt(0).toUpperCase() }}</span>
+                    {{ o.clientName }}
+                  </span>
                 </td>
-                <td data-label="">
+                <td data-label="Produto">
+                  <span class="vex-table__product">{{ displayName(o) }}</span>
+                  <span class="vex-table__size">{{ displaySize(o) }}</span>
+                </td>
+                <td data-label="Entrega">{{ formatDate(o.deliveryDate || o.createdAt) }}</td>
+                <td data-label="Despesas">
+                  @if (hasVariableExpenses(o)) {
+                    <span class="vex-badge vex-badge--ok">
+                      {{ getTotalVariableExpenses(o) | number:'1.0-0' }} MZN
+                    </span>
+                    <span class="vex-table__expense-names">{{ getExpenseNamesPreview(o) }}</span>
+                  } @else {
+                    <span class="vex-badge vex-badge--none">Sem despesas</span>
+                  }
+                </td>
+                <td class="vex-table__actions-col" data-label="Acção">
                   <button
                     type="button"
-                    class="btn btn-secondary btn-compact"
-                    (click)="openModalForOrder(o)"
-                    [title]="hasVariableExpenses(o) ? 'Editar/remover despesas desta encomenda' : 'Adicionar primeira despesa desta encomenda'">
+                    class="btn btn-primary btn-row"
+                    (click)="openModalForOrder(o); $event.stopPropagation()">
+                    <i class="fa-solid" [class.fa-pen-to-square]="hasVariableExpenses(o)" [class.fa-plus]="!hasVariableExpenses(o)" aria-hidden="true"></i>
                     {{ hasVariableExpenses(o) ? 'Gerir' : 'Adicionar' }}
                   </button>
                 </td>
@@ -116,49 +125,75 @@
           </tbody>
         </table>
       </div>
-    }
-  </section>
+    </section>
+  }
 </div>
 
 @if (modalOrder(); as mo) {
-  <div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="vex-modal-title" (click)="closeModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <div class="modal-title-wrap">
           <p class="modal-eyebrow">Encomenda #{{ getOrderNumber(mo) }}</p>
-          <h3>Despesas extras</h3>
+          <h3 id="vex-modal-title">Despesas extras</h3>
         </div>
         <button type="button" class="modal-close" (click)="closeModal()" aria-label="Fechar">×</button>
       </div>
       <div class="modal-body">
-        <p class="modal-product">{{ mo.clientName }} — {{ displayName(mo) }}</p>
-        <p class="modal-hint">Adicione, ajuste ou remova custos extras desta encomenda.</p>
+        <div class="modal-order-card">
+          <p class="modal-product">{{ mo.clientName }} — {{ displayName(mo) }} · {{ displaySize(mo) }}</p>
+          <p class="modal-meta">Entrega: {{ formatDate(mo.deliveryDate || mo.createdAt) }}</p>
+        </div>
+
         <div class="modal-expense-form">
           <div class="modal-field">
             <label for="modal-expense-name">Tipo de despesa</label>
-            <input id="modal-expense-name" type="text" class="form-input" placeholder="Ex.: Delivery, embalagem, desconto" [value]="newExpenseName()" (input)="newExpenseName.set($any($event.target).value)" />
+            <input
+              id="modal-expense-name"
+              type="text"
+              class="form-input"
+              placeholder="Ex.: Delivery, embalagem, desconto"
+              [value]="newExpenseName()"
+              (input)="newExpenseName.set($any($event.target).value)"
+              (keydown.enter)="$event.preventDefault(); addExpenseInModal()" />
           </div>
           <div class="modal-field modal-field-amount">
             <label for="modal-expense-amount">Valor (MZN)</label>
-            <input id="modal-expense-amount" type="number" class="form-input form-input-amount" min="0" step="0.01" placeholder="0" [value]="newExpenseAmount() || ''" (input)="newExpenseAmount.set(+$any($event.target).value || 0)" />
+            <input
+              id="modal-expense-amount"
+              type="number"
+              class="form-input form-input-amount"
+              min="0"
+              step="0.01"
+              placeholder="0"
+              [value]="newExpenseAmount() || ''"
+              (input)="newExpenseAmount.set(+$any($event.target).value || 0)"
+              (keydown.enter)="$event.preventDefault(); addExpenseInModal()" />
           </div>
-          <button type="button" class="btn btn-add" (click)="addExpenseInModal()">Adicionar item</button>
+          <button type="button" class="btn btn-add" (click)="addExpenseInModal()">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i>
+            Adicionar
+          </button>
         </div>
+
         @if (modalExpenses().length === 0) {
-          <p class="no-expenses">Nenhuma despesa extra nesta lista.</p>
+          <p class="no-expenses">Ainda não há despesas nesta encomenda. Adicione o primeiro item acima.</p>
         } @else {
-          <div class="modal-expenses-list">
+          <ul class="modal-expenses-list">
             @for (e of modalExpenses(); track $index) {
-              <div class="expense-item">
+              <li class="expense-item">
                 <div class="expense-item-main">
                   <span class="expense-item-name">{{ e.name }}</span>
                   <span class="expense-item-amount">{{ e.amount | number:'1.0-2' }} MZN</span>
                 </div>
-                <button type="button" class="btn btn-danger" (click)="removeExpenseInModal($index)" title="Remover">×</button>
-              </div>
+                <button type="button" class="btn btn-danger" (click)="removeExpenseInModal($index)" title="Remover despesa" aria-label="Remover despesa">
+                  <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                </button>
+              </li>
             }
-          </div>
+          </ul>
         }
+
         <div class="modal-total">
           <span>Total de despesas</span>
           <strong>{{ getModalExpensesTotal() | number:'1.0-2' }} MZN</strong>
@@ -167,7 +202,7 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
         <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="saveModalExpenses()">
-          {{ saving() ? 'A guardar…' : 'Guardar' }}
+          {{ saving() ? 'A guardar…' : 'Guardar alterações' }}
         </button>
       </div>
     </div>

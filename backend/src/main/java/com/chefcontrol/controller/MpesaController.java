@@ -110,37 +110,6 @@ public class MpesaController {
         return runMpesaPayment(userId, phone, months, parseSimulatedChannel(body), body);
     }
 
-    /**
-     * Inicia pagamento M-Pesa sem sessão: valida telefone e senha da conta (mesmo formato que no login).
-     */
-    @PostMapping("/pay-with-credentials")
-    public ResponseEntity<Map<String, Object>> payWithCredentials(@RequestBody Map<String, Object> body) {
-        String loginPhone = AuthService.normalizeLoginPhone(
-            body.get("loginPhone") != null ? body.get("loginPhone").toString() : "");
-        String password = body.get("password") != null ? body.get("password").toString() : "";
-        if (loginPhone.isEmpty() || password.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Telefone e senha são obrigatórios.");
-        }
-        UserEntity user = userRepository.findByPhone(loginPhone)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Telefone ou senha incorretos."));
-        if (user.isBlocked()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Conta bloqueada. Contacte o suporte.");
-        }
-        if (!user.getPasswordHash().equals(password)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Telefone ou senha incorretos.");
-        }
-        if (user.isAdmin()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Administradores não utilizam este fluxo.");
-        }
-        if (licenseService.isCommerciallyPaidLicense(user.getId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A sua licença já está activa. Inicie sessão normalmente.");
-        }
-        String mpesaPhone = body.get("mpesaPhone") != null ? body.get("mpesaPhone").toString()
-            : (body.get("phone") != null ? body.get("phone").toString() : "");
-        int months = parseMonths(body);
-        return runMpesaPayment(user.getId(), mpesaPhone, months, parseSimulatedChannel(body), body);
-    }
-
     /** Canal de simulação: mpesa (omissão) ou emola. Ignorado quando a simulação está desligada. */
     private static String parseSimulatedChannel(Map<String, Object> body) {
         if (body == null) {
@@ -377,7 +346,11 @@ public class MpesaController {
             r.put("paymentId", latest.getId().toString());
             r.put("status", latest.getStatus());
             r.put("amount", latest.getAmount());
-            r.put("rejectionReason", latest.getAdminRejectionReason());
+            String reason = latest.getAdminRejectionReason();
+            r.put("rejectionReason", reason != null && !reason.isBlank()
+                ? reason.trim()
+                : "O pagamento não foi confirmado. Pode efectuar uma nova transferência.");
+            r.put("supportWhatsapp", licenseService.getSupportWhatsapp());
             r.put("rejectedAt", latest.getRejectedAt() != null ? latest.getRejectedAt().toString() : null);
             if (latest.getSimulationChannel() != null && !latest.getSimulationChannel().isBlank()) {
                 r.put("simulatedChannel", latest.getSimulationChannel());
