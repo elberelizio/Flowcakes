@@ -604,6 +604,87 @@ export class AuthService {
       }));
   }
 
+  /** Solicita OTP de recuperação de senha (modo simulação expõe o código no ecrã). */
+  requestPasswordResetOtp(phone: string): Promise<{
+    ok: boolean;
+    message?: string;
+    simulationOtp?: string;
+    expiresInSeconds?: number;
+  }> {
+    const normalizedPhone = normalizeMzPhoneDigits(phone);
+    return this.http
+      .post<{
+        message?: string;
+        simulationOtp?: string;
+        expiresInSeconds?: number;
+      }>(`${API_URL}/auth/recover-password/request-otp`, { phone: normalizedPhone })
+      .toPromise()
+      .then((r) => ({
+        ok: true,
+        message: r?.message,
+        simulationOtp: r?.simulationOtp,
+        expiresInSeconds: r?.expiresInSeconds,
+      }))
+      .catch((err) => ({
+        ok: false,
+        message: AuthService.apiErrorMessage(err, 'Não foi possível enviar o código.'),
+      }));
+  }
+
+  /** Valida OTP e devolve token para definir nova senha. */
+  verifyPasswordResetOtp(
+    phone: string,
+    otp: string
+  ): Promise<{ ok: boolean; message?: string; resetToken?: string }> {
+    const normalizedPhone = normalizeMzPhoneDigits(phone);
+    return this.http
+      .post<{ message?: string; resetToken?: string }>(`${API_URL}/auth/recover-password/verify-otp`, {
+        phone: normalizedPhone,
+        otp: otp.trim(),
+      })
+      .toPromise()
+      .then((r) => ({
+        ok: true,
+        message: r?.message,
+        resetToken: r?.resetToken,
+      }))
+      .catch((err) => ({
+        ok: false,
+        message: AuthService.apiErrorMessage(err, 'Código OTP inválido ou expirado.'),
+      }));
+  }
+
+  /** Altera a senha após OTP confirmado. */
+  resetPasswordViaRecovery(data: {
+    phone: string;
+    resetToken: string;
+    newPassword: string;
+    confirmPassword: string;
+  }): Promise<{ ok: boolean; message?: string }> {
+    const normalizedPhone = normalizeMzPhoneDigits(data.phone);
+    return this.http
+      .post<{ message?: string }>(`${API_URL}/auth/recover-password/reset`, {
+        phone: normalizedPhone,
+        resetToken: data.resetToken,
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword,
+      })
+      .toPromise()
+      .then((r) => ({
+        ok: true,
+        message: r?.message ?? 'Senha alterada com sucesso.',
+      }))
+      .catch((err) => ({
+        ok: false,
+        message: AuthService.apiErrorMessage(err, 'Não foi possível alterar a senha.'),
+      }));
+  }
+
+  private static apiErrorMessage(err: unknown, fallback: string): string {
+    const payload = AuthService.loginErrorPayload(err);
+    return payload.message?.trim() || fallback;
+  }
+
   /** Verifica estado de pagamento pendente. */
   checkMpesaPaymentStatus(): Promise<{
     hasPending: boolean;

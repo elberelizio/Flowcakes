@@ -105,7 +105,7 @@
           }
         </section>
 
-        <a routerLink="/license-payment" class="btn-renew">
+        <a routerLink="/license-payment" [queryParams]="{ renewed: '1' }" class="btn-renew">
           <i class="fa-solid fa-credit-card" aria-hidden="true"></i>
           Pagar ou renovar licença
         </a>

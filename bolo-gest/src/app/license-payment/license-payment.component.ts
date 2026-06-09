@@ -114,11 +114,6 @@ export class LicensePaymentComponent implements OnInit, OnDestroy, AfterViewInit
       }
     }
     if (this.sessionActive()) {
-      if (this.auth.isAccountFinalized()) {
-        this.notification.showSuccess(LicensePaymentStrings.toastPaymentApproved, 5000);
-        void this.router.navigate(['/dashboard'], { replaceUrl: true });
-        return;
-      }
       const p = this.auth.getPhone();
       if (p) {
         const d = sanitizeMzWalletPhone(p, this.selectedTab());
