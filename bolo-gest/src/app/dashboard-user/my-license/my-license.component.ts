@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+﻿import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService, LicenseStatusResponse, LicensePaymentRow } from '../../services/auth.service';
@@ -63,7 +63,7 @@ export class MyLicenseComponent implements OnInit {
   whatsappSupportUrl(phone?: string): string {
     const d = (phone ?? '871964887').replace(/\D/g, '');
     const e164 = d.startsWith('258') ? d : d.length === 9 ? `258${d}` : d;
-    const text = encodeURIComponent('Olá, preciso de ajuda com o pagamento da licença Chef Control.');
+    const text = encodeURIComponent('Olá, preciso de ajuda com o pagamento da licença Flow Cakes.');
     return `https://wa.me/${e164}?text=${text}`;
   }
 
@@ -119,7 +119,7 @@ export class MyLicenseComponent implements OnInit {
     const id = this.txId(row);
     const user = this.auth.getCurrentUser();
     this.pdfExport.downloadRecibo({
-      filename: `recibo-licenca-chefcontrol-${stamp}-${ref}.pdf`,
+      filename: `recibo-licenca-flow-cakes-${stamp}-${ref}.pdf`,
       issuedAt: this.issuedAtLabel(),
       clientName: user?.fullName,
       clientPhone: user?.phone ? this.formatPhone(user.phone) : undefined,
@@ -132,7 +132,7 @@ export class MyLicenseComponent implements OnInit {
         ['Licença válida até (após este pagamento)', this.validUntilAfterPayment(row)],
         ['ID transacção e-Mola', id || '—'],
       ],
-      note: 'Recibo de pagamento confirmado — Chef Control. Conserve para os seus registos contabilísticos.',
+      note: 'Recibo de pagamento confirmado — Flow Cakes. Conserve para os seus registos contabilísticos.',
     });
     this.notification.showSuccess('Recibo descarregado em PDF.');
   }
@@ -143,7 +143,7 @@ export class MyLicenseComponent implements OnInit {
     const lic = this.status();
     const total = this.payments().reduce((s, r) => s + (Number(r.amount) || 0), 0);
     this.pdfExport.downloadExtrato({
-      filename: `extrato-licenca-chefcontrol-${stamp}.pdf`,
+      filename: `extrato-licenca-flow-cakes-${stamp}.pdf`,
       issuedAt: this.issuedAtLabel(),
       clientName: user?.fullName,
       clientPhone: user?.phone ? this.formatPhone(user.phone) : undefined,

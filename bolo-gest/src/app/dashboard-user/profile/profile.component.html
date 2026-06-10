@@ -1,4 +1,4 @@
-<div class="profile-page">
+﻿<div class="profile-page">
   <header class="page-hero">
     <a routerLink="/dashboard" class="btn-back">← Voltar ao dashboard</a>
     <div class="page-hero__main">
@@ -16,7 +16,7 @@
             <span>{{ userInitial() }}</span>
           </div>
           <h2 class="identity-card__name">{{ user.fullName?.trim() || 'Utilizador' }}</h2>
-          <p class="identity-card__role">{{ auth.isAdmin() ? 'Administrador' : 'Utilizador Chef Control' }}</p>
+          <p class="identity-card__role">{{ auth.isAdmin() ? 'Administrador' : 'Utilizador Flow Cakes' }}</p>
           <div class="identity-card__chips">
             <span class="chip chip--phone">
               <app-icon [name]="iconPhone" />

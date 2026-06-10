@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -46,7 +46,7 @@ export class ContactPageComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    this.title.setTitle('Contacto — ChefControl');
+    this.title.setTitle('Contacto — Flow Cakes');
   }
 
   onSubmit(): void {
@@ -65,7 +65,7 @@ export class ContactPageComponent implements OnInit {
     }
 
     const v = this.form.getRawValue();
-    const subject = `[ChefControl] Reclamação — ${v.fullName}`;
+    const subject = `[Flow Cakes] Reclamação — ${v.fullName}`;
 
     const bodyLines = [
       'Reclamação / contacto',
@@ -76,7 +76,7 @@ export class ContactPageComponent implements OnInit {
       'Mensagem:',
       v.message,
       '',
-      '— Enviado a partir do formulário de contacto do site ChefControl.',
+      '— Enviado a partir do formulário de contacto do site Flow Cakes.',
     ];
     const body = bodyLines.join('\n');
 

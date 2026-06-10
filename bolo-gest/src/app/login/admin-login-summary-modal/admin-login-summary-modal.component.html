@@ -1,4 +1,4 @@
-<div
+﻿<div
   class="admin-summary-overlay"
   [class.closing]="closing"
   role="dialog"
@@ -18,11 +18,11 @@
       @if (data(); as d) {
       <header class="admin-summary-header">
         <div class="admin-summary-header__brand">
-          <img src="/logotipo.png" alt="" class="admin-summary-logo" width="52" height="52" />
+          <img [src]="brand.logoIcon" alt="Flow Cakes" class="admin-summary-logo" width="52" height="52" />
           <div>
             <p class="admin-summary-eyebrow">Bem-vindo de volta</p>
             <h2 id="admin-summary-title">Resumo da plataforma</h2>
-            <p class="admin-summary-tagline">Estado actual da Chef Control em tempo real</p>
+            <p class="admin-summary-tagline">Estado actual da Flow Cakes em tempo real</p>
           </div>
         </div>
         <div class="admin-summary-health" [attr.data-level]="healthClass(d.alerts.healthScore)">

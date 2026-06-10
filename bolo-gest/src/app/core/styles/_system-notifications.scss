@@ -274,11 +274,12 @@ body.login-popup-scroll-lock {
   justify-content: center;
   margin-bottom: 0.55rem;
 
-  img {
-    width: 3rem;
-    height: 3rem;
-    border-radius: 14px;
-    box-shadow: 0 8px 20px rgba(15, 118, 110, 0.18);
+  img,
+  .welcome-onboarding-popup__logo {
+    max-width: min(100%, 200px);
+    width: auto;
+    height: auto;
+    object-fit: contain;
   }
 }
 

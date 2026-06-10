@@ -1,6 +1,7 @@
 import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { BRAND_ASSETS } from '@app/core/config/brand-assets';
 
 /** Barra de navegação partilhada entre a landing e páginas públicas (ex.: contacto). */
 @Component({
@@ -12,6 +13,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   host: { class: 'block' },
 })
 export class PublicSiteNavComponent {
+  readonly brand = BRAND_ASSETS;
   navScrolled = false;
   mobileMenuOpen = false;
 

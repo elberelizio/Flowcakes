@@ -1,4 +1,4 @@
-package com.chefcontrol.service;
+﻿package com.Flow Cakes.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +65,7 @@ public class NotificationService {
     private String buildAccountCreatedMessageToUser(String fullName, String phone) {
         String nome = (fullName != null && !fullName.isBlank()) ? fullName : "Utilizador";
         return String.format(
-            "Chef Control: Olá %s! A sua conta foi criada com sucesso. Os seus dados de acesso: use o número %s e a senha que definiu. Para activar a conta, efectue %s MZN para o número %s (e-Mola). Obrigado!",
+            "Flow Cakes: Olá %s! A sua conta foi criada com sucesso. Os seus dados de acesso: use o número %s e a senha que definiu. Para activar a conta, efectue %s MZN para o número %s (e-Mola). Obrigado!",
             nome.trim(), phone, licenseAmount.toPlainString(), adminPhone
         );
     }
@@ -73,7 +73,7 @@ public class NotificationService {
     private String buildNewAccountMessageToAdmin(String phone, String fullName) {
         String nome = (fullName != null && !fullName.isBlank()) ? fullName : "-";
         return String.format(
-            "Chef Control: Nova conta criada. Nome: %s. Telefone (login): %s. Credenciais de acesso: número %s e a senha que o cliente definiu. Peça ao cliente para pagar %s MZN para este número (e-Mola) para activar.",
+            "Flow Cakes: Nova conta criada. Nome: %s. Telefone (login): %s. Credenciais de acesso: número %s e a senha que o cliente definiu. Peça ao cliente para pagar %s MZN para este número (e-Mola) para activar.",
             nome, phone, phone, licenseAmount.toPlainString()
         );
     }
@@ -85,7 +85,7 @@ public class NotificationService {
         String nome = (fullName != null && !fullName.isBlank()) ? fullName.trim() : "—";
         String amt = amountMzn != null ? amountMzn.toPlainString() : "500";
         String message = String.format(
-            "Chef Control: O utilizador %s (%s) indicou que transferiu %s MZN para a licença. Consulte e confirme o pagamento na gestão de licenças.",
+            "Flow Cakes: O utilizador %s (%s) indicou que transferiu %s MZN para a licença. Consulte e confirme o pagamento na gestão de licenças.",
             nome, userPhone != null ? userPhone : "—", amt
         );
         if (isTwilioConfigured()) {
@@ -120,11 +120,11 @@ public class NotificationService {
      * Envio de teste: SMS e WhatsApp com mensagem livre (para verificar se o serviço está a funcionar).
      * Retorna o resultado de cada canal.
      */
-    public com.chefcontrol.dto.TestNotificationResponse sendTestMessage(String phone, String messageBody) {
-        String body = (messageBody != null && !messageBody.isBlank()) ? messageBody.trim() : "Mensagem teste - Chef Control";
+    public com.Flow Cakes.dto.TestNotificationResponse sendTestMessage(String phone, String messageBody) {
+        String body = (messageBody != null && !messageBody.isBlank()) ? messageBody.trim() : "Mensagem teste - Flow Cakes";
         String to = normalizePhone(phone);
         if (to.isEmpty()) {
-            return com.chefcontrol.dto.TestNotificationResponse.of(false, false, "Número inválido", null);
+            return com.Flow Cakes.dto.TestNotificationResponse.of(false, false, "Número inválido", null);
         }
         boolean smsOk = false;
         String smsErr = null;
@@ -142,7 +142,7 @@ public class NotificationService {
         } else {
             waErr = "WhatsApp não configurado (TWILIO_WHATSAPP_FROM).";
         }
-        return com.chefcontrol.dto.TestNotificationResponse.of(smsOk, waOk, smsErr, waErr, body);
+        return com.Flow Cakes.dto.TestNotificationResponse.of(smsOk, waOk, smsErr, waErr, body);
     }
 
     /**
@@ -154,7 +154,7 @@ public class NotificationService {
         String phone = normalizePhone(userPhone);
         if (phone.isEmpty()) return;
         String message = String.format(
-            "Chef Control: O seu código de licença é %s. Introduza na aplicação para activar a conta. Obrigado!",
+            "Flow Cakes: O seu código de licença é %s. Introduza na aplicação para activar a conta. Obrigado!",
             licenseCode.trim().toUpperCase()
         );
         if (isTwilioConfigured()) {

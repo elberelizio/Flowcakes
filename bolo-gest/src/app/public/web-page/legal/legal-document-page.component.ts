@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
@@ -25,6 +25,6 @@ export class LegalDocumentPageComponent implements OnInit {
   ngOnInit(): void {
     const tipo = this.route.snapshot.data['legalType'] as LegalDocumentId | undefined;
     this.documentId = tipo === 'privacy' ? 'privacy' : 'terms';
-    this.title.setTitle(`${this.document.title} — ChefControl`);
+    this.title.setTitle(`${this.document.title} — Flow Cakes`);
   }
 }

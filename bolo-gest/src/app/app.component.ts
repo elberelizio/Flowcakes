@@ -1,4 +1,4 @@
-import { Component, signal, HostListener, OnInit, OnDestroy, AfterViewInit, effect, inject, ViewChild } from '@angular/core';
+﻿import { Component, signal, HostListener, OnInit, OnDestroy, AfterViewInit, effect, inject, ViewChild } from '@angular/core';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { IsActiveMatchOptions, Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -23,6 +23,7 @@ import { orderDisplayName } from './models/order.model';
 import { isPaidOrTrialStatus } from './core/license/license-status';
 import { PublicPageMotionService } from './public/web-page/public-page-motion.service';
 import { LicensePaymentLockService } from './services/license-payment-lock.service';
+import { BRAND_ASSETS } from './core/config/brand-assets';
 
 @Component({
   selector: 'app-root',
@@ -47,6 +48,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     fragment: 'ignored',
     matrixParams: 'ignored',
   };
+  readonly brand = BRAND_ASSETS;
 
   @ViewChild(SnackbarComponent) private snackbar!: SnackbarComponent;
   private notificationService = inject(NotificationService);
@@ -346,6 +348,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     if (url.includes('/register')) return 'Criar conta';
     if (url.includes('/choose-plan')) return 'Escolher plano';
     if (url.includes('/license-payment')) return 'Pagamento da licença';
-    return 'Chef Control';
+    return 'Flow Cakes';
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, inject, signal, computed, Injector } from '@angular/core';
+﻿import { Injectable, inject, signal, computed, Injector } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { API_URL } from '../core/config/api.config';
@@ -149,7 +149,7 @@ export class SystemNotificationsService {
     const msg = (n.message || '').trim();
     if (n.category !== 'maintenance') return msg;
     const parts = msg.split(/\n\n+/);
-    if (parts.length >= 2 && parts[0].includes('Chef Control estará em manutenção')) {
+    if (parts.length >= 2 && (parts[0].includes('Flow Cakes estará em manutenção') || parts[0].includes('Chef Control estará em manutenção'))) {
       return parts.slice(1).join('\n\n').trim() || parts[0];
     }
     return msg;

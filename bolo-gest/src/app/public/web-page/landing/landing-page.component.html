@@ -1,4 +1,4 @@
-<div class="landing-page-root text-slate-800 bg-slate-50 overflow-x-hidden antialiased">
+﻿<div class="landing-page-root text-slate-800 bg-slate-50 overflow-x-hidden antialiased">
   <app-public-site-nav />
 
   <section class="landing-hero" aria-labelledby="landing-hero-title">
@@ -52,7 +52,7 @@
             </div>
             <div>
               <p class="landing-hero__social-title">Junte-se a <strong>+2.500</strong> confeiteiras</p>
-              <p class="landing-hero__social-sub">A gerir pedidos e lucro com o ChefControl</p>
+              <p class="landing-hero__social-sub">A gerir pedidos e lucro com o Flow Cakes</p>
             </div>
           </div>
         </div>
@@ -66,8 +66,8 @@
                 <span></span><span></span><span></span>
               </div>
               <div class="landing-hero__mock-brand">
-                <img src="/logotipo.png" alt="" width="20" height="20" decoding="async" />
-                <span>Dashboard ChefControl</span>
+                <img [src]="brand.logoIcon" alt="Flow Cakes" width="24" height="24" decoding="async" />
+                <span>Dashboard Flow Cakes</span>
               </div>
               <span class="landing-hero__mock-live">
                 <span class="landing-hero__mock-live-dot" aria-hidden="true"></span>
@@ -218,7 +218,7 @@
           <p class="text-brand-300 text-xs font-bold uppercase tracking-[0.18em] mb-4">Feito para confeiteiras</p>
           <h2 class="text-3xl md:text-4xl font-serif font-bold mb-6 leading-tight tracking-tight">Haaa djo! Transforme talento em vendas reais com controlo total do seu negócio.</h2>
           <p class="text-brand-100/90 mb-8 text-lg leading-relaxed">
-            Milhares de confeiteiras já usam o ChefControl para organizar pedidos, calcular lucros e crescer com confiança. Enquanto outras ainda vendem no improviso, você pode vender com estratégia.
+            Milhares de confeiteiras já usam o Flow Cakes para organizar pedidos, calcular lucros e crescer com confiança. Enquanto outras ainda vendem no improviso, você pode vender com estratégia.
           </p>
           <ul class="space-y-3.5 text-brand-50/95">
             <li class="flex items-start gap-3"><i class="fa-solid fa-circle-check text-brand-400 mt-1 shrink-0" aria-hidden="true"></i><span>Saiba quanto realmente lucra em cada pedido, sem adivinhação</span></li>
@@ -237,7 +237,7 @@
           class="hero-slider relative overflow-hidden shadow-2xl ring-1 ring-white/10 h-[420px] sm:h-[520px] lg:h-[680px] bg-brand-950 w-full"
           data-landing-reveal-child
           data-reveal-delay="2"
-          aria-label="Imagens do ChefControl"
+          aria-label="Imagens do Flow Cakes"
           aria-live="polite"
         >
           <div class="hero-slider__track">
@@ -479,7 +479,7 @@
       <header class="lp-section-header mb-12 lg:mb-14" data-landing-reveal-child data-reveal-delay="1">
         <p class="lp-eyebrow"><i class="fa-solid fa-comments text-[0.65rem]" aria-hidden="true"></i> Sugestões</p>
         <h2 class="lp-section-title">Ajude-nos a evoluir o sistema</h2>
-        <p class="lp-section-lead">A sua opinião orienta o que construímos a seguir no ChefControl.</p>
+        <p class="lp-section-lead">A sua opinião orienta o que construímos a seguir no Flow Cakes.</p>
       </header>
 
       <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
@@ -489,8 +489,8 @@
           data-reveal-delay="2"
         >
           <img
-            src="/gft.png"
-            alt="Equipa ChefControl"
+            [src]="brand.heroHome"
+            alt="Equipa Flow Cakes"
             class="h-full w-full object-cover object-center min-h-[280px] lg:min-h-[420px]"
             loading="lazy"
             width="1200"
@@ -503,7 +503,7 @@
           <div class="suggestion-form-card__accent" aria-hidden="true"></div>
           <h3 class="text-2xl font-serif font-bold text-slate-900 mb-2 leading-tight">Ajude-nos a crescer</h3>
           <p class="text-slate-600 text-sm leading-relaxed mb-6">
-            A sua sugestão ajuda-nos a priorizar melhorias reais no ChefControl para as próximas versões.
+            A sua sugestão ajuda-nos a priorizar melhorias reais no Flow Cakes para as próximas versões.
           </p>
 
           <label for="team-suggestion-name" class="block text-sm font-semibold text-slate-700 mb-1.5">O seu nome</label>
@@ -594,8 +594,7 @@
         <div class="landing-footer__main">
         <div class="landing-footer__brand">
           <a routerLink="/" class="landing-footer__logo-link">
-            <img src="/logotipo.png" alt="ChefControl" class="landing-footer__logo" width="120" height="32" />
-            <span class="landing-footer__brand-name">ChefControl</span>
+            <img [src]="brand.logoFull" alt="Flow Cakes" class="landing-footer__logo" />
           </a>
           <p class="landing-footer__tagline">
             Sistema de gestão para confeiteiras — encomendas, lucro, clientes, dívidas e relatórios em MZN.
@@ -637,7 +636,7 @@
 
     <div class="landing-footer__bottom">
       <div class="landing-footer__bottom-inner">
-        <p class="landing-footer__copy">© {{ currentYear }} ChefControl. Todos os direitos reservados.</p>
+        <p class="landing-footer__copy">© {{ currentYear }} Flow Cakes. Todos os direitos reservados.</p>
         <p class="landing-footer__meta">Gestão para confeitaria · Valores em MZN</p>
         <p class="landing-footer__credit">develop by <span>COMMIT</span></p>
       </div>

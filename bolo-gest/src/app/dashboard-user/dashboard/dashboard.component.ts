@@ -1,4 +1,4 @@
-import {
+﻿import {
   Component,
   computed,
   effect,
@@ -94,7 +94,7 @@ const SUGESTIVE_MESSAGES = [
   'Um passo de cada vez: as suas finanças e entregas em ordem.',
   'Bom trabalho! Consulte os filtros para analisar por período.',
   'Mantenha os lembretes em dia para não faltar material.',
-  'O Chef Control está aqui para simplificar o seu negócio.',
+  'O Flow Cakes está aqui para simplificar o seu negócio.',
 ];
 const DASHBOARD_VISITED_KEY = 'chefcontrol_dashboard_visited';
 const LOGIN_SUMMARY_DISMISSED_KEY = 'chefcontrol_login_summary_dismissed';
@@ -154,7 +154,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   welcomeSubline = computed(() => {
     const first = this.isFirstVisitThisSession();
     const base = first
-      ? 'Bem-vindo ao dashboard do Chef Control. '
+      ? 'Bem-vindo ao dashboard do Flow Cakes. '
       : 'Bem-vindo de volta. ';
     const idx = new Date().getDate() % SUGESTIVE_MESSAGES.length;
     return base + SUGESTIVE_MESSAGES[idx];
@@ -699,7 +699,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const days = lic.daysRemaining;
     const kind = lic.status === 'trial' ? 'período de teste' : 'licença';
     if (days <= 0) {
-      return `O seu ${kind} terminou. Pague agora para continuar a usar o Chef Control.`;
+      return `O seu ${kind} terminou. Pague agora para continuar a usar o Flow Cakes.`;
     }
     const dayWord = days === 1 ? 'dia' : 'dias';
     return `Faltam ${days} ${dayWord} para o ${kind} terminar. Pague agora para não perder o acesso.`;

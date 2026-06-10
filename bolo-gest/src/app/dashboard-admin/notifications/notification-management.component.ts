@@ -1,4 +1,4 @@
-import {
+﻿import {
   Component,
   OnInit,
   computed,
@@ -297,7 +297,7 @@ export class NotificationManagementComponent implements OnInit {
     if (template === 'new_features') {
       return `Estimados clientes, estaremos em manutenção de ${period} para implementar novas funcionalidades pedidas. Agradecemos a compreensão.`;
     }
-    return `Estimados clientes, o Chef Control estará em manutenção de ${period}. Durante este período algumas funções podem ficar indisponíveis.`;
+    return `Estimados clientes, o Flow Cakes estará em manutenção de ${period}. Durante este período algumas funções podem ficar indisponíveis.`;
   }
 
   private toDateInputValue(iso: string): string {

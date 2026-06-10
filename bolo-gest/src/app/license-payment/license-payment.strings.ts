@@ -1,6 +1,6 @@
-/** Textos da UI em português (página de pagamento da licença). */
+﻿/** Textos da UI em português (página de pagamento da licença). */
 export const LicensePaymentStrings = {
-  documentTitle: 'Pagamento da licença · Chef Control',
+  documentTitle: 'Pagamento da licença · Flow Cakes',
   backToHome: '← Página inicial',
   backToPanel: '← Voltar ao painel',
   backToChoosePlan: '← Voltar a escolher plano',
@@ -15,7 +15,7 @@ export const LicensePaymentStrings = {
   sectionConfirm: 'Passo 3 · Confirmação',
 
   summaryTitle: 'Resumo',
-  lineItemName: 'Licença Chef Control',
+  lineItemName: 'Licença Flow Cakes',
   lineItemMetaPerMonth: 'MZN / 30 dias',
   durationLabel: 'Validade',
   totalDue: 'Total a transferir',
@@ -26,7 +26,7 @@ export const LicensePaymentStrings = {
   stepTransfer: '1. Faça a transferência',
   stepTransferHint: (channel: string, amount: number, phone: string) =>
     `Envie exactamente ${amount} MZN para o número ${channel} abaixo.`,
-  destinationLabel: (channel: string) => `Número ${channel} (Chef Control)`,
+  destinationLabel: (channel: string) => `Número ${channel} (Flow Cakes)`,
   copyNumber: 'Copiar número',
 
   stepConfirm: '2. Confirme o pedido',
@@ -43,7 +43,7 @@ export const LicensePaymentStrings = {
   submitPay: (total: number) => `Pagar ${total} MZN`,
 
   footManualLogged:
-    'O pedido fica com estado pendente. O administrador confirma quando o valor chegar à conta Chef Control.',
+    'O pedido fica com estado pendente. O administrador confirma quando o valor chegar à conta Flow Cakes.',
   footLiveLogged: 'Confirme no telemóvel, se aplicável, e volte ao painel para continuar.',
 
   pendingPopupTitle: 'Pagamento pendente de validação',
@@ -62,7 +62,7 @@ export const LicensePaymentStrings = {
   supportWhatsapp: 'WhatsApp suporte',
   supportCall: 'Ligar',
 
-  secureNote: 'Pedido registado de forma segura no Chef Control.',
+  secureNote: 'Pedido registado de forma segura no Flow Cakes.',
 
   errWalletRequired: (channel: string) => `Indique o número ${channel} de onde enviou.`,
   errMpesaFormat: 'M-Pesa: use 9 dígitos começando por 84 ou 85 (ex.: 841234567).',
@@ -71,7 +71,7 @@ export const LicensePaymentStrings = {
   toastCopyNumber: 'Número copiado.',
   toastPendingRegistered: 'Pedido registado. Aguarde a confirmação do administrador.',
   toastPaymentApproved:
-    'Pagamento aprovado. Obrigado! Já pode usar todos os serviços do Chef Control.',
+    'Pagamento aprovado. Obrigado! Já pode usar todos os serviços do Flow Cakes.',
   toastPaymentRejected: 'Pagamento não confirmado. Pode enviar uma nova transferência.',
   toastSubmitError: 'Não foi possível registar o pedido. Tente novamente.',
   toastLoadError: 'Não foi possível carregar os dados de pagamento.',

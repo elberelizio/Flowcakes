@@ -3,6 +3,7 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AdminTreasuryService, type AdminLoginSummary } from '../../dashboard-admin/services/admin-treasury.service';
 import { IconComponent } from '../../ui/icon/icon.component';
+import { BRAND_ASSETS } from '@app/core/config/brand-assets';
 
 @Component({
   selector: 'app-admin-login-summary-modal',
@@ -12,6 +13,7 @@ import { IconComponent } from '../../ui/icon/icon.component';
   styleUrl: './admin-login-summary-modal.component.scss',
 })
 export class AdminLoginSummaryModalComponent implements OnInit {
+  readonly brand = BRAND_ASSETS;
   private readonly treasury = inject(AdminTreasuryService);
 
   @Output() closed = new EventEmitter<void>();

@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import * as XLSX from 'xlsx';
+import { BRAND_ASSETS } from '@app/core/config/brand-assets';
 
 export interface RevenueByMonthDto {
   month: string;
@@ -22,7 +23,7 @@ export interface ReportsExportPayload {
 
 @Injectable({ providedIn: 'root' })
 export class ReportsExportService {
-  private readonly logoUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/logotipo.png`;
+  private readonly logoUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}${BRAND_ASSETS.logoFull}`;
   private logoBase64Cache: string | null = null;
 
   exportPdf(payload: ReportsExportPayload): void {
@@ -49,7 +50,7 @@ export class ReportsExportService {
     const wb = XLSX.utils.book_new();
 
     const metaRows: (string | number)[][] = [
-      ['Chef Control — Relatório financeiro'],
+      ['Flow Cakes — Relatório financeiro'],
       ['Data de extracção', this.formatDateTime(payload.extractedAt)],
     ];
     if (payload.userName) {
@@ -111,7 +112,7 @@ export class ReportsExportService {
     const extracted = this.formatDateTime(payload.extractedAt);
     const subtitle = payload.isAdmin ? 'Administração da plataforma' : 'Análise do negócio';
     const logoCell = logoDataUrl
-      ? `<img src="${logoDataUrl}" alt="Chef Control" width="72" height="72" style="display:block;width:72px;height:72px;" />`
+      ? `<img src="${logoDataUrl}" alt="Flow Cakes" width="72" height="72" style="display:block;width:72px;height:72px;" />`
       : `<p style="margin:0;font-size:16pt;font-weight:bold;color:#0f766e;">CC</p>`;
 
     const metaRows = [
@@ -157,7 +158,7 @@ export class ReportsExportService {
       lang="pt">
 <head>
   <meta charset="utf-8" />
-  <title>Relatório — Chef Control</title>
+  <title>Relatório — Flow Cakes</title>
   <!--[if gte mso 9]>
   <xml>
     <w:WordDocument>
@@ -186,7 +187,7 @@ export class ReportsExportService {
       <tr>
         <td width="84" valign="middle" style="padding:0 12pt 12pt 0;">${logoCell}</td>
         <td valign="middle" style="padding-bottom:12pt;">
-          <p style="margin:0;font-size:20pt;font-weight:bold;color:#0f766e;font-family:Calibri,Arial,sans-serif;">Chef Control</p>
+          <p style="margin:0;font-size:20pt;font-weight:bold;color:#0f766e;font-family:Calibri,Arial,sans-serif;">Flow Cakes</p>
           <p style="margin:4pt 0 0;font-size:12pt;color:#475569;font-family:Calibri,Arial,sans-serif;">Relatório financeiro — ${subtitle}</p>
         </td>
       </tr>
@@ -202,7 +203,7 @@ export class ReportsExportService {
     ${revenueTable}
 
     <p style="margin:18pt 0 0;padding-top:10pt;border-top:1pt solid #e2e8f0;font-size:10pt;color:#64748b;text-align:center;font-family:Calibri,Arial,sans-serif;">
-      Documento gerado automaticamente pelo Chef Control. Valores em meticais (MZN).
+      Documento gerado automaticamente pelo Flow Cakes. Valores em meticais (MZN).
     </p>
   </div>
 </body>
@@ -258,7 +259,7 @@ export class ReportsExportService {
   private buildPrintHtml(payload: ReportsExportPayload, logoDataUrl: string): string {
     const extracted = this.formatDateTime(payload.extractedAt);
     const logoImg = logoDataUrl
-      ? `<img src="${logoDataUrl}" alt="Chef Control" width="72" height="72" />`
+      ? `<img src="${logoDataUrl}" alt="Flow Cakes" width="72" height="72" />`
       : '';
 
     const metaRows = [
@@ -309,7 +310,7 @@ export class ReportsExportService {
 <html lang="pt">
 <head>
   <meta charset="utf-8" />
-  <title>Relatório — Chef Control</title>
+  <title>Relatório — Flow Cakes</title>
   <style>
     @page { margin: 18mm; }
     body {
@@ -367,7 +368,7 @@ export class ReportsExportService {
   <header class="header">
     <div class="header-logo">${logoImg}</div>
     <div class="header-text">
-      <h1>Chef Control</h1>
+      <h1>Flow Cakes</h1>
       <p>Relatório financeiro — ${payload.isAdmin ? 'Administração' : 'Análise do negócio'}</p>
     </div>
   </header>
@@ -378,7 +379,7 @@ export class ReportsExportService {
   ${summarySection}
   ${revenueSection}
 
-  <p class="footer">Documento gerado automaticamente pelo Chef Control. Valores em meticais (MZN).</p>
+  <p class="footer">Documento gerado automaticamente pelo Flow Cakes. Valores em meticais (MZN).</p>
 </body>
 </html>`;
   }
@@ -386,7 +387,7 @@ export class ReportsExportService {
   private fileName(payload: ReportsExportPayload, ext: string): string {
     const d = payload.extractedAt;
     const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
-    return `relatorio-chef-control-${stamp}.${ext}`;
+    return `relatorio-flow-cakes-${stamp}.${ext}`;
   }
 
   private downloadBlob(blob: Blob, filename: string): void {

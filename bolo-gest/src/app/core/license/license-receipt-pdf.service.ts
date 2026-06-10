@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -93,7 +93,7 @@ export class LicenseReceiptPdfService {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
     doc.setTextColor(...this.brand);
-    doc.text('Chef Control', this.margin, 22);
+    doc.text('Flow Cakes', this.margin, 22);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
@@ -179,7 +179,7 @@ export class LicenseReceiptPdfService {
     doc.setFontSize(8);
     doc.setTextColor(100, 116, 139);
     doc.text(
-      'Documento gerado automaticamente pelo Chef Control · Valores em meticais (MZN)',
+      'Documento gerado automaticamente pelo Flow Cakes · Valores em meticais (MZN)',
       pageW / 2,
       y,
       { align: 'center' }

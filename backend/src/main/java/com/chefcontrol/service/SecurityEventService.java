@@ -1,11 +1,11 @@
-package com.chefcontrol.service;
+﻿package com.Flow Cakes.service;
 
-import com.chefcontrol.dto.BlockedAccountRowDto;
-import com.chefcontrol.dto.SecurityEventDto;
-import com.chefcontrol.entity.SecurityEventEntity;
-import com.chefcontrol.entity.UserEntity;
-import com.chefcontrol.repository.SecurityEventRepository;
-import com.chefcontrol.repository.UserRepository;
+import com.Flow Cakes.dto.BlockedAccountRowDto;
+import com.Flow Cakes.dto.SecurityEventDto;
+import com.Flow Cakes.entity.SecurityEventEntity;
+import com.Flow Cakes.entity.UserEntity;
+import com.Flow Cakes.repository.SecurityEventRepository;
+import com.Flow Cakes.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

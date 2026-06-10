@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 
 export type RegistrationFlowPhase = 'choose-plan' | 'finalize';
 export type RegistrationPlanChoice = 'trial' | 'paid';

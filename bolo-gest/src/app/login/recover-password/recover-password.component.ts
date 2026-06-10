@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { SnackbarComponent } from '../../ui/snackbar/snackbar.component';
 import { NotificationService } from '../../services/notification.service';
 import { AuthService } from '../../services/auth.service';
+import { BRAND_ASSETS } from '@app/core/config/brand-assets';
 
 /** Contacto Moçambique: exactamente 9 dígitos */
 const PHONE_PATTERN = /^[0-9]{9}$/;
@@ -20,6 +21,7 @@ type RecoverStep = 'phone' | 'otp' | 'password';
   styleUrl: './recover-password.component.scss',
 })
 export class RecoverPasswordComponent implements AfterViewInit {
+  readonly brand = BRAND_ASSETS;
   @ViewChild(SnackbarComponent) snackbar!: SnackbarComponent;
 
   private readonly notificationService = inject(NotificationService);

@@ -1,10 +1,10 @@
-<div class="my-license-page">
+﻿<div class="my-license-page">
   <header class="page-hero">
     <a routerLink="/dashboard" class="btn-back">← Voltar ao dashboard</a>
     <div class="page-hero__main">
       <p class="page-hero__eyebrow">Subscrição</p>
       <h1>Minha Licença</h1>
-      <p class="page-hero__sub">Estado da licença, validade, pagamentos e renovação do ChefControl.</p>
+      <p class="page-hero__sub">Estado da licença, validade, pagamentos e renovação do Flow Cakes.</p>
     </div>
   </header>
 
@@ -86,7 +86,7 @@
                 <span class="pending-amount__label">Valor a pagar</span>
                 <span class="pending-amount__value">{{ lic.amount | number:'1.0-0' }} MZN</span>
               </div>
-              <p class="pending-hint">Transfira para um dos números Chef Control e confirme em «Pagar ou renovar».</p>
+              <p class="pending-hint">Transfira para um dos números Flow Cakes e confirme em «Pagar ou renovar».</p>
               <ul class="pending-numbers">
                 @if (lic.mpesaPhone) {
                   <li><strong>Vodacom (M-Pesa):</strong> {{ formatPhone(lic.mpesaPhone) }}</li>

@@ -1,9 +1,9 @@
-package com.chefcontrol.service;
+﻿package com.Flow Cakes.service;
 
-import com.chefcontrol.dto.*;
-import com.chefcontrol.entity.UserEntity;
-import com.chefcontrol.exception.InvalidPasswordException;
-import com.chefcontrol.repository.UserRepository;
+import com.Flow Cakes.dto.*;
+import com.Flow Cakes.entity.UserEntity;
+import com.Flow Cakes.exception.InvalidPasswordException;
+import com.Flow Cakes.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

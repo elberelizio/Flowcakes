@@ -1,9 +1,9 @@
-package com.chefcontrol.service;
+﻿package com.Flow Cakes.service;
 
-import com.chefcontrol.dto.ReminderRequest;
-import com.chefcontrol.dto.ReminderResponse;
-import com.chefcontrol.entity.ReminderEntity;
-import com.chefcontrol.repository.ReminderRepository;
+import com.Flow Cakes.dto.ReminderRequest;
+import com.Flow Cakes.dto.ReminderResponse;
+import com.Flow Cakes.entity.ReminderEntity;
+import com.Flow Cakes.repository.ReminderRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;

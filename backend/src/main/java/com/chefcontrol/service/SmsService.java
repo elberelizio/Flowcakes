@@ -1,4 +1,4 @@
-package com.chefcontrol.service;
+﻿package com.Flow Cakes.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +52,7 @@ public class SmsService {
         Map<String, Object> body = new HashMap<>();
         // Estes campos ("to", "message") devem ser alinhados com a API real.
         body.put("to", phone);
-        body.put("message", "Seu código de verificação Chef Control: " + code);
+        body.put("message", "Seu código de verificação Flow Cakes: " + code);
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
         try {

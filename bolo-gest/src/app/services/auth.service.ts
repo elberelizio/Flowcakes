@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, Injector } from '@angular/core';
+﻿import { Injectable, signal, computed, Injector } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
@@ -295,7 +295,7 @@ export class AuthService {
           code: 'INVALID_CREDENTIALS',
           message:
             msg?.trim() ||
-            `O servidor respondeu 404 ao login (normalmente não é "conta inexistente" — isso seria 401). Confirme que o backend ChefControl está activo na mesma URL que o front (por omissão porta 8081). Teste no browser: ${API_URL}/public/health — deve devolver JSON com "chef-control-backend". Se usar a porta 8080: localStorage.setItem('chefcontrol_api_base_url','http://localhost:8080/api'); location.reload()`,
+            `O servidor respondeu 404 ao login (normalmente não é "conta inexistente" — isso seria 401). Confirme que o backend Flow Cakes está activo na mesma URL que o front (por omissão porta 8081). Teste no browser: ${API_URL}/public/health — deve devolver JSON com "chef-control-backend". Se usar a porta 8080: localStorage.setItem('chefcontrol_api_base_url','http://localhost:8080/api'); location.reload()`,
         };
       }
       if (status === 0) {

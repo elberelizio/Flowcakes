@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, PLATFORM_ID, inject } from '@angular/core';
+﻿import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, PLATFORM_ID, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
@@ -9,6 +9,7 @@ import { API_URL } from '@app/core/config/api.config';
 import { PublicSiteNavComponent } from '../public-site-nav/public-site-nav.component';
 import { RegistrationFlowService } from '@app/core/registration/registration-flow.service';
 import { PublicPageMotionService } from '../public-page-motion.service';
+import { BRAND_ASSETS } from '@app/core/config/brand-assets';
 
 /** Página inicial pública (marketing). Parte do módulo de rotas `web-page`. */
 @Component({
@@ -19,6 +20,7 @@ import { PublicPageMotionService } from '../public-page-motion.service';
   styleUrl: './landing-page.component.scss',
 })
 export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
+  readonly brand = BRAND_ASSETS;
   private auth = inject(AuthService);
   private router = inject(Router);
   private title = inject(Title);
@@ -34,8 +36,8 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** Slideshow da secção «Haaa djo!» (lado direito). */
   readonly heroSlides = [
-    { src: '/t.jpg', alt: 'Confeiteira a decorar bolos com o ChefControl na cozinha' },
-    { src: '/t%20(1).jpg', alt: 'Chef a gerir o negócio com o dashboard ChefControl' },
+    { src: '/t.jpg', alt: 'Confeiteira a decorar bolos com o Flow Cakes na cozinha' },
+    { src: '/t%20(1).jpg', alt: 'Confeiteira a gerir o negócio com o dashboard Flow Cakes' },
     { src: '/t%20(2).jpg', alt: 'Croissants frescos — produto de confeitaria' },
   ] as const;
   heroSlideIndex = 0;
@@ -75,7 +77,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     {
       id: 'maria',
       quote:
-        'Com o ChefControl organizo entregas e pagamentos no mesmo dia. Já não perco encomendas por esquecimento no caderno.',
+        'Com o Flow Cakes organizo entregas e pagamentos no mesmo dia. Já não perco encomendas por esquecimento no caderno.',
       name: 'Maria Fernandes',
       role: 'Doces da Maria · Maputo',
       stars: 5,
@@ -117,7 +119,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private suggestionPopupTimer: any = null;
 
   ngOnInit(): void {
-    this.title.setTitle('ChefControl - Gestão para Confeiteiras');
+    this.title.setTitle('Flow Cakes - Gestão para Confeiteiras');
     if (this.auth.isLoggedIn()) {
       if (this.registrationFlow.mustCompleteOnboarding()) {
         this.redirectIncompleteRegistration();

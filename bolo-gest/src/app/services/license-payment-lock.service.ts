@@ -1,4 +1,4 @@
-import { Injectable, computed, inject } from '@angular/core';
+﻿import { Injectable, computed, inject } from '@angular/core';
 import { AuthService } from './auth.service';
 
 export type LicenseRestrictionCode =
@@ -37,7 +37,7 @@ export class LicensePaymentLockService {
     if (code === 'LICENSE_EXPIRED') {
       return 'A sua licença expirou. Renove abaixo para voltar a aceder aos seus dados e serviços.';
     }
-    return 'Active a licença por transferência para voltar a usar o Chef Control.';
+    return 'Active a licença por transferência para voltar a usar o Flow Cakes.';
   });
 
   isLicensePaymentUrl(url: string): boolean {

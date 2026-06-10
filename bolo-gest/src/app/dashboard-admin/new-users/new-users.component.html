@@ -1,4 +1,4 @@
-<div class="nu-page">
+﻿<div class="nu-page">
   <header class="nu-hero">
     <a routerLink="/admin-dashboard" class="nu-hero__back">
       <app-icon name="chevron-left" />
@@ -67,7 +67,7 @@
     <section class="nu-section" aria-labelledby="transfer-title">
       <header class="nu-section__head">
         <h2 id="transfer-title">Pagamentos por transferência</h2>
-        <p>Confirme se o valor chegou à conta Chef Control ou rejeite com motivo (visível no perfil do cliente).</p>
+        <p>Confirme se o valor chegou à conta Flow Cakes ou rejeite com motivo (visível no perfil do cliente).</p>
       </header>
 
       @if (simulatedLoading()) {
@@ -100,7 +100,7 @@
                 <div><dt>Duração</dt><dd>{{ p.durationMonths }} {{ p.durationMonths === 1 ? 'mês' : 'meses' }}</dd></div>
                 <div class="nu-card__meta-row--stack">
                   <dt>Ref. interna</dt>
-                  <dd><code class="nu-ref-internal" title="Gerada pelo Chef Control — não é o ID da operadora">{{ p.transactionRef }}</code></dd>
+                  <dd><code class="nu-ref-internal" title="Gerada pelo Flow Cakes — não é o ID da operadora">{{ p.transactionRef }}</code></dd>
                 </div>
                 <div><dt>Ref. cliente</dt><dd>{{ p.userTransferReference?.trim() || '—' }}</dd></div>
                 <div><dt>Data</dt><dd>{{ formatDate(p.createdAt) }}</dd></div>

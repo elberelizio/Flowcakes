@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, inject, computed } from '@angular/core';
+﻿import { Component, signal, OnInit, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -35,7 +35,7 @@ interface SimulatedPaymentPending {
   userPhone: string;
   amount: number;
   durationMonths: number;
-  /** Ref. interna Chef Control (auto). */
+  /** Ref. interna Flow Cakes (auto). */
   transactionRef: string;
   userTransferReference?: string;
   createdAt: string;
@@ -102,7 +102,7 @@ export class NewUsersComponent implements OnInit {
   /** Últimos dígitos do ID da transação no SMS M-Pesa / e-Mola. */
   readonly operatorSmsDigits = 6;
   readonly rejectionReasons: RejectionReasonOption[] = [
-    { id: 'valor_nao_recebido', label: 'Valor não recebido na conta Chef Control' },
+    { id: 'valor_nao_recebido', label: 'Valor não recebido na conta Flow Cakes' },
     { id: 'valor_incorreto', label: 'Valor transferido não corresponde ao pedido' },
     { id: 'referencia_invalida', label: 'Referência ou comprovativo inválido' },
     { id: 'outro', label: 'Outro motivo' },

@@ -1,4 +1,4 @@
-<div
+﻿<div
   class="license-web-shell"
   [class.license-web-shell--in-app]="inAppShell()"
   [class.license-web-shell--restricted]="accessRestricted()"
@@ -6,8 +6,8 @@
   @if (accessRestricted()) {
     <header class="pay-topbar" aria-label="Renovação de licença">
       <a class="pay-topbar__brand" routerLink="/license-payment" title="Pagamento da licença">
-        <img src="/logotipo.png" alt="" class="pay-topbar__logo" width="40" height="40" decoding="async" />
-        <span class="pay-topbar__app">Chef Control</span>
+        <img [src]="brand.logoIcon" alt="Flow Cakes" class="pay-topbar__logo" width="44" height="44" decoding="async" />
+        <span class="pay-topbar__app">Flow Cakes</span>
       </a>
       <div class="pay-topbar__end">
         <div class="pay-topbar__user" [attr.aria-label]="'Sessão de ' + userDisplayName()">

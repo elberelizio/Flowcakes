@@ -1,4 +1,4 @@
-/* Shell da app (sidebar, navbar) — global */
+﻿/* Shell da app (sidebar, navbar) — global */
 @use './app/core/styles/sidebar';
 @use './app/core/styles/navbar';
 @use './app/core/styles/dropdowns';
@@ -14,7 +14,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Chef Control – variáveis globais e base (modular) */
+/* Flow Cakes – variáveis globais e base (modular) */
 :root,
 [data-theme="light"] {
   --primary: #0d9488;

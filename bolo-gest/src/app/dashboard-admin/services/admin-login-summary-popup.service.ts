@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+﻿import { Injectable, signal } from '@angular/core';
 
 const SESSION_STORAGE_KEY = 'chefcontrol_admin_login_summary_consumed';
 

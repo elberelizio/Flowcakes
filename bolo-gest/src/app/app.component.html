@@ -1,13 +1,13 @@
-@if (auth.isLoggedIn() && !isPublicPage()) {
+﻿@if (auth.isLoggedIn() && !isPublicPage()) {
   <div class="app-shell" [class.app-shell--admin]="auth.isAdmin()">
     <aside class="sidebar" [class.collapsed]="sidebarCollapsed()" [class.visible-mobile]="sidebarOpen()">
       <div class="sidebar-header">
-        <a [routerLink]="auth.isAdmin() ? '/admin-dashboard' : '/dashboard'" class="brand" title="Chef Control — início">
+        <a [routerLink]="auth.isAdmin() ? '/admin-dashboard' : '/dashboard'" class="brand" title="Flow Cakes — início">
           <span class="brand-mark">
-            <img src="/logotipo.png" alt="" class="brand-logo" width="40" height="40" decoding="async" />
+            <img [src]="brand.logoIcon" alt="Flow Cakes" class="brand-logo" width="40" height="40" decoding="async" />
           </span>
           <div class="brand-inner">
-            <span class="brand-name">Chef Control</span>
+            <span class="brand-name">Flow Cakes</span>
             <span class="brand-tagline">Gestão de doces e salgados</span>
             <span class="brand-role" [class.brand-role--admin]="auth.isAdmin()">
               {{ auth.isAdmin() ? 'Administrador' : 'Utilizador' }}
@@ -225,7 +225,7 @@
               } @else {
                 <a routerLink="/dashboard" class="breadcrumb-item">Início</a>
               }
-              @if (getPageTitle() !== 'Dashboard' && getPageTitle() !== 'Painel de administração' && getPageTitle() !== 'Chef Control') {
+              @if (getPageTitle() !== 'Dashboard' && getPageTitle() !== 'Painel de administração' && getPageTitle() !== 'Flow Cakes') {
                 <span class="breadcrumb-sep">/</span>
                 <span class="breadcrumb-current">{{ getPageTitle() }}</span>
               }
@@ -403,9 +403,9 @@
         <header class="welcome-onboarding-popup__hero">
           <span class="welcome-onboarding-popup__badge">Primeiro acesso</span>
           <div class="welcome-onboarding-popup__brand" aria-hidden="true">
-            <img src="/logotipo.png" alt="" width="48" height="48" decoding="async" />
+            <img [src]="brand.logoFull" alt="Flow Cakes" width="120" height="auto" decoding="async" class="welcome-onboarding-popup__logo" />
           </div>
-          <h2 id="welcome-onboarding-title" class="welcome-onboarding-popup__title">Bem-vindo ao Chef Control</h2>
+          <h2 id="welcome-onboarding-title" class="welcome-onboarding-popup__title">Bem-vindo ao Flow Cakes</h2>
           <p class="welcome-onboarding-popup__lead">
             Em poucos cliques, organize encomendas, calcule o lucro, controle dívidas e mantenha lembretes — tudo em MZN.
           </p>
@@ -460,7 +460,7 @@
           <app-icon name="alert-circle" />
           <h3>Licença a expirar</h3>
           <p class="popup-subtitle">
-            Faltam {{ licenseExpiryPopup.daysRemaining() ?? '—' }} dia(s) para a sua licença expirar. Renove a tempo para não perder o acesso ao Chef Control.
+            Faltam {{ licenseExpiryPopup.daysRemaining() ?? '—' }} dia(s) para a sua licença expirar. Renove a tempo para não perder o acesso ao Flow Cakes.
           </p>
         </div>
         <div class="popup-actions">

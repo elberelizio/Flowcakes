@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+﻿import { Injectable, signal, computed } from '@angular/core';
 
 const STORAGE_KEY_REMINDER_DAYS = 'chefcontrol_reminder_days_before';
 const DEFAULT_REMINDER_DAYS = 7;

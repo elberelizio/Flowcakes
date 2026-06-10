@@ -1,4 +1,4 @@
-/**
+﻿/**
  * URL base da API (backend Spring Boot).
  * Por omissão: mesma máquina que o front, porta 8081 (alinhado a `backend/iniciar-backend.bat`).
  *

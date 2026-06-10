@@ -1,11 +1,11 @@
-package com.chefcontrol.service;
+﻿package com.Flow Cakes.service;
 
-import com.chefcontrol.dto.FeedbackPromptStatusDto;
-import com.chefcontrol.dto.UserFeedbackDto;
-import com.chefcontrol.entity.UserEntity;
-import com.chefcontrol.entity.UserFeedbackEntity;
-import com.chefcontrol.repository.UserFeedbackRepository;
-import com.chefcontrol.repository.UserRepository;
+import com.Flow Cakes.dto.FeedbackPromptStatusDto;
+import com.Flow Cakes.dto.UserFeedbackDto;
+import com.Flow Cakes.entity.UserEntity;
+import com.Flow Cakes.entity.UserFeedbackEntity;
+import com.Flow Cakes.repository.UserFeedbackRepository;
+import com.Flow Cakes.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { AuthService, LicensePaymentRow } from '../../services/auth.service';
 
@@ -53,10 +53,10 @@ export class PaymentsComponent implements OnInit {
     const w = window.open('', '_blank');
     if (!w) return;
     const id = this.txId(row);
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Recibo — Chef Control</title>
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Recibo — Flow Cakes</title>
       <style>body{font-family:system-ui,sans-serif;padding:2rem;max-width:480px;margin:auto}
       h1{font-size:1.25rem} .muted{color:#666;font-size:0.9rem}</style></head><body>
-      <h1>Recibo de pagamento — Licença Chef Control</h1>
+      <h1>Recibo de pagamento — Licença Flow Cakes</h1>
       <p><strong>Data:</strong> ${this.formatDate(row.createdAt)}</p>
       <p><strong>Valor:</strong> ${row.amount} MZN</p>
       <p><strong>Duração:</strong> ${row.durationMonths} mês(es)</p>
@@ -77,11 +77,11 @@ export class PaymentsComponent implements OnInit {
           `<tr><td>${this.formatDate(r.createdAt)}</td><td>${r.amount} MZN</td><td>${r.durationMonths}</td><td>${this.txId(r)}</td></tr>`
       )
       .join('');
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Extrato — Chef Control</title>
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Extrato — Flow Cakes</title>
       <style>body{font-family:system-ui,sans-serif;padding:2rem} table{border-collapse:collapse;width:100%}
       th,td{border:1px solid #ccc;padding:0.5rem;text-align:left} th{background:#f5f5f5}</style></head><body>
       <h1>Extrato de pagamentos da licença</h1>
-      <p class="muted">Chef Control</p>
+      <p class="muted">Flow Cakes</p>
       <table><thead><tr><th>Data</th><th>Valor (MZN)</th><th>Meses</th><th>ID e-Mola</th></tr></thead><tbody>${lines}</tbody></table>
       </body></html>`;
     w.document.write(html);

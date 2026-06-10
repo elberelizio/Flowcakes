@@ -154,7 +154,7 @@ export class OrderDetailsComponent implements OnInit {
   originalAgreedBeforeCancel = orderOriginalAgreedBeforeCancel;
 
   /** Nome do assistente inteligente */
-  readonly assistantName = 'ChefAssist';
+  readonly assistantName = 'FlowAssist';
 
   /** Verifica dados em falta e retorna as mensagens do assistente */
   getAssistantWarnings(o: Order): string[] {

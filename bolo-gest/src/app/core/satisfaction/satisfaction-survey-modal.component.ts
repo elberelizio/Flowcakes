@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+﻿import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../ui/icon/icon.component';
@@ -40,7 +40,7 @@ export class SatisfactionSurveyModalComponent {
   title(): string {
     return this.prompt.mode() === 'logout'
       ? 'Antes de sair, como foi a sua experiência?'
-      : 'Como está a sua experiência no Chef Control?';
+      : 'Como está a sua experiência no Flow Cakes?';
   }
 
   subtitle(): string {

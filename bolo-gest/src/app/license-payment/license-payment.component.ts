@@ -1,4 +1,4 @@
-import {
+﻿import {
   Component,
   OnInit,
   OnDestroy,
@@ -21,6 +21,7 @@ import {
 } from '../validators/mz-phone.validator';
 import { LicensePaymentStrings } from './license-payment.strings';
 import { LICENSE_PAYMENT_BRAND_ALTS, LICENSE_PAYMENT_BRAND_IMAGES } from './license-payment.brand-assets';
+import { BRAND_ASSETS } from '@app/core/config/brand-assets';
 import { RegistrationFlowService } from '@app/core/registration/registration-flow.service';
 import { LicensePaymentLockService } from '../services/license-payment-lock.service';
 import { RegistrationProgressComponent } from '@app/core/registration/registration-progress.component';
@@ -43,6 +44,7 @@ import { SnackbarComponent } from '../ui/snackbar/snackbar.component';
   styleUrl: './license-payment.component.scss',
 })
 export class LicensePaymentComponent implements OnInit, OnDestroy, AfterViewInit {
+  readonly brand = BRAND_ASSETS;
   @ViewChild(SnackbarComponent) private snackbar!: SnackbarComponent;
 
   private title = inject(Title);
@@ -305,7 +307,7 @@ export class LicensePaymentComponent implements OnInit, OnDestroy, AfterViewInit
 
   whatsappUrl(): string {
     const text = encodeURIComponent(
-      `Olá, preciso de ajuda com o pagamento da licença Chef Control (${this.totalMzn} MZN).`
+      `Olá, preciso de ajuda com o pagamento da licença Flow Cakes (${this.totalMzn} MZN).`
     );
     return `https://wa.me/${this.whatsappE164()}?text=${text}`;
   }

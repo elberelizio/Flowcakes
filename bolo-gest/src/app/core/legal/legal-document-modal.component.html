@@ -1,9 +1,9 @@
-@if (open) {
+﻿@if (open) {
   <div class="legal-modal__backdrop" role="dialog" aria-modal="true" [attr.aria-labelledby]="'legal-title-' + documentId" (click)="onBackdropClick($event)">
     <div class="legal-modal__panel">
       <header class="legal-modal__header">
         <div>
-          <p class="legal-modal__eyebrow">ChefControl</p>
+          <p class="legal-modal__eyebrow">Flow Cakes</p>
           <h2 class="legal-modal__title" [id]="'legal-title-' + documentId">{{ document.title }}</h2>
           <p class="legal-modal__date">Última actualização: {{ document.updatedAt }}</p>
         </div>

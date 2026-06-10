@@ -15,6 +15,7 @@ import { ReminderService } from '../services/reminder.service';
 import { LoginPopupOrchestratorService } from '../services/login-popup-orchestrator.service';
 import { AdminLoginSummaryPopupService } from '../dashboard-admin/services/admin-login-summary-popup.service';
 import { RegistrationFlowService } from '@app/core/registration/registration-flow.service';
+import { BRAND_ASSETS } from '@app/core/config/brand-assets';
 
 @Component({
   selector: 'app-login',
@@ -24,6 +25,7 @@ import { RegistrationFlowService } from '@app/core/registration/registration-flo
   styleUrl: './login.component.scss',
 })
 export class LoginComponent implements OnInit {
+  readonly brand = BRAND_ASSETS;
   error = '';
   /** Mostrar nota sobre JSON 401 em POST /auth/login (distingue conta inexistente vs senha). */
   showLoginDiagHint = false;

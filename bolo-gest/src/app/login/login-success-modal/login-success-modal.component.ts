@@ -1,5 +1,6 @@
 import { Component, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { BRAND_ASSETS } from '@app/core/config/brand-assets';
 
 const CLOSE_ANIMATION_MS = 280;
 const AUTO_CLOSE_MS = 4000;
@@ -12,6 +13,7 @@ const AUTO_CLOSE_MS = 4000;
   styleUrl: './login-success-modal.component.scss',
 })
 export class LoginSuccessModalComponent implements OnInit, OnDestroy {
+  readonly brand = BRAND_ASSETS;
   @Output() closed = new EventEmitter<void>();
 
   closing = false;

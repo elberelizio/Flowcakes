@@ -1,9 +1,9 @@
-package com.chefcontrol.service;
+﻿package com.Flow Cakes.service;
 
-import com.chefcontrol.dto.LandingSuggestionDto;
-import com.chefcontrol.dto.LandingSuggestionRequest;
-import com.chefcontrol.entity.LandingSuggestionEntity;
-import com.chefcontrol.repository.LandingSuggestionRepository;
+import com.Flow Cakes.dto.LandingSuggestionDto;
+import com.Flow Cakes.dto.LandingSuggestionRequest;
+import com.Flow Cakes.entity.LandingSuggestionEntity;
+import com.Flow Cakes.repository.LandingSuggestionRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-export type LegalDocumentId = 'terms' | 'privacy';
+﻿export type LegalDocumentId = 'terms' | 'privacy';
 
 export interface LegalSection {
   title: string;
@@ -19,12 +19,12 @@ export const LEGAL_DOCUMENTS: Record<LegalDocumentId, LegalDocument> = {
     title: 'Termos de Utilização',
     updatedAt: 'Maio de 2026',
     intro:
-      'Ao criar conta no ChefControl, o utilizador declara que leu, compreendeu e aceita estes Termos de Utilização. O acesso ao sistema sem aceitação explícita não é permitido.',
+      'Ao criar conta no Flow Cakes, o utilizador declara que leu, compreendeu e aceita estes Termos de Utilização. O acesso ao sistema sem aceitação explícita não é permitido.',
     sections: [
       {
         title: '1. Objeto do serviço',
         paragraphs: [
-          'O ChefControl é uma plataforma de gestão para confeiteiras e negócios de confeitaria, incluindo encomendas, clientes, dívidas, relatórios financeiros e lembretes.',
+          'O Flow Cakes é uma plataforma de gestão para confeiteiras e negócios de confeitaria, incluindo encomendas, clientes, dívidas, relatórios financeiros e lembretes.',
           'A conta é pessoal e intransmissível. É proibido partilhar credenciais ou permitir acesso não autorizado a terceiros.',
         ],
       },
@@ -52,7 +52,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocumentId, LegalDocument> = {
       {
         title: '5. Responsabilidade',
         paragraphs: [
-          'O ChefControl esforça-se por manter o serviço disponível, mas não garante funcionamento ininterrupto em caso de falhas de rede, terceiros ou força maior.',
+          'O Flow Cakes esforça-se por manter o serviço disponível, mas não garante funcionamento ininterrupto em caso de falhas de rede, terceiros ou força maior.',
           'Decisões de negócio (preços, prazos, ingredientes) são da exclusiva responsabilidade do utilizador.',
         ],
       },
@@ -70,7 +70,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocumentId, LegalDocument> = {
     title: 'Política de Privacidade',
     updatedAt: 'Maio de 2026',
     intro:
-      'Esta política explica como o ChefControl trata os dados pessoais recolhidos no registo e durante a utilização do sistema, em conformidade com boas práticas de protecção de dados.',
+      'Esta política explica como o Flow Cakes trata os dados pessoais recolhidos no registo e durante a utilização do sistema, em conformidade com boas práticas de protecção de dados.',
     sections: [
       {
         title: '1. Dados que recolhemos',
