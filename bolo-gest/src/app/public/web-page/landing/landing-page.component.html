@@ -235,7 +235,7 @@
         </div>
         <div class="hero-slider-wrap" data-landing-reveal-child data-reveal-delay="2">
           <figure
-            class="hero-slider relative overflow-hidden shadow-2xl ring-1 ring-white/10 h-[420px] sm:h-[520px] lg:h-[680px] bg-brand-950 w-full"
+            class="hero-slider relative overflow-hidden shadow-2xl ring-1 ring-white/10 bg-brand-950 w-full"
             aria-label="Imagens do Flow Cakes"
             aria-live="polite"
             (touchstart)="onHeroSliderTouchStart($event)"
@@ -248,6 +248,8 @@
                   [alt]="slide.alt"
                   class="hero-slider__slide"
                   [class.hero-slider__slide--active]="i === heroSlideIndex"
+                  [style.--hero-focus]="slide.focus"
+                  [style.--hero-focus-desktop]="slide.focusDesktop"
                   [attr.loading]="i === 0 ? 'eager' : 'lazy'"
                   width="1200"
                   height="800"

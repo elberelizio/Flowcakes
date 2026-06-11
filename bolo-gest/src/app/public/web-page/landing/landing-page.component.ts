@@ -57,9 +57,24 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** Slideshow da secção «Haaa djo!» (lado direito). */
   readonly heroSlides = [
-    { src: '/t.jpg', alt: 'Confeiteira a decorar bolos com o Flow Cakes na cozinha' },
-    { src: '/t%20(1).jpg', alt: 'Confeiteira a gerir o negócio com o dashboard Flow Cakes' },
-    { src: '/t%20(2).jpg', alt: 'Croissants frescos — produto de confeitaria' },
+    {
+      src: '/t.jpg',
+      alt: 'Confeiteira a decorar bolos com o Flow Cakes na cozinha',
+      focus: '62% center',
+      focusDesktop: '58% center',
+    },
+    {
+      src: '/t%20(1).jpg',
+      alt: 'Confeiteira a gerir o negócio com o dashboard Flow Cakes',
+      focus: '60% center',
+      focusDesktop: '55% center',
+    },
+    {
+      src: '/t%20(2).jpg',
+      alt: 'Croissants frescos — produto de confeitaria',
+      focus: 'center center',
+      focusDesktop: 'center center',
+    },
   ] as const;
   heroSlideIndex = 0;
 
