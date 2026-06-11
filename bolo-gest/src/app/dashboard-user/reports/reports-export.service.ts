@@ -228,7 +228,7 @@ export class ReportsExportService {
     const th = headers
       .map((h, i) => {
         const align = rightAlignValueCols && i === 1 ? 'text-align:right;' : 'text-align:left;';
-        return `<th style="padding:8pt 10pt;font-size:12pt;font-weight:bold;color:#0f766e;background:#ecfdf5;border:1pt solid #99f6e4;${align}font-family:Calibri,Arial,sans-serif;">${h}</th>`;
+        return `<th style="padding:8pt 10pt;font-size:12pt;font-weight:bold;color:#0f766e;background:#f0fdfa;border:1pt solid #99f6e4;${align}font-family:Calibri,Arial,sans-serif;">${h}</th>`;
       })
       .join('');
 
@@ -349,7 +349,7 @@ export class ReportsExportService {
     .block h2 { margin: 0 0 8pt; font-size: 12pt; font-weight: bold; color: #0f766e; text-transform: uppercase; }
     table.data { width: 100%; border-collapse: collapse; font-size: 12pt; }
     table.data th, table.data td { border: 1pt solid #e2e8f0; padding: 8pt 10pt; text-align: left; }
-    table.data th { background: #ecfdf5; color: #0f766e; font-weight: bold; }
+    table.data th { background: #f0fdfa; color: #0f766e; font-weight: bold; }
     table.data tr:nth-child(even) td { background: #f8fafc; }
     table.data td.num { text-align: right; font-weight: bold; color: #0f766e; }
     table.data td.muted { color: #64748b; }

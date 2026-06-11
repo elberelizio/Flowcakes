@@ -71,7 +71,7 @@
     box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
 
     .cfg-link__chevron {
-      color: #059669;
+      color: #0f766e;
       transform: translateX(2px);
     }
   }
@@ -82,8 +82,8 @@
   }
 
   &[data-accent='teal'] .cfg-link__icon {
-    background: #d1fae5;
-    color: #047857;
+    background: #ccfbf1;
+    color: #0f766e;
   }
 
   &[data-accent='amber'] .cfg-link__icon {

@@ -31,8 +31,8 @@ export const SETTINGS_NAV: SettingsNavItem[] = [
   },
   {
     path: '/admin-settings/suggestions',
-    label: 'Sugestões da landing',
-    description: 'Pedidos de funcionalidades enviados pelo site público.',
+    label: 'Sugestões e reclamações',
+    description: 'Sugestões da landing e mensagens de contacto do site público.',
     section: 'communication',
     icon: 'file-text',
     accent: 'teal',

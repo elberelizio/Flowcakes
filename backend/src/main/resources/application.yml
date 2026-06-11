@@ -15,17 +15,6 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
-  mail:
-    host: ${MAIL_HOST:}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:}
-    password: ${MAIL_PASSWORD:}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
 
 # Por omissão 8081 = mesmo que `bolo-gest` em api.config.ts e `iniciar-backend.bat` (evita 404 no login por porta errada).
 server:
@@ -55,9 +44,6 @@ app:
     simulation:
       # Por omissão: pagamento de licença só simulado (M-Pesa/e-Mola fictício); notifica admins. Defina APP_PAYMENT_SIMULATION_ENABLED=false para tentar API real.
       enabled: ${APP_PAYMENT_SIMULATION_ENABLED:true}
-  contact:
-    destination-email: ${APP_CONTACT_DESTINATION_EMAIL:commit976@gmail.com}
-
 # M-Pesa OpenAPI (sandbox por defeito)
 mpesa:
   api-key: ${MPESA_API_KEY:}

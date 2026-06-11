@@ -2,25 +2,50 @@
   <header class="gn2-hero">
     <div class="gn2-hero__text">
       <a routerLink="/admin-settings" class="gn2-hero__back">← Configurações</a>
-      <h1 class="gn2__title">Sugestões da landing page</h1>
-      <p class="gn2__subtitle">Pedidos de funcionalidades enviados pelos visitantes do site público</p>
+      <h1 class="gn2__title">Sugestões e reclamações</h1>
+      <p class="gn2__subtitle">Mensagens enviadas pelos visitantes do site público</p>
     </div>
     @if (!loading() && !error()) {
       <div class="gn2-hero__stats">
         <article class="gn2-stat-inline">
           <div>
-            <strong>{{ allSuggestions().length }}</strong>
-            <span>Total recebidas</span>
+            <strong>{{ activeTab() === 'landing' ? allSuggestions().length : allContactMessages().length }}</strong>
+            <span>{{ activeTab() === 'landing' ? 'Sugestões' : 'Reclamações' }}</span>
           </div>
         </article>
       </div>
     }
   </header>
 
+  <section class="gn2-toolbar">
+    <div class="gn2-tabs" role="tablist" aria-label="Tipo de mensagem">
+      <button
+        type="button"
+        role="tab"
+        class="gn2-tab"
+        [class.gn2-tab--on]="activeTab() === 'landing'"
+        [attr.aria-selected]="activeTab() === 'landing'"
+        (click)="setTab('landing')"
+      >
+        Sugestões da landing
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="gn2-tab"
+        [class.gn2-tab--on]="activeTab() === 'contact'"
+        [attr.aria-selected]="activeTab() === 'contact'"
+        (click)="setTab('contact')"
+      >
+        Reclamações / contacto
+      </button>
+    </div>
+  </section>
+
   @if (loading()) {
     <div class="gn2-empty">
       <span class="gn2-spinner" aria-hidden="true"></span>
-      <p>A carregar sugestões…</p>
+      <p>A carregar mensagens…</p>
     </div>
   } @else if (error()) {
     <div class="gn2-empty gn2-empty--err" role="alert">
@@ -35,10 +60,10 @@
         </svg>
         <input
           type="search"
-          placeholder="Pesquisar por nome, mensagem ou página…"
+          [placeholder]="activeTab() === 'landing' ? 'Pesquisar sugestões…' : 'Pesquisar reclamações…'"
           [value]="searchTerm()"
           (input)="handleSearchInput($event)"
-          aria-label="Pesquisar sugestões"
+          aria-label="Pesquisar mensagens"
         />
         @if (searchTerm()) {
           <button type="button" class="gn2-btn gn2-btn--ghost" (click)="onSearch('')" aria-label="Limpar pesquisa">×</button>
@@ -47,21 +72,13 @@
 
       <div class="gn2-actions">
         <div class="gn2-tabs" role="group" aria-label="Ordenar">
-          <button
-            type="button"
-            class="gn2-tab"
-            [class.gn2-tab--on]="sortBy() === 'date'"
-            (click)="toggleSort('date')">
+          <button type="button" class="gn2-tab" [class.gn2-tab--on]="sortBy() === 'date'" (click)="toggleSort('date')">
             Data
             @if (sortBy() === 'date') {
               <span>{{ sortOrder() === 'asc' ? '↑' : '↓' }}</span>
             }
           </button>
-          <button
-            type="button"
-            class="gn2-tab"
-            [class.gn2-tab--on]="sortBy() === 'name'"
-            (click)="toggleSort('name')">
+          <button type="button" class="gn2-tab" [class.gn2-tab--on]="sortBy() === 'name'" (click)="toggleSort('name')">
             Nome
             @if (sortBy() === 'name') {
               <span>{{ sortOrder() === 'asc' ? '↑' : '↓' }}</span>
@@ -91,12 +108,12 @@
 
     @if (totalResults() === 0) {
       <div class="gn2-empty">
-        <p>Nenhuma sugestão encontrada.</p>
+        <p>{{ activeTab() === 'landing' ? 'Nenhuma sugestão encontrada.' : 'Nenhuma reclamação encontrada.' }}</p>
         @if (searchTerm()) {
           <button type="button" class="gn2-btn gn2-btn--ghost" (click)="onSearch('')">Limpar pesquisa</button>
         }
       </div>
-    } @else {
+    } @else if (activeTab() === 'landing') {
       <div class="gn2-card gn2-card--table">
         <div class="gn2-table-wrap">
           <table class="gn2-table">
@@ -110,16 +127,14 @@
               </tr>
             </thead>
             <tbody>
-              @for (s of paginatedSuggestions(); track s.id) {
+              @for (s of paginatedItems(); track s.id) {
                 <tr>
-                  <td>
-                    <time [attr.datetime]="s.createdAt">{{ formatDate(s.createdAt) }}</time>
-                  </td>
-                  <td>{{ s.personName }}</td>
+                  <td><time [attr.datetime]="s.createdAt">{{ formatDate(s.createdAt) }}</time></td>
+                  <td>{{ $any(s).personName }}</td>
                   <td>{{ s.message }}</td>
                   <td>
                     @if (s.pageUrl) {
-                      <a [href]="s.pageUrl" target="_blank" rel="noopener noreferrer" [title]="s.pageUrl">{{ s.pageUrl }}</a>
+                      <a [href]="s.pageUrl" target="_blank" rel="noopener noreferrer">{{ s.pageUrl }}</a>
                     } @else {
                       <span class="gn2-muted">—</span>
                     }
@@ -137,40 +152,73 @@
           </table>
         </div>
       </div>
-
-      @if (totalPages() > 1) {
-        <nav class="gn2-pager" aria-label="Paginação">
-          <button
-            type="button"
-            class="gn2-pager-btn"
-            (click)="goToPage(currentPage() - 1)"
-            [disabled]="currentPage() === 1">
-            Anterior
-          </button>
-          <div class="gn2-pager__nums">
-            @for (page of getPageNumbers(); track $index) {
-              @if (page === -1) {
-                <span class="gn2-pager__ellipsis">…</span>
-              } @else {
-                <button
-                  type="button"
-                  class="gn2-pager-num"
-                  [class.gn2-pager-num--on]="page === currentPage()"
-                  (click)="goToPage(page)">
-                  {{ page }}
-                </button>
+    } @else {
+      <div class="gn2-card gn2-card--table">
+        <div class="gn2-table-wrap">
+          <table class="gn2-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Telefone</th>
+                <th>Mensagem</th>
+                <th>IP</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of paginatedItems(); track s.id) {
+                <tr>
+                  <td><time [attr.datetime]="s.createdAt">{{ formatDate(s.createdAt) }}</time></td>
+                  <td>{{ $any(s).fullName }}</td>
+                  <td>{{ $any(s).email || '—' }}</td>
+                  <td>{{ $any(s).phone || '—' }}</td>
+                  <td>{{ s.message }}</td>
+                  <td>
+                    @if (s.ipAddress) {
+                      <code>{{ s.ipAddress }}</code>
+                    } @else {
+                      <span class="gn2-muted">—</span>
+                    }
+                  </td>
+                </tr>
               }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    @if (totalPages() > 1) {
+      <nav class="gn2-pager" aria-label="Paginação">
+        <button type="button" class="gn2-pager-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">
+          Anterior
+        </button>
+        <div class="gn2-pager__nums">
+          @for (page of getPageNumbers(); track $index) {
+            @if (page === -1) {
+              <span class="gn2-pager__ellipsis">…</span>
+            } @else {
+              <button
+                type="button"
+                class="gn2-pager-num"
+                [class.gn2-pager-num--on]="page === currentPage()"
+                (click)="goToPage(page)"
+              >
+                {{ page }}
+              </button>
             }
-          </div>
-          <button
-            type="button"
-            class="gn2-pager-btn"
-            (click)="goToPage(currentPage() + 1)"
-            [disabled]="currentPage() === totalPages()">
-            Seguinte
-          </button>
-        </nav>
-      }
+          }
+        </div>
+        <button
+          type="button"
+          class="gn2-pager-btn"
+          (click)="goToPage(currentPage() + 1)"
+          [disabled]="currentPage() === totalPages()"
+        >
+          Seguinte
+        </button>
+      </nav>
     }
   }
 </div>

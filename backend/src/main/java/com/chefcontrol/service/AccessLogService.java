@@ -1,11 +1,11 @@
-﻿package com.Flow Cakes.service;
+package com.chefcontrol.service;
 
-import com.Flow Cakes.dto.AccessLogDto;
-import com.Flow Cakes.dto.AccessLogUserSummaryDto;
-import com.Flow Cakes.dto.AccessLogUsersPageDto;
-import com.Flow Cakes.entity.AccessLogEntity;
-import com.Flow Cakes.entity.UserEntity;
-import com.Flow Cakes.repository.AccessLogRepository;
+import com.chefcontrol.dto.AccessLogDto;
+import com.chefcontrol.dto.AccessLogUserSummaryDto;
+import com.chefcontrol.dto.AccessLogUsersPageDto;
+import com.chefcontrol.entity.AccessLogEntity;
+import com.chefcontrol.entity.UserEntity;
+import com.chefcontrol.repository.AccessLogRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;

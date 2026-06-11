@@ -1,14 +1,14 @@
-﻿package com.Flow Cakes.service;
+package com.chefcontrol.service;
 
-import com.Flow Cakes.dto.OrderCloseRequest;
-import com.Flow Cakes.dto.OrderRequest;
-import com.Flow Cakes.dto.OrderResponse;
-import com.Flow Cakes.dto.RevenueByMonthDto;
-import com.Flow Cakes.dto.VariableExpense;
-import com.Flow Cakes.entity.OrderEntity;
-import com.Flow Cakes.entity.UserEntity;
-import com.Flow Cakes.repository.OrderRepository;
-import com.Flow Cakes.repository.UserRepository;
+import com.chefcontrol.dto.OrderCloseRequest;
+import com.chefcontrol.dto.OrderRequest;
+import com.chefcontrol.dto.OrderResponse;
+import com.chefcontrol.dto.RevenueByMonthDto;
+import com.chefcontrol.dto.VariableExpense;
+import com.chefcontrol.entity.OrderEntity;
+import com.chefcontrol.entity.UserEntity;
+import com.chefcontrol.repository.OrderRepository;
+import com.chefcontrol.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;

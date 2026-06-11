@@ -118,8 +118,8 @@
   }
 
   &--month .profit-card__icon {
-    background: #d1fae5;
-    color: #047857;
+    background: #ccfbf1;
+    color: #0f766e;
     border: 1px solid #a7f3d0;
   }
 
@@ -450,11 +450,11 @@
   }
 
   &--excel {
-    color: #047857;
+    color: #0f766e;
     border-color: #a7f3d0;
 
     &:hover:not(:disabled) {
-      background: #ecfdf5;
+      background: #f0fdfa;
     }
   }
 }

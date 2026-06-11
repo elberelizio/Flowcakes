@@ -1,17 +1,17 @@
-﻿package com.Flow Cakes.controller;
+package com.chefcontrol.controller;
 
-import com.Flow Cakes.config.CurrentUserId;
-import com.Flow Cakes.config.PaymentSimulationProperties;
-import com.Flow Cakes.entity.MpesaPaymentEntity;
-import com.Flow Cakes.entity.UserEntity;
-import com.Flow Cakes.mpesa.MpesaConfig;
-import com.Flow Cakes.mpesa.MpesaException;
-import com.Flow Cakes.mpesa.MpesaService;
-import com.Flow Cakes.repository.MpesaPaymentRepository;
-import com.Flow Cakes.repository.UserRepository;
-import com.Flow Cakes.service.AuthService;
-import com.Flow Cakes.service.LicenseService;
-import com.Flow Cakes.service.SystemNotificationService;
+import com.chefcontrol.config.CurrentUserId;
+import com.chefcontrol.config.PaymentSimulationProperties;
+import com.chefcontrol.entity.MpesaPaymentEntity;
+import com.chefcontrol.entity.UserEntity;
+import com.chefcontrol.mpesa.MpesaConfig;
+import com.chefcontrol.mpesa.MpesaException;
+import com.chefcontrol.mpesa.MpesaService;
+import com.chefcontrol.repository.MpesaPaymentRepository;
+import com.chefcontrol.repository.UserRepository;
+import com.chefcontrol.service.AuthService;
+import com.chefcontrol.service.LicenseService;
+import com.chefcontrol.service.SystemNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -457,7 +457,7 @@ public class MpesaController {
     }
 
     /**
-     * Referência alfanumérica de 18 caracteres (compatível com validação em {@link com.Flow Cakes.service.LicenseService#confirmPayment}).
+     * Referência alfanumérica de 18 caracteres (compatível com validação em {@link com.chefcontrol.service.LicenseService#confirmPayment}).
      * Prefixo SIM = fluxo simulado M-Pesa; EML = fluxo simulado e-Mola.
      */
     private static String generateSimulatedTransactionRef(String channel) {

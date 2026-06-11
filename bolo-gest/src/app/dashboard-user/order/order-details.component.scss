@@ -77,8 +77,8 @@
     color: #b45309;
   }
   &.pago {
-    background: #ecfdf5;
-    color: #047857;
+    background: #f0fdfa;
+    color: #0f766e;
   }
   &.status-ordered {
     background: #f0fdfa;
@@ -89,8 +89,8 @@
     color: #b45309;
   }
   &.status-completed {
-    background: #ecfdf5;
-    color: #047857;
+    background: #f0fdfa;
+    color: #0f766e;
   }
   &.status-cancelled {
     background: #fef2f2;
@@ -195,9 +195,9 @@
   padding: 0.4rem 0.65rem;
   border-radius: 0.5rem;
   font-size: 0.78rem;
-  background: #ecfdf5;
+  background: #f0fdfa;
   border: 1px solid #a7f3d0;
-  color: #047857;
+  color: #0f766e;
 
   &--debt {
     background: #fef2f2;
@@ -209,7 +209,7 @@
     width: 1.35rem;
     height: 1.35rem;
     border-radius: 0.35rem;
-    background: #059669;
+    background: #0f766e;
     color: #fff;
     font-size: 0.65rem;
     font-weight: 800;
@@ -312,7 +312,7 @@
   }
 
   &--paid .fin-cell__v {
-    color: #047857;
+    color: #0f766e;
   }
 
   &--refund {

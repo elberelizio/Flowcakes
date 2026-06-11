@@ -1,8 +1,8 @@
-﻿package com.Flow Cakes.service;
+package com.chefcontrol.service;
 
-import com.Flow Cakes.entity.UserEntity;
-import com.Flow Cakes.exception.InvalidPasswordException;
-import com.Flow Cakes.repository.UserRepository;
+import com.chefcontrol.entity.UserEntity;
+import com.chefcontrol.exception.InvalidPasswordException;
+import com.chefcontrol.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;

@@ -145,7 +145,7 @@ export interface SnackbarNotification {
 
     .snackbar-success .snackbar-icon-wrap {
       background: rgba(16, 185, 129, 0.15);
-      color: #047857;
+      color: #0f766e;
     }
 
     .snackbar-error .snackbar-icon-wrap {

@@ -7,9 +7,10 @@ import { RegistrationFlowService } from '../registration/registration-flow.servi
  * Protege rotas que exigem licença activa. Admin não precisa de licença.
  * Com sessão mas licença inactiva: só permite /license-payment (pagamento + espera de aprovação).
  */
-export const licenseGuard: CanActivateFn = () => {
+export const licenseGuard: CanActivateFn = async () => {
   const auth = inject(AuthService);
   const router = inject(Router);
+  await auth.whenInitialized();
   if (!auth.isLoggedIn()) return router.createUrlTree(['/login']);
   if (auth.isAdmin()) return true;
   if (auth.isAccountFinalized()) return true;

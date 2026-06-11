@@ -1,13 +1,13 @@
-﻿package com.Flow Cakes.service;
+package com.chefcontrol.service;
 
-import com.Flow Cakes.dto.SystemNotificationDto;
-import com.Flow Cakes.dto.SystemNotificationRequest;
-import com.Flow Cakes.entity.SystemNotificationEntity;
-import com.Flow Cakes.entity.UserEntity;
-import com.Flow Cakes.entity.UserNotificationDismissalEntity;
-import com.Flow Cakes.repository.SystemNotificationRepository;
-import com.Flow Cakes.repository.UserNotificationDismissalRepository;
-import com.Flow Cakes.repository.UserRepository;
+import com.chefcontrol.dto.SystemNotificationDto;
+import com.chefcontrol.dto.SystemNotificationRequest;
+import com.chefcontrol.entity.SystemNotificationEntity;
+import com.chefcontrol.entity.UserEntity;
+import com.chefcontrol.entity.UserNotificationDismissalEntity;
+import com.chefcontrol.repository.SystemNotificationRepository;
+import com.chefcontrol.repository.UserNotificationDismissalRepository;
+import com.chefcontrol.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;

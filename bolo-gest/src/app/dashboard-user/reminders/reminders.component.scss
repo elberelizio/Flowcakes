@@ -216,7 +216,7 @@
   }
 
   &--flag {
-    background: linear-gradient(135deg, #059669, #047857);
+    background: linear-gradient(135deg, #0f766e, #0f766e);
     color: #fff;
   }
 }
@@ -239,8 +239,8 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #047857;
-  background: #d1fae5;
+  color: #0f766e;
+  background: #ccfbf1;
   padding: 0.15rem 0.45rem;
   border-radius: 0.35rem;
 }
@@ -659,7 +659,7 @@
 
   &__date {
     font-weight: 800;
-    color: #047857;
+    color: #0f766e;
     white-space: nowrap;
     font-size: 0.78rem;
   }

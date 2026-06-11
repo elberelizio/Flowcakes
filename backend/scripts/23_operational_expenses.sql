@@ -19,10 +19,12 @@ CREATE TABLE IF NOT EXISTS platform_admin_settings (
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
-INSERT INTO platform_admin_settings (setting_key, setting_value) VALUES
-    ('feedback_alert_threshold', '5'),
-    ('maintenance_interval_days', '90'),
-    ('last_maintenance_at', '')
+ALTER TABLE platform_admin_settings ALTER COLUMN updated_at SET DEFAULT NOW();
+
+INSERT INTO platform_admin_settings (setting_key, setting_value, updated_at) VALUES
+    ('feedback_alert_threshold', '5', NOW()),
+    ('maintenance_interval_days', '90', NOW()),
+    ('last_maintenance_at', '', NOW())
 ON CONFLICT (setting_key) DO NOTHING;
 
 COMMENT ON TABLE operational_expenses IS 'Despesas operacionais da Chef Control (hosting, marketing, suporte, etc.).';

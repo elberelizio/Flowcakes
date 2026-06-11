@@ -31,10 +31,13 @@ export const appConfig: ApplicationConfig = {
     providePrimeNG(),
     {
       provide: APP_INITIALIZER,
-      useFactory: (auth: AuthService, activity: UserActivityService) => () =>
-        auth.initSession().then(() => {
-          activity.init();
-        }),
+      useFactory: (auth: AuthService, activity: UserActivityService) => () => {
+        // Não bloquear o bootstrap: em Vercel a API antiga (:8081) podia travar 15s+.
+        void auth.initSession().then(() => {
+          if (auth.isLoggedIn()) activity.init();
+        });
+        return Promise.resolve();
+      },
       deps: [AuthService, UserActivityService],
       multi: true,
     },

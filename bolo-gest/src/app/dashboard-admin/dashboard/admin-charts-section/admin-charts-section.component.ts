@@ -17,7 +17,7 @@ Chart.register(...registerables);
 const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 /** Verde — receita de licenças */
-const COLOR_LICENSE = '#059669';
+const COLOR_LICENSE = '#0f766e';
 
 /** Laranja — lucro em encomendas */
 const COLOR_ORDERS = '#ea580c';

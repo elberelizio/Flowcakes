@@ -221,6 +221,11 @@
   align-items: center;
   gap: 0.75rem;
   overflow: visible;
+  flex-shrink: 0;
+
+  > * {
+    flex-shrink: 0;
+  }
 }
 
 .navbar-link {

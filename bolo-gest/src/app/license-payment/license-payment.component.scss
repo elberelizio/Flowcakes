@@ -831,7 +831,7 @@
   }
 
   &--wa {
-    background: #f0fdf4;
+    background: #f0fdfa;
     border-color: #86efac;
     color: #15803d;
 
@@ -853,7 +853,7 @@
   padding: 1.25rem 1.35rem;
   border-radius: 1rem;
   border: 1px solid var(--border);
-  background: linear-gradient(120deg, #ecfdf5 0%, #ccfbf1 20%, var(--card-bg, #fff) 55%);
+  background: linear-gradient(120deg, #f0fdfa 0%, #ccfbf1 20%, var(--card-bg, #fff) 55%);
   box-shadow: 0 8px 26px rgba(15, 23, 42, 0.06);
 
   &__back {

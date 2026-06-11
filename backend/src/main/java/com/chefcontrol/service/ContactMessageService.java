@@ -1,5 +1,6 @@
 package com.chefcontrol.service;
 
+import com.chefcontrol.dto.ContactMessageAdminDto;
 import com.chefcontrol.dto.ContactMessageDto;
 import com.chefcontrol.dto.ContactMessageRequest;
 import com.chefcontrol.entity.ContactMessageEntity;
@@ -9,15 +10,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 @Service
 public class ContactMessageService {
 
     private final ContactMessageRepository repository;
-    private final ContactMailNotifier mailNotifier;
+    private final AdminService adminService;
 
-    public ContactMessageService(ContactMessageRepository repository, ContactMailNotifier mailNotifier) {
+    public ContactMessageService(ContactMessageRepository repository, AdminService adminService) {
         this.repository = repository;
-        this.mailNotifier = mailNotifier;
+        this.adminService = adminService;
     }
 
     public ContactMessageDto create(ContactMessageRequest body, HttpServletRequest request) {
@@ -41,15 +46,30 @@ public class ContactMessageService {
 
         entity = repository.save(entity);
 
-        try {
-            mailNotifier.notifyTeam(entity);
-        } catch (Exception e) {
-            System.err.println("❌ Falha ao enviar e-mail de reclamação (id=" + entity.getId() + "): " + e.getMessage());
-        }
-
         ContactMessageDto dto = new ContactMessageDto();
         dto.setId(entity.getId() != null ? entity.getId().toString() : null);
-        dto.setMessage("A sua mensagem foi enviada com sucesso.");
+        dto.setMessage("A sua reclamação ou pedido de contacto foi enviado com sucesso.");
+        return dto;
+    }
+
+    public List<ContactMessageAdminDto> listForAdmin(UUID adminUserId) {
+        adminService.requireAdmin(adminUserId);
+        return repository.findTop100ByOrderByCreatedAtDesc().stream()
+            .map(this::toAdminDto)
+            .collect(Collectors.toList());
+    }
+
+    private ContactMessageAdminDto toAdminDto(ContactMessageEntity entity) {
+        ContactMessageAdminDto dto = new ContactMessageAdminDto();
+        dto.setId(entity.getId() != null ? entity.getId().toString() : null);
+        dto.setFullName(entity.getFullName());
+        dto.setEmail(entity.getEmail());
+        dto.setPhone(entity.getPhone());
+        dto.setMessage(entity.getMessage());
+        dto.setPageUrl(entity.getPageUrl());
+        dto.setIpAddress(entity.getIpAddress());
+        dto.setUserAgent(entity.getUserAgent());
+        dto.setCreatedAt(entity.getCreatedAt() != null ? entity.getCreatedAt().toString() : null);
         return dto;
     }
 

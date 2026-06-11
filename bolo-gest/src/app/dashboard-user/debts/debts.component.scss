@@ -145,13 +145,13 @@
   }
 
   &--paid .kpi-card__icon {
-    background: #d1fae5;
-    color: #047857;
+    background: #ccfbf1;
+    color: #0f766e;
     border-color: #a7f3d0;
   }
 
   &--paid .kpi-card__value {
-    color: #047857;
+    color: #0f766e;
   }
 }
 
@@ -175,8 +175,8 @@
     height: 3.25rem;
     margin-bottom: 0.85rem;
     border-radius: 9999px;
-    background: #d1fae5;
-    color: #047857;
+    background: #ccfbf1;
+    color: #0f766e;
     font-size: 1.35rem;
     border: 1px solid #a7f3d0;
   }
@@ -367,8 +367,8 @@
   color: #64748b;
 
   &--yes {
-    background: #d1fae5;
-    color: #047857;
+    background: #ccfbf1;
+    color: #0f766e;
   }
 }
 
@@ -451,8 +451,8 @@
     width: 2.5rem;
     height: 2.5rem;
     border-radius: 0.75rem;
-    background: #d1fae5;
-    color: #047857;
+    background: #ccfbf1;
+    color: #0f766e;
     font-size: 1.1rem;
     flex-shrink: 0;
   }

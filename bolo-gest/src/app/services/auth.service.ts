@@ -1,6 +1,6 @@
 ﻿import { Injectable, signal, computed, Injector } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, timeout, catchError, of } from 'rxjs';
 import { Router } from '@angular/router';
 import { API_URL } from '../core/config/api.config';
 import { OrderAlertsPopupService } from './order-alerts-popup.service';
@@ -114,6 +114,8 @@ export interface LicensePaymentRow {
 export class AuthService {
   private readonly currentUser = signal<CurrentUser | null>(null);
   private initialized = false;
+  private sessionInitPromise: Promise<void> | null = null;
+  private static readonly SESSION_CHECK_TIMEOUT_MS = 4000;
 
   constructor(
     private http: HttpClient,
@@ -127,21 +129,37 @@ export class AuthService {
   /** Verifica sessão no backend (cookie). Chamado no arranque da app. Nenhum dado guardado no browser. */
   initSession(): Promise<void> {
     if (this.initialized) return Promise.resolve();
-    return this.http
-      .get<UserResponse>(`${API_URL}/auth/me`)
-      .toPromise()
+    if (this.sessionInitPromise) return this.sessionInitPromise;
+
+    this.sessionInitPromise = firstValueFrom(
+      this.http.get<UserResponse>(`${API_URL}/auth/me`).pipe(
+        timeout(AuthService.SESSION_CHECK_TIMEOUT_MS),
+        catchError((err) => {
+          const status = err?.status;
+          const isExpected =
+            status === 401 ||
+            err?.name === 'TimeoutError' ||
+            (status === 200 && /api$/i.test(API_URL) && typeof window !== 'undefined' && !window.location.hostname.includes('localhost'));
+          if (!isExpected) {
+            console.warn('Sessão: API indisponível.', API_URL, status ?? err?.name);
+          }
+          return of(null);
+        }),
+      ),
+    )
       .then((user) => {
         this.currentUser.set(user ? this.toCurrentUser(user) : null);
-        this.initialized = true;
       })
-      .catch((err) => {
-        // 401 = sem cookie de sessão; é o comportamento normal antes do login
-        if (err?.status !== 401) {
-          console.error('Erro ao verificar sessão:', err);
-        }
-        this.currentUser.set(null);
+      .finally(() => {
         this.initialized = true;
       });
+
+    return this.sessionInitPromise;
+  }
+
+  /** Aguarda a verificação inicial de sessão (ex.: guards de rotas protegidas). */
+  whenInitialized(): Promise<void> {
+    return this.sessionInitPromise ?? Promise.resolve();
   }
 
   /** Chamar quando precisar de saber se a sessão já foi verificada (ex.: guards) */
@@ -296,6 +314,14 @@ export class AuthService {
           message:
             msg?.trim() ||
             `O servidor respondeu 404 ao login (normalmente não é "conta inexistente" — isso seria 401). Confirme que o backend Flow Cakes está activo na mesma URL que o front (por omissão porta 8081). Teste no browser: ${API_URL}/public/health — deve devolver JSON com "chef-control-backend". Se usar a porta 8080: localStorage.setItem('chefcontrol_api_base_url','http://localhost:8080/api'); location.reload()`,
+        };
+      }
+      if (status === 405) {
+        return {
+          ok: false,
+          code: 'INVALID_CREDENTIALS',
+          message:
+            'A API não está configurada no Vercel. Defina CHEFCONTROL_API_BACKEND_ORIGIN com a URL pública do backend Spring Boot e faça redeploy.',
         };
       }
       if (status === 0) {

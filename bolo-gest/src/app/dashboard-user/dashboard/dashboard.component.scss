@@ -1081,7 +1081,7 @@
     border-top: 3px solid #0284c7;
   }
   &.popup--good {
-    border-top: 3px solid #059669;
+    border-top: 3px solid #0f766e;
   }
   &.popup--excellent {
     border-top: 3px solid var(--primary, #0d9488);
@@ -1315,7 +1315,7 @@
     color: #0284c7;
   }
   &.value--good {
-    color: #059669;
+    color: #0f766e;
   }
   &.value--excellent {
     color: var(--primary, #0d9488);
@@ -1622,7 +1622,7 @@
 }
 
 .stat-card--clients .stat-card__accent {
-  background: linear-gradient(180deg, var(--primary, #0d9488) 0%, #059669 100%);
+  background: linear-gradient(180deg, var(--primary, #0d9488) 0%, #0f766e 100%);
 }
 
 .stat-card--retiradas .stat-card__accent {

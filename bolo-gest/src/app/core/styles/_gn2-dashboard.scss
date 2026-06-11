@@ -1,8 +1,8 @@
 // Widgets do painel admin (KPIs, estado, gráficos)
-$green-600: #059669;
-$green-500: #10b981;
-$green-50: #ecfdf5;
-$green-100: #d1fae5;
+$green-600: #0f766e;
+$green-500: #0d9488;
+$green-50: #f0fdfa;
+$green-100: #ccfbf1;
 $amber-600: #d97706;
 $amber-100: #fef3c7;
 $warm-50: #fafaf9;
@@ -37,9 +37,9 @@ $shadow-card: 0 4px 20px rgba(15, 23, 42, 0.05);
 
 .gn2-hero__chip {
   &.roi-profit {
-    color: #047857;
+    color: #0f766e;
     border-color: rgba(34, 197, 94, 0.35);
-    background: #f0fdf4;
+    background: #f0fdfa;
   }
 
   &.roi-loss {

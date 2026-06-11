@@ -1,9 +1,9 @@
-﻿package com.Flow Cakes.service;
+package com.chefcontrol.service;
 
-import com.Flow Cakes.dto.StoreSettingsDto;
-import com.Flow Cakes.dto.StoreSettingsRequest;
-import com.Flow Cakes.entity.UserStoreSettingsEntity;
-import com.Flow Cakes.repository.UserStoreSettingsRepository;
+import com.chefcontrol.dto.StoreSettingsDto;
+import com.chefcontrol.dto.StoreSettingsRequest;
+import com.chefcontrol.entity.UserStoreSettingsEntity;
+import com.chefcontrol.repository.UserStoreSettingsRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

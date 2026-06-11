@@ -1,9 +1,9 @@
-﻿// Layout inspirado no mockup Flow Cakes — emerald + warm stone
-$green-600: #059669;
-$green-500: #10b981;
-$green-400: #34d399;
-$green-50: #ecfdf5;
-$green-100: #d1fae5;
+﻿// Layout Flow Cakes — teal (mesma sintonia do modal de boas-vindas)
+$green-600: #0f766e;
+$green-500: #0d9488;
+$green-400: #14b8a6;
+$green-50: #f0fdfa;
+$green-100: #ccfbf1;
 $amber-600: #d97706;
 $amber-100: #fef3c7;
 $warm-50: #fafaf9;
@@ -889,7 +889,7 @@ $shadow-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
   &[data-tone='active'],
   &[data-tone='live'] {
     background: $green-100;
-    color: #047857;
+    color: #0f766e;
   }
 
   &[data-tone='scheduled'] {

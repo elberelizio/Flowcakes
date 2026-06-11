@@ -23,6 +23,7 @@ import com.chefcontrol.dto.RejectSimulatedPaymentRequest;
 import com.chefcontrol.dto.SimulatedPaymentPendingDto;
 import com.chefcontrol.dto.UserFeedbackDto;
 import com.chefcontrol.service.AdminService;
+import com.chefcontrol.service.ContactMessageService;
 import com.chefcontrol.service.LandingSuggestionService;
 import com.chefcontrol.service.LicenseService;
 import com.chefcontrol.service.SystemNotificationService;
@@ -41,6 +42,7 @@ import com.chefcontrol.dto.TreasurySettingsRequest;
 import com.chefcontrol.dto.TreasurySuggestionApproveRequest;
 import com.chefcontrol.dto.TreasurySuggestionDto;
 import com.chefcontrol.dto.TreasurySummaryDto;
+import com.chefcontrol.dto.ContactMessageAdminDto;
 import com.chefcontrol.dto.LandingSuggestionDto;
 import com.chefcontrol.dto.UserActivityHistoryPageDto;
 import com.chefcontrol.dto.UserSessionDetailDto;
@@ -63,6 +65,7 @@ public class AdminController {
     private final SystemNotificationService notificationService;
     private final UserFeedbackService feedbackService;
     private final LandingSuggestionService landingSuggestionService;
+    private final ContactMessageService contactMessageService;
     private final TreasuryService treasuryService;
 
     public AdminController(
@@ -71,6 +74,7 @@ public class AdminController {
         SystemNotificationService notificationService,
         UserFeedbackService feedbackService,
         LandingSuggestionService landingSuggestionService,
+        ContactMessageService contactMessageService,
         TreasuryService treasuryService
     ) {
         this.adminService = adminService;
@@ -78,6 +82,7 @@ public class AdminController {
         this.notificationService = notificationService;
         this.feedbackService = feedbackService;
         this.landingSuggestionService = landingSuggestionService;
+        this.contactMessageService = contactMessageService;
         this.treasuryService = treasuryService;
     }
 
@@ -297,6 +302,11 @@ public class AdminController {
     @GetMapping("/landing-suggestions")
     public ResponseEntity<List<LandingSuggestionDto>> landingSuggestions(@CurrentUserId UUID userId) {
         return ResponseEntity.ok(landingSuggestionService.listForAdmin(userId));
+    }
+
+    @GetMapping("/contact-messages")
+    public ResponseEntity<List<ContactMessageAdminDto>> contactMessages(@CurrentUserId UUID userId) {
+        return ResponseEntity.ok(contactMessageService.listForAdmin(userId));
     }
 
     @GetMapping("/login-summary")

@@ -1,10 +1,10 @@
-﻿package com.Flow Cakes.service;
+package com.chefcontrol.service;
 
-import com.Flow Cakes.dto.*;
-import com.Flow Cakes.entity.PasswordResetOtpEntity;
-import com.Flow Cakes.entity.UserEntity;
-import com.Flow Cakes.repository.PasswordResetOtpRepository;
-import com.Flow Cakes.repository.UserRepository;
+import com.chefcontrol.dto.*;
+import com.chefcontrol.entity.PasswordResetOtpEntity;
+import com.chefcontrol.entity.UserEntity;
+import com.chefcontrol.repository.PasswordResetOtpRepository;
+import com.chefcontrol.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

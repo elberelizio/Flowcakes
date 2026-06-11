@@ -28,7 +28,7 @@
   }
   border-radius: 1rem;
   border: 1px solid var(--border);
-  background: linear-gradient(145deg, #f0fdfa 0%, #ecfdf5 42%, var(--card-bg, #fff) 100%);
+  background: linear-gradient(145deg, #f0fdfa 0%, #f0fdfa 42%, var(--card-bg, #fff) 100%);
   box-shadow: 0 6px 24px rgba(15, 23, 42, 0.06);
 
   .header-top {
@@ -613,7 +613,7 @@ a.btn-back,
   input.ng-valid.ng-dirty,
   select.ng-valid.ng-dirty {
     border-color: #16a34a;
-    background: #f0fdf4;
+    background: #f0fdfa;
   }
 
   select.select-compact {

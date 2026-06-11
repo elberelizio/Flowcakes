@@ -1,0 +1,5 @@
+target/
+.env
+supabase.local.env
+*.log
+.git/

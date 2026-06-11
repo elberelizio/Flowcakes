@@ -100,7 +100,7 @@
 
   &--paid {
     border-color: rgba(16, 185, 129, 0.35);
-    background: linear-gradient(145deg, #ecfdf5 0%, #fff 55%);
+    background: linear-gradient(145deg, #f0fdfa 0%, #fff 55%);
   }
 
   &--pending {
@@ -141,8 +141,8 @@
   }
 
   &--paid .status-panel__icon {
-    color: #059669;
-    background: #d1fae5;
+    color: #0f766e;
+    background: #ccfbf1;
     border-color: #a7f3d0;
   }
 
@@ -188,8 +188,8 @@
   }
 
   &--paid .status-panel__chip {
-    background: #d1fae5;
-    color: #047857;
+    background: #ccfbf1;
+    color: #0f766e;
   }
 
   &--pending .status-panel__chip,
@@ -512,8 +512,8 @@
   letter-spacing: 0.03em;
 
   &--confirmed {
-    background: #d1fae5;
-    color: #047857;
+    background: #ccfbf1;
+    color: #0f766e;
   }
 }
 

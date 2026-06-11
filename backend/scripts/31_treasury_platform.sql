@@ -25,19 +25,22 @@ CREATE TABLE IF NOT EXISTS treasury_allocation_suggestions (
 CREATE INDEX IF NOT EXISTS idx_treasury_suggestions_status ON treasury_allocation_suggestions(status, created_at DESC);
 
 -- Configuração da conta e percentagens (soma recomendada = 100)
-INSERT INTO platform_admin_settings (setting_key, setting_value) VALUES
-    ('treasury_account_balance', '50000'),
-    ('treasury_alloc_maintenance_pct', '40'),
-    ('treasury_alloc_fixed_pct', '15'),
-    ('treasury_alloc_reserve_pct', '15'),
-    ('treasury_alloc_payroll_pct', '20'),
-    ('treasury_alloc_tools_pct', '10'),
-    ('treasury_payroll_headcount', '2')
+ALTER TABLE treasury_investments ALTER COLUMN id SET DEFAULT gen_random_uuid();
+ALTER TABLE treasury_investments ALTER COLUMN created_at SET DEFAULT NOW();
+
+INSERT INTO platform_admin_settings (setting_key, setting_value, updated_at) VALUES
+    ('treasury_account_balance', '50000', NOW()),
+    ('treasury_alloc_maintenance_pct', '40', NOW()),
+    ('treasury_alloc_fixed_pct', '15', NOW()),
+    ('treasury_alloc_reserve_pct', '15', NOW()),
+    ('treasury_alloc_payroll_pct', '20', NOW()),
+    ('treasury_alloc_tools_pct', '10', NOW()),
+    ('treasury_payroll_headcount', '2', NOW())
 ON CONFLICT (setting_key) DO NOTHING;
 
 -- Investimento inicial de referência (5 000 MZN)
-INSERT INTO treasury_investments (amount, invested_at, notes)
-SELECT 5000, CURRENT_DATE, 'Investimento inicial da plataforma'
+INSERT INTO treasury_investments (id, amount, invested_at, notes, created_at)
+SELECT gen_random_uuid(), 5000, CURRENT_DATE, 'Investimento inicial da plataforma', NOW()
 WHERE NOT EXISTS (SELECT 1 FROM treasury_investments LIMIT 1);
 
 COMMENT ON TABLE treasury_investments IS 'Capital injectado na plataforma (tesouraria).';
