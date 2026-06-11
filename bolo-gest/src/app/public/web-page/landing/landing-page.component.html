@@ -233,28 +233,43 @@
             Quero começar agora <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
           </a>
         </div>
-        <figure
-          class="hero-slider relative overflow-hidden shadow-2xl ring-1 ring-white/10 h-[420px] sm:h-[520px] lg:h-[680px] bg-brand-950 w-full"
-          data-landing-reveal-child
-          data-reveal-delay="2"
-          aria-label="Imagens do Flow Cakes"
-          aria-live="polite"
-        >
-          <div class="hero-slider__track">
-            @for (slide of heroSlides; track slide.src; let i = $index) {
-              <img
-                [src]="slide.src"
-                [alt]="slide.alt"
-                class="hero-slider__slide"
-                [class.hero-slider__slide--active]="i === heroSlideIndex"
-                [attr.loading]="i === 0 ? 'eager' : 'lazy'"
-                width="1200"
-                height="800"
-              />
-            }
-          </div>
-          <div class="hero-slider__shade" aria-hidden="true"></div>
-        </figure>
+        <div class="hero-slider-wrap" data-landing-reveal-child data-reveal-delay="2">
+          <figure
+            class="hero-slider relative overflow-hidden shadow-2xl ring-1 ring-white/10 h-[420px] sm:h-[520px] lg:h-[680px] bg-brand-950 w-full"
+            aria-label="Imagens do Flow Cakes"
+            aria-live="polite"
+            (touchstart)="onHeroSliderTouchStart($event)"
+            (touchend)="onHeroSliderTouchEnd($event)"
+          >
+            <div class="hero-slider__track">
+              @for (slide of heroSlides; track slide.src; let i = $index) {
+                <img
+                  [src]="slide.src"
+                  [alt]="slide.alt"
+                  class="hero-slider__slide"
+                  [class.hero-slider__slide--active]="i === heroSlideIndex"
+                  [attr.loading]="i === 0 ? 'eager' : 'lazy'"
+                  width="1200"
+                  height="800"
+                />
+              }
+            </div>
+            <div class="hero-slider__shade" aria-hidden="true"></div>
+            <div class="hero-slider__dots" role="tablist" aria-label="Imagens em destaque">
+              @for (slide of heroSlides; track slide.src; let i = $index) {
+                <button
+                  type="button"
+                  role="tab"
+                  class="hero-slider__dot"
+                  [class.hero-slider__dot--active]="i === heroSlideIndex"
+                  [attr.aria-selected]="i === heroSlideIndex"
+                  [attr.aria-label]="'Imagem ' + (i + 1)"
+                  (click)="goToHeroSlide(i)"
+                ></button>
+              }
+            </div>
+          </figure>
+        </div>
       </div>
     </div>
   </section>

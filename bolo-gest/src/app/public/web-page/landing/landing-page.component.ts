@@ -1,4 +1,14 @@
-﻿import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, PLATFORM_ID, inject } from '@angular/core';
+﻿import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID,
+  inject,
+} from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
@@ -29,8 +39,19 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private registrationFlow = inject(RegistrationFlowService);
   private motion = inject(PublicPageMotionService);
+  private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
   private teardownLandingMotion: (() => void) | null = null;
   private heroSlideTimer: ReturnType<typeof setInterval> | null = null;
+  private heroTouchStartX = 0;
+  private heroTouchStartY = 0;
+  private readonly onHeroVisibilityChange = (): void => {
+    if (document.hidden) {
+      this.stopHeroSlideAutoplay();
+      return;
+    }
+    this.startHeroSlideAutoplay();
+  };
 
   readonly currentYear = new Date().getFullYear();
 
@@ -137,13 +158,17 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     requestAnimationFrame(() => {
-      this.teardownLandingMotion = this.motion.initLandingMotion(this.host.nativeElement);
+      void this.motion.initLandingMotion(this.host.nativeElement).then((teardown) => {
+        this.teardownLandingMotion = teardown;
+      });
     });
     this.startHeroSlideAutoplay();
     this.startTestimonialAutoplay();
+    document.addEventListener('visibilitychange', this.onHeroVisibilityChange);
   }
 
   ngOnDestroy(): void {
+    document.removeEventListener('visibilitychange', this.onHeroVisibilityChange);
     this.teardownLandingMotion?.();
     this.teardownLandingMotion = null;
     this.stopHeroSlideAutoplay();
@@ -219,20 +244,49 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.startTestimonialAutoplay();
   }
 
-  private goToHeroSlide(index: number): void {
+  goToHeroSlide(index: number): void {
     const total = this.heroSlides.length;
     this.heroSlideIndex = ((index % total) + total) % total;
+    this.cdr.markForCheck();
+    this.startHeroSlideAutoplay();
   }
 
   private nextHeroSlide(): void {
     this.goToHeroSlide(this.heroSlideIndex + 1);
   }
 
+  onHeroSliderTouchStart(event: TouchEvent): void {
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+    this.heroTouchStartX = touch.clientX;
+    this.heroTouchStartY = touch.clientY;
+  }
+
+  onHeroSliderTouchEnd(event: TouchEvent): void {
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+    const deltaX = touch.clientX - this.heroTouchStartX;
+    const deltaY = touch.clientY - this.heroTouchStartY;
+    if (Math.abs(deltaX) < 40 || Math.abs(deltaX) < Math.abs(deltaY)) return;
+    if (deltaX < 0) {
+      this.nextHeroSlide();
+      return;
+    }
+    this.goToHeroSlide(this.heroSlideIndex - 1);
+  }
+
   private startHeroSlideAutoplay(): void {
     this.stopHeroSlideAutoplay();
+    if (!isPlatformBrowser(this.platformId)) return;
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReduced) return;
-    this.heroSlideTimer = setInterval(() => this.nextHeroSlide(), 5500);
+    this.ngZone.runOutsideAngular(() => {
+      this.heroSlideTimer = setInterval(() => {
+        this.ngZone.run(() => {
+          this.nextHeroSlide();
+        });
+      }, 5500);
+    });
   }
 
   private stopHeroSlideAutoplay(): void {

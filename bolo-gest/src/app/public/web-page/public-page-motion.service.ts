@@ -2,16 +2,22 @@ import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import type gsap from 'gsap';
+import type { ScrollTrigger as ScrollTriggerType } from 'gsap/ScrollTrigger';
 
 const PUBLIC_PAGE_SELECTORS =
   'app-web-page-layout, app-landing-page, app-contact-page, app-legal-document-page, app-login, app-register, app-recover-password, app-post-register-plan';
 
+type GsapRuntime = {
+  gsap: typeof gsap;
+  ScrollTrigger: typeof ScrollTriggerType;
+};
+
 @Injectable({ providedIn: 'root' })
 export class PublicPageMotionService {
   private readonly platformId = inject(PLATFORM_ID);
-  private gsapReady = false;
+  private runtime: GsapRuntime | null = null;
+  private loadPromise: Promise<GsapRuntime | null> | null = null;
   private routerBound = false;
   private outletRouterBound = false;
   private previousUrl = '';
@@ -21,14 +27,20 @@ export class PublicPageMotionService {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
-  private ensureGsap(): boolean {
-    if (!isPlatformBrowser(this.platformId)) return false;
-    if (this.prefersReducedMotion()) return false;
-    if (!this.gsapReady) {
-      gsap.registerPlugin(ScrollTrigger);
-      this.gsapReady = true;
+  /** Carrega GSAP sob demanda (chunk separado — não bloqueia login nem dashboard). */
+  private loadGsap(): Promise<GsapRuntime | null> {
+    if (!isPlatformBrowser(this.platformId) || this.prefersReducedMotion()) {
+      return Promise.resolve(null);
     }
-    return true;
+    if (this.runtime) return Promise.resolve(this.runtime);
+    if (!this.loadPromise) {
+      this.loadPromise = Promise.all([import('gsap'), import('gsap/ScrollTrigger')]).then(([gsapMod, stMod]) => {
+        gsapMod.default.registerPlugin(stMod.ScrollTrigger);
+        this.runtime = { gsap: gsapMod.default, ScrollTrigger: stMod.ScrollTrigger };
+        return this.runtime;
+      });
+    }
+    return this.loadPromise;
   }
 
   /** Agrupa rotas do site marketing (landing, contacto, legais) no mesmo shell. */
@@ -74,6 +86,13 @@ export class PublicPageMotionService {
     return fromShell === 'marketing' && toShell === 'marketing';
   }
 
+  /** Troca de rota filha no layout marketing (landing ↔ contacto) — tratada pelo outlet. */
+  private isMarketingChildRouteChange(fromUrl: string, toUrl: string): boolean {
+    const fromPath = this.marketingRoutePath(fromUrl);
+    const toPath = this.marketingRoutePath(toUrl);
+    return this.isMarketingRoute(fromUrl) && this.isMarketingRoute(toUrl) && fromPath !== toPath;
+  }
+
   /** Transições dramáticas entre shells públicos (início ↔ login ↔ registo, etc.). */
   bindPublicRouteTransitions(router: Router): void {
     if (!isPlatformBrowser(this.platformId) || this.routerBound) return;
@@ -81,7 +100,6 @@ export class PublicPageMotionService {
     this.previousUrl = router.url;
 
     if (this.prefersReducedMotion()) return;
-    this.ensureGsap();
 
     router.events
       .pipe(filter((e) => e instanceof NavigationStart || e instanceof NavigationEnd))
@@ -89,9 +107,12 @@ export class PublicPageMotionService {
         if (event instanceof NavigationStart) {
           const fromShell = this.routeShellKey(this.previousUrl);
           const toShell = this.routeShellKey(event.url);
+          if (this.isMarketingChildRouteChange(this.previousUrl, event.url)) {
+            return;
+          }
           if (this.shouldAnimateShellTransition(fromShell, toShell)) {
             const leaving = this.findActivePublicHost();
-            if (leaving) this.animateMarketingPageExit(leaving);
+            if (leaving) void this.animateMarketingPageExit(leaving);
           } else {
             const leaving = this.findActivePublicHost();
             if (leaving) this.preparePublicHostEnter(leaving);
@@ -100,11 +121,12 @@ export class PublicPageMotionService {
         }
         const fromShell = this.routeShellKey(this.previousUrl);
         const toShell = this.routeShellKey(event.url);
+        if (this.isMarketingChildRouteChange(this.previousUrl, event.url)) {
+          this.previousUrl = event.url;
+          return;
+        }
         if (this.shouldAnimateShellTransition(fromShell, toShell)) {
-          requestAnimationFrame(() => {
-            const entering = this.findActivePublicHost();
-            if (entering) this.animateMarketingPageEnter(entering);
-          });
+          this.scheduleMarketingPageEnter(() => this.findActivePublicHost());
         } else {
           requestAnimationFrame(() => {
             const entering = this.findActivePublicHost();
@@ -127,6 +149,11 @@ export class PublicPageMotionService {
 
   /** Host activo dentro de um router-outlet (ex.: landing vs contacto no mesmo layout). */
   findOutletPageHost(containerEl: HTMLElement): HTMLElement | null {
+    const routed = containerEl.querySelector(
+      'app-landing-page, app-contact-page, app-legal-document-page',
+    ) as HTMLElement | null;
+    if (routed) return routed;
+
     const outlet = containerEl.querySelector('router-outlet');
     if (!outlet) return null;
     let sibling = outlet.nextElementSibling;
@@ -139,12 +166,23 @@ export class PublicPageMotionService {
     return null;
   }
 
+  /** Duplo rAF: garante que o host do outlet já está no DOM (especialmente em mobile). */
+  private scheduleMarketingPageEnter(resolveHost: () => HTMLElement | null): void {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const host = resolveHost();
+        if (host) void this.animateMarketingPageEnter(host);
+      });
+    });
+  }
+
   bindOutletRouteTransitions(router: Router, containerEl: HTMLElement): void {
     if (!isPlatformBrowser(this.platformId) || this.outletRouterBound) return;
     this.outletRouterBound = true;
 
     if (this.prefersReducedMotion()) return;
-    this.ensureGsap();
+
+    void this.loadGsap();
 
     let previousPath = this.marketingRoutePath(router.url);
 
@@ -159,7 +197,7 @@ export class PublicPageMotionService {
             previousPath !== nextPath
           ) {
             const host = this.findOutletPageHost(containerEl);
-            if (host) this.animateMarketingPageExit(host);
+            if (host) void this.animateMarketingPageExit(host);
           }
           return;
         }
@@ -169,10 +207,7 @@ export class PublicPageMotionService {
           this.isMarketingRoute(event.url) &&
           previousPath !== nextPath
         ) {
-          requestAnimationFrame(() => {
-            const next = this.findOutletPageHost(containerEl);
-            if (next) this.animateMarketingPageEnter(next);
-          });
+          this.scheduleMarketingPageEnter(() => this.findOutletPageHost(containerEl));
         }
         previousPath = nextPath;
       });
@@ -180,7 +215,7 @@ export class PublicPageMotionService {
 
   /** Login, registo e app: sem animação GSAP (evita página presa). */
   resetHostVisible(host: HTMLElement): void {
-    gsap.killTweensOf(host);
+    this.runtime?.gsap.killTweensOf(host);
     host.style.opacity = '1';
     host.style.transform = '';
     host.style.filter = '';
@@ -190,7 +225,7 @@ export class PublicPageMotionService {
    * Prepara o host ao entrar: login usa fade-in CSS (não forçar opacity inline).
    */
   preparePublicHostEnter(host: HTMLElement): void {
-    gsap.killTweensOf(host);
+    this.runtime?.gsap.killTweensOf(host);
     host.style.transform = '';
     host.style.filter = '';
     if (host.tagName === 'APP-LOGIN') {
@@ -201,11 +236,13 @@ export class PublicPageMotionService {
   }
 
   /** Transição suave só entre páginas do site público (landing ↔ contacto). */
-  animateMarketingPageEnter(host: HTMLElement): void {
-    if (!this.ensureGsap()) {
+  async animateMarketingPageEnter(host: HTMLElement): Promise<void> {
+    const rt = await this.loadGsap();
+    if (!rt) {
       this.resetHostVisible(host);
       return;
     }
+    const { gsap } = rt;
     gsap.killTweensOf(host);
     gsap.fromTo(
       host,
@@ -220,8 +257,10 @@ export class PublicPageMotionService {
     );
   }
 
-  animateMarketingPageExit(host: HTMLElement): void {
-    if (!this.ensureGsap()) return;
+  async animateMarketingPageExit(host: HTMLElement): Promise<void> {
+    const rt = await this.loadGsap();
+    if (!rt) return;
+    const { gsap } = rt;
     gsap.killTweensOf(host);
     gsap.to(host, {
       opacity: 0,
@@ -232,15 +271,17 @@ export class PublicPageMotionService {
   }
 
   /** Hero + secções com reveal ao scroll na landing. Devolve função de limpeza. */
-  initLandingMotion(root: HTMLElement): () => void {
-    if (!this.ensureGsap()) {
+  async initLandingMotion(root: HTMLElement): Promise<() => void> {
+    const rt = await this.loadGsap();
+    if (!rt) {
       root.querySelectorAll('[data-landing-reveal-child]').forEach((el) => {
         (el as HTMLElement).classList.add('landing-reveal--visible');
       });
       return () => undefined;
     }
 
-    const triggers: ScrollTrigger[] = [];
+    const { gsap, ScrollTrigger } = rt;
+    const triggers: InstanceType<typeof ScrollTrigger>[] = [];
     const tweens: gsap.core.Tween[] = [];
 
     const hero = root.querySelector('[data-landing-hero]');
@@ -263,7 +304,7 @@ export class PublicPageMotionService {
         duration: 1.15,
         stagger: 0.14,
       });
-      tweens.push(...heroTl.getChildren() as gsap.core.Tween[]);
+      tweens.push(...(heroTl.getChildren() as gsap.core.Tween[]));
 
       const mock = hero.querySelector('.landing-hero__mock, .lp-dashboard-mock');
       if (mock) {
@@ -306,6 +347,13 @@ export class PublicPageMotionService {
             stagger: 0.11,
             ease: 'power4.out',
             overwrite: 'auto',
+            onComplete: () => {
+              children.forEach((child) => {
+                if (child.querySelector('.hero-slider')) {
+                  gsap.set(child, { clearProps: 'opacity,transform' });
+                }
+              });
+            },
           });
         },
       });
@@ -336,9 +384,14 @@ export class PublicPageMotionService {
       triggers.push(st);
     });
 
+    const refreshScroll = () => ScrollTrigger.refresh();
     ScrollTrigger.refresh();
+    window.addEventListener('resize', refreshScroll);
+    window.addEventListener('orientationchange', refreshScroll);
 
     return () => {
+      window.removeEventListener('resize', refreshScroll);
+      window.removeEventListener('orientationchange', refreshScroll);
       triggers.forEach((t) => t.kill());
       tweens.forEach((t) => t.kill());
       gsap.killTweensOf(root.querySelectorAll('[data-landing-reveal-child], .lp-dashboard-mock, .lp-feature-card'));
