@@ -10,7 +10,7 @@
         <h1 class="contact-hero__title">Contacto</h1>
         <p class="contact-hero__lead">
           Página de contacto da empresa Flow Cakes. Para sugestões de melhoria do produto, use o formulário na página inicial.
-          Aqui pode enviar reclamações ou pedidos de apoio — o envio abre a sua app de e-mail, sem armazenamento no servidor.
+          Aqui pode enviar reclamações ou pedidos de apoio — a mensagem é enviada directamente pela aplicação.
         </p>
       </div>
 
@@ -107,22 +107,27 @@
             }
 
             <div class="contact-actions">
-              <button type="submit" class="contact-btn contact-btn--primary">Continuar para enviar</button>
+              <button
+                type="submit"
+                class="contact-btn contact-btn--primary"
+                [disabled]="submitting"
+                [class.contact-btn--loading]="submitting"
+              >
+                @if (submitting) {
+                  <span>A enviar…</span>
+                } @else {
+                  <span>Enviar mensagem</span>
+                }
+              </button>
             </div>
           </form>
         </div>
       } @else {
         <div class="contact-card contact-card--success">
           <div class="contact-success-icon" aria-hidden="true">✓</div>
-          <h2 class="contact-card__title">Pronto para enviar</h2>
-          <p class="contact-muted">
-            Nada foi gravado no Flow Cakes. Abra a app de e-mail do seu telemóvel para enviar à empresa ({{ companyEmail }}).
-          </p>
-          <div class="contact-launch">
-            <a class="contact-btn contact-btn--primary" [href]="mailtoHref">Abrir e-mail</a>
-          </div>
+          <h2 class="contact-card__title">Mensagem enviada</h2>
+          <p class="contact-muted">{{ successMessage }}</p>
           <div class="contact-secondary-actions">
-            <button type="button" class="contact-link-btn" (click)="copyBodyToClipboard()">Copiar texto</button>
             <button type="button" class="contact-link-btn" (click)="resetForm()">Nova mensagem</button>
             <a routerLink="/" class="contact-link-btn">Início</a>
           </div>

@@ -1,9 +1,12 @@
 package com.chefcontrol.controller;
 
+import com.chefcontrol.dto.ContactMessageDto;
+import com.chefcontrol.dto.ContactMessageRequest;
 import com.chefcontrol.dto.LicenseInfoPublicDto;
 import com.chefcontrol.dto.LandingSuggestionDto;
 import com.chefcontrol.dto.LandingSuggestionRequest;
 import com.chefcontrol.dto.StoreSettingsDto;
+import com.chefcontrol.service.ContactMessageService;
 import com.chefcontrol.service.LandingSuggestionService;
 import com.chefcontrol.service.LicenseService;
 import com.chefcontrol.service.StoreSettingsService;
@@ -25,15 +28,18 @@ public class PublicController {
     private final LicenseService licenseService;
     private final StoreSettingsService storeSettingsService;
     private final LandingSuggestionService landingSuggestionService;
+    private final ContactMessageService contactMessageService;
 
     public PublicController(
         LicenseService licenseService,
         StoreSettingsService storeSettingsService,
-        LandingSuggestionService landingSuggestionService
+        LandingSuggestionService landingSuggestionService,
+        ContactMessageService contactMessageService
     ) {
         this.licenseService = licenseService;
         this.storeSettingsService = storeSettingsService;
         this.landingSuggestionService = landingSuggestionService;
+        this.contactMessageService = contactMessageService;
     }
 
     /** Confirma que este processo é o backend ChefControl (útil para depurar 404 no login). */
@@ -75,6 +81,19 @@ public class PublicController {
         HttpServletRequest request
     ) {
         LandingSuggestionDto saved = landingSuggestionService.create(body, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    /**
+     * Reclamações e pedidos de contacto da página pública /contacto.
+     * O destino interno (e-mail da equipa) é tratado no servidor — não exposto ao utilizador.
+     */
+    @PostMapping("/contact-messages")
+    public ResponseEntity<ContactMessageDto> createContactMessage(
+        @Valid @RequestBody ContactMessageRequest body,
+        HttpServletRequest request
+    ) {
+        ContactMessageDto saved = contactMessageService.create(body, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 }

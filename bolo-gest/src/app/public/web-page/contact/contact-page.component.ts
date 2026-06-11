@@ -1,11 +1,14 @@
 ﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
+import { firstValueFrom } from 'rxjs';
+import { API_URL } from '@app/core/config/api.config';
 import { PublicSiteNavComponent } from '../public-site-nav/public-site-nav.component';
 
-type ContactStep = 'form' | 'actions';
+type ContactStep = 'form' | 'success';
 
 function requireEmailOrPhone(control: AbstractControl): ValidationErrors | null {
   const email = (control.get('email')?.value ?? '').toString().trim();
@@ -13,7 +16,7 @@ function requireEmailOrPhone(control: AbstractControl): ValidationErrors | null 
   return email || phone ? null : { contactRequired: true };
 }
 
-/** Página pública de contacto da empresa; envio via e-mail (sem backend). */
+/** Página pública de contacto da empresa; envio directo pela aplicação. */
 @Component({
   selector: 'app-contact-page',
   standalone: true,
@@ -24,6 +27,7 @@ function requireEmailOrPhone(control: AbstractControl): ValidationErrors | null 
 export class ContactPageComponent implements OnInit {
   private fb = inject(FormBuilder);
   private title = inject(Title);
+  private http = inject(HttpClient);
 
   readonly companyEmail = 'dap@gmail.com';
   readonly companyPhoneDisplay = '871 964 887';
@@ -33,7 +37,8 @@ export class ContactPageComponent implements OnInit {
 
   step: ContactStep = 'form';
   formError: string | null = null;
-  mailtoHref = '';
+  submitting = false;
+  successMessage = '';
 
   readonly form = this.fb.nonNullable.group(
     {
@@ -49,7 +54,7 @@ export class ContactPageComponent implements OnInit {
     this.title.setTitle('Contacto — Flow Cakes');
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     this.formError = null;
 
     if (this.form.hasError('contactRequired')) {
@@ -65,51 +70,39 @@ export class ContactPageComponent implements OnInit {
     }
 
     const v = this.form.getRawValue();
-    const subject = `[Flow Cakes] Reclamação — ${v.fullName}`;
+    const pageUrl = typeof window !== 'undefined' ? window.location.href : null;
 
-    const bodyLines = [
-      'Reclamação / contacto',
-      `Nome: ${v.fullName}`,
-      `E-mail: ${v.email.trim() || '—'}`,
-      `Telefone (contacto): ${v.phone.trim() || '—'}`,
-      '',
-      'Mensagem:',
-      v.message,
-      '',
-      '— Enviado a partir do formulário de contacto do site Flow Cakes.',
-    ];
-    const body = bodyLines.join('\n');
-
-    this.mailtoHref = `mailto:${this.companyEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    this.step = 'actions';
+    try {
+      this.submitting = true;
+      const response = await firstValueFrom(
+        this.http.post<{ message?: string }>(`${API_URL}/public/contact-messages`, {
+          fullName: v.fullName.trim(),
+          email: v.email.trim(),
+          phone: v.phone.trim(),
+          message: v.message.trim(),
+          pageUrl,
+        }),
+      );
+      this.successMessage =
+        response?.message?.trim() ||
+        'A sua reclamação ou pedido de contacto foi enviado com sucesso. A nossa equipa responderá em breve.';
+      this.step = 'success';
+    } catch {
+      this.formError = 'Não foi possível enviar a mensagem agora. Tente novamente em alguns instantes.';
+    } finally {
+      this.submitting = false;
+    }
   }
 
   resetForm(): void {
     this.step = 'form';
     this.formError = null;
-    this.mailtoHref = '';
+    this.successMessage = '';
     this.form.reset({
       fullName: '',
       email: '',
       phone: '',
       message: '',
     });
-  }
-
-  async copyBodyToClipboard(): Promise<void> {
-    const v = this.form.getRawValue();
-    const text = [
-      'Reclamação / contacto',
-      `Nome: ${v.fullName}`,
-      `E-mail: ${v.email}`,
-      `Telefone: ${v.phone}`,
-      '',
-      v.message,
-    ].join('\n');
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch {
-      /* ignorar — alguns browsers bloqueiam clipboard sem HTTPS */
-    }
   }
 }
