@@ -14,8 +14,12 @@
             </span>
           </div>
         </a>
-        <button type="button" class="sidebar-toggle" (click)="toggleSidebar()" [attr.aria-label]="sidebarCollapsed() ? 'Expandir menu' : 'Recolher menu'">
-          @if (sidebarCollapsed()) {
+        <button
+          type="button"
+          class="sidebar-toggle"
+          (click)="onSidebarToggleClick()"
+          [attr.aria-label]="sidebarOpen() ? 'Fechar menu' : (sidebarCollapsed() ? 'Expandir menu' : 'Recolher menu')">
+          @if (sidebarCollapsed() && !sidebarOpen()) {
             <app-icon name="chevron-right" />
           } @else {
             <app-icon name="chevron-left" />

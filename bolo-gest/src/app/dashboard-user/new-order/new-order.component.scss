@@ -435,6 +435,42 @@ a.btn-back,
     width: 100%;
     justify-content: center;
   }
+
+  @media (max-width: 960px) {
+    display: none;
+  }
+}
+
+.form-actions--bottom {
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  @media (max-width: 960px) {
+    display: flex;
+  }
+}
+
+.form-error--bottom {
+  margin: 0.5rem 0 0;
+  font-size: 0.82rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius);
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+
+  @media (min-width: 961px) {
+    display: none;
+  }
 }
 
 .label-optional {

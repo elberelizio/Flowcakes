@@ -110,6 +110,9 @@
               <th>Tipo pagamento</th>
               <th>Valor adiantado</th>
               <th>Valor em falta</th>
+              @if (!isShowingClosed) {
+                <th>Despesas extras</th>
+              }
               @if (isShowingClosed) {
                 <th>Data cancelamento</th>
                 <th>Motivo</th>
@@ -145,6 +148,15 @@
                 <td data-label="Valor em falta">
                   <span [class.has-debt]="getSaldo(o) > 0">{{ getSaldo(o) | number:'1.0-0' }} MZN</span>
                 </td>
+                @if (!isShowingClosed) {
+                  <td data-label="Despesas extras">
+                    @if (getDespesasExtrasTotal(o) > 0) {
+                      {{ getDespesasExtrasTotal(o) | number:'1.0-0' }} MZN
+                    } @else {
+                      —
+                    }
+                  </td>
+                }
                 @if (isShowingClosed) {
                   <td data-label="Data cancelamento">{{ formatClosedDate(o) }}</td>
                   <td data-label="Motivo"><span class="closure-reason-pill">{{ getClosureReasonShort(o) }}</span></td>

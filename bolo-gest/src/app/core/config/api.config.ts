@@ -39,7 +39,11 @@ function getApiBaseUrl(): string {
     return deployApi.replace(/\/+$/, '');
   }
 
-  // Produção sem backend configurado: evita /api no Vercel (devolve HTML → 405 no POST).
+  // Fallback: domínio Vercel usa proxy /api definido em vercel.json
+  if (hostname.endsWith('.vercel.app')) {
+    return `${origin}/api`;
+  }
+
   return `${protocol}//${hostname}:8081/api`;
 }
 

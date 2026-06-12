@@ -23,8 +23,9 @@ function cleanEnv(value) {
     .replace(/\/+$/, '');
 }
 
-const backendOrigin = cleanEnv(process.env.CHEFCONTROL_API_BACKEND_ORIGIN);
-const apiBaseUrl = cleanEnv(process.env.CHEFCONTROL_API_BASE_URL || (backendOrigin ? '/api' : ''));
+const DEFAULT_BACKEND_ORIGIN = 'https://chef-control-api-production.up.railway.app';
+const backendOrigin = cleanEnv(process.env.CHEFCONTROL_API_BACKEND_ORIGIN || DEFAULT_BACKEND_ORIGIN);
+const apiBaseUrl = cleanEnv(process.env.CHEFCONTROL_API_BASE_URL || '/api');
 
 const generatedTs = `/** Gerado por scripts/generate-deploy-config.mjs — não editar à mão. */
 export const DEPLOY_API_BASE_URL = ${JSON.stringify(apiBaseUrl)};

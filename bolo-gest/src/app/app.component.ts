@@ -211,6 +211,14 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     this.sidebarCollapsed.update(v => !v);
   }
 
+  onSidebarToggleClick(): void {
+    if (typeof window !== 'undefined' && window.innerWidth <= 900 && this.sidebarOpen()) {
+      this.closeSidebar();
+      return;
+    }
+    this.toggleSidebar();
+  }
+
   toggleOrders(): void {
     this.ordersExpanded.update(v => !v);
   }

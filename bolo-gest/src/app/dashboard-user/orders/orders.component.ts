@@ -104,6 +104,11 @@ export class OrdersComponent implements OnInit {
     return orderActiveDebt(order);
   }
 
+  getDespesasExtrasTotal(order: Order): number {
+    if (!order.variableExpenses?.length) return 0;
+    return order.variableExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+  }
+
   getPaymentLabel(status: string): string {
     switch (status) {
       case 'pendente': return 'Pendente';

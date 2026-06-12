@@ -114,7 +114,7 @@
             }
 
             <div class="form-actions form-actions--aside">
-              <button type="submit" class="btn btn-primary" [disabled]="form.invalid || submitting">
+              <button type="submit" class="btn btn-primary" [disabled]="submitting">
                 {{ submitting ? 'A guardar...' : 'Criar encomenda' }}
               </button>
               <a routerLink="/dashboard" class="btn btn-secondary">Cancelar</a>
@@ -125,9 +125,12 @@
             <section class="form-section form-section--compact">
               <h3 class="section-title">Cliente</h3>
               <div class="section-grid section-grid--3">
-                <div class="field-block">
+                <div class="field-block" id="field-clientName">
                   <label [attr.for]="category + '-clientName'">Nome</label>
                   <input [id]="category + '-clientName'" formControlName="clientName" placeholder="Nome completo" />
+                  @if (showFieldError('clientName')) {
+                    <span class="field-hint field-hint--error">Indique o nome do cliente.</span>
+                  }
                 </div>
                 <div class="field-block">
                   <label [attr.for]="category + '-clientContact'">Contacto</label>
@@ -154,7 +157,7 @@
             <section class="form-section form-section--compact">
               <h3 class="section-title">Produto</h3>
               <div class="section-grid section-grid--product">
-                <div class="field-block">
+                <div class="field-block" id="field-subcategory">
                   <label [attr.for]="category + '-subcategory'">Tipo</label>
                   <select [id]="category + '-subcategory'" formControlName="subcategory">
                     <option value="">Selecione...</option>
@@ -168,18 +171,24 @@
                       }
                     }
                   </select>
+                  @if (showFieldError('subcategory')) {
+                    <span class="field-hint field-hint--error">Seleccione o tipo de produto.</span>
+                  }
                 </div>
-                <div class="field-block field-block-wide">
+                <div class="field-block field-block-wide" id="field-productName">
                   <label [attr.for]="category + '-productName'">Descrição</label>
                   <input
                     [id]="category + '-productName'"
                     formControlName="productName"
                     [placeholder]="isDoces ? 'Ex: de chocolate' : 'Ex: de carne e frango'" />
                   <span class="field-hint field-hint--inline">Não repita o tipo na descrição.</span>
+                  @if (showFieldError('productName')) {
+                    <span class="field-hint field-hint--error">Indique a descrição do produto.</span>
+                  }
                 </div>
 
                 @if (isDoces) {
-                  <div class="field-block">
+                  <div class="field-block" id="field-size-type">
                     <label>Tamanho</label>
                     <div class="option-group option-group-small">
                       <button type="button" class="option-btn" [class.active]="sizeType === 'numero'" (click)="setSizeType('numero')">Número</button>
@@ -194,6 +203,9 @@
                           <option [value]="s">{{ s }}</option>
                         }
                       </select>
+                    }
+                    @if (sizeTypeError) {
+                      <span class="field-hint field-hint--error">Seleccione Número ou Escala e preencha o tamanho.</span>
                     }
                   </div>
                 } @else {
@@ -215,9 +227,12 @@
             <section class="form-section form-section--compact">
               <h3 class="section-title">Valores & entrega</h3>
               <div class="section-grid section-grid--values">
-                <div class="field-block">
+                <div class="field-block" id="field-valueCharged">
                   <label [attr.for]="category + '-valueCharged'">Valor cobrado (MZN)</label>
                   <input [id]="category + '-valueCharged'" type="number" formControlName="valueCharged" min="1" step="1" placeholder="Ex: 5000" />
+                  @if (showFieldError('valueCharged')) {
+                    <span class="field-hint field-hint--error">Indique o valor cobrado (mínimo 1 MZN).</span>
+                  }
                 </div>
                 <div class="field-block">
                   <label [attr.for]="category + '-discount'">Desconto <span class="label-optional">(opc.)</span></label>
@@ -230,9 +245,12 @@
                     <span class="field-hint field-hint--inline">{{ paymentPercentDisplay }}% do cobrado</span>
                   }
                 </div>
-                <div class="field-block">
+                <div class="field-block" id="field-deliveryDate">
                   <label [attr.for]="category + '-deliveryDate'">Data entrega</label>
                   <input [id]="category + '-deliveryDate'" type="date" formControlName="deliveryDate" [min]="today" />
+                  @if (showFieldError('deliveryDate')) {
+                    <span class="field-hint field-hint--error">Seleccione a data de entrega.</span>
+                  }
                 </div>
                 <div class="field-block">
                   <label [attr.for]="category + '-deliveryTime'">Hora</label>
@@ -309,6 +327,17 @@
                 </div>
               }
             </section>
+
+            @if (submitError) {
+              <p class="form-error form-error--bottom">{{ submitError }}</p>
+            }
+
+            <div class="form-actions form-actions--bottom">
+              <button type="submit" class="btn btn-primary" [disabled]="submitting">
+                {{ submitting ? 'A guardar...' : 'Criar encomenda' }}
+              </button>
+              <a routerLink="/dashboard" class="btn btn-secondary">Cancelar</a>
+            </div>
           </div>
         </div>
       </form>

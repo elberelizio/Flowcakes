@@ -32,6 +32,8 @@ export class NewOrderComponent implements OnInit {
   expenseMode: 'detalhado' | 'simples' | null = 'simples';
   submitError = '';
   submitting = false;
+  submitAttempted = false;
+  sizeTypeError = false;
   private notification = inject(NotificationService);
 
   get today(): string {
@@ -89,7 +91,13 @@ export class NewOrderComponent implements OnInit {
 
   setSizeType(type: 'nome' | 'numero'): void {
     this.sizeType = type;
+    this.sizeTypeError = false;
     this.form.patchValue({ size: '', sizeNumberCustom: null });
+  }
+
+  showFieldError(controlName: string): boolean {
+    const control = this.form.get(controlName);
+    return !!(control?.invalid && (control.touched || this.submitAttempted));
   }
 
   setHasDelivery(value: boolean): void {
@@ -186,6 +194,9 @@ export class NewOrderComponent implements OnInit {
   selectCategory(cat: OrderCategory): void {
     this.category = cat;
     this.sizeType = null;
+    this.sizeTypeError = false;
+    this.submitAttempted = false;
+    this.submitError = '';
     this.expenseMode = 'simples';
     this.form.reset({
       clientName: '',
@@ -220,6 +231,9 @@ export class NewOrderComponent implements OnInit {
   backToCategory(): void {
     this.step = 1;
     this.category = null;
+    this.submitAttempted = false;
+    this.sizeTypeError = false;
+    this.submitError = '';
   }
 
   addIngredient(): void {
@@ -299,14 +313,60 @@ export class NewOrderComponent implements OnInit {
     return productName.replace(pattern, '').trim() || productName;
   }
 
-  async submit(): Promise<void> {
-    this.submitError = '';
-    if (!this.category) return;
-    if (this.category === 'doces' && this.sizeType === null) {
-      this.submitError = 'Selecione o tipo de tamanho (Número ou Escala).';
-      return;
+  private scrollToField(targetId: string): void {
+    const el = document.getElementById(targetId);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const focusable = el.querySelector<HTMLElement>('input, select, textarea, button');
+    focusable?.focus({ preventScroll: true });
+  }
+
+  private validateBeforeSubmit(): boolean {
+    this.submitAttempted = true;
+    this.sizeTypeError = false;
+    this.form.markAllAsTouched();
+
+    const fieldChecks: { id: string; label: string; invalid: boolean }[] = [
+      { id: 'field-clientName', label: 'Nome do cliente', invalid: !!this.form.get('clientName')?.invalid },
+      { id: 'field-subcategory', label: 'Tipo de produto', invalid: !!this.form.get('subcategory')?.invalid },
+      { id: 'field-productName', label: 'Descrição do produto', invalid: !!this.form.get('productName')?.invalid },
+      { id: 'field-valueCharged', label: 'Valor cobrado', invalid: !!this.form.get('valueCharged')?.invalid },
+      { id: 'field-deliveryDate', label: 'Data de entrega', invalid: !!this.form.get('deliveryDate')?.invalid },
+    ];
+
+    if (this.category === 'doces') {
+      const sizeMissing =
+        this.sizeType === null ||
+        (this.sizeType === 'numero' && !this.form.get('sizeNumberCustom')?.value) ||
+        (this.sizeType === 'nome' && !this.form.get('size')?.value);
+      if (sizeMissing) {
+        this.sizeTypeError = true;
+        fieldChecks.unshift({ id: 'field-size-type', label: 'Tamanho', invalid: true });
+      }
     }
-    if (this.form.invalid) return;
+
+    const firstInvalid = fieldChecks.find((f) => f.invalid);
+    if (firstInvalid) {
+      this.submitError = `Preencha o campo obrigatório: ${firstInvalid.label}.`;
+      this.notification.showError(this.submitError);
+      this.scrollToField(firstInvalid.id);
+      return false;
+    }
+
+    if (this.form.get('clientContact')?.invalid) {
+      this.submitError = 'O contacto deve ter apenas números, com no máximo 9 dígitos.';
+      this.notification.showError(this.submitError);
+      this.scrollToField('field-clientName');
+      return false;
+    }
+
+    this.submitError = '';
+    return true;
+  }
+
+  async submit(): Promise<void> {
+    if (!this.category) return;
+    if (!this.validateBeforeSubmit()) return;
     this.submitting = true;
 
     const raw = this.form.getRawValue();
