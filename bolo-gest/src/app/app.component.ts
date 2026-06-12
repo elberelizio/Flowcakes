@@ -315,7 +315,9 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     if (url.startsWith('/recover-password')) return true;
     if (url === '/license-payment') {
       if (!this.auth.isLoggedIn()) return true;
-      return !this.auth.isAdmin() && !this.auth.isAccountFinalized();
+      // Utilizadores com licença activa também acedem aqui para renovar (sem shell bloqueado).
+      if (this.auth.isAccountFinalized()) return true;
+      return !this.auth.isAdmin();
     }
     return false;
   }

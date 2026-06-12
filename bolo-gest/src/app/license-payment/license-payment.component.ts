@@ -56,6 +56,7 @@ export class LicensePaymentComponent implements OnInit, OnDestroy, AfterViewInit
   private notification = inject(NotificationService);
   private cdr = inject(ChangeDetectorRef);
   private accessPollTimer: ReturnType<typeof setInterval> | null = null;
+  private paymentPollTimer: ReturnType<typeof setInterval> | null = null;
   private readonly pollIntervalMs = 8000;
   private navigatingAfterApproval = false;
   private pendingInfoShown = false;
@@ -126,7 +127,11 @@ export class LicensePaymentComponent implements OnInit, OnDestroy, AfterViewInit
     }
     void this.refreshPayMode();
     if (this.sessionActive()) {
-      void this.loadPendingStatus();
+      void this.loadPendingStatus().then(() => {
+        if (this.hasPendingPayment() && !this.accessRestricted()) {
+          this.startPaymentStatusPoll();
+        }
+      });
     }
     if (this.accessRestricted()) {
       this.startAccessPoll();
@@ -135,6 +140,7 @@ export class LicensePaymentComponent implements OnInit, OnDestroy, AfterViewInit
 
   ngOnDestroy(): void {
     this.stopAccessPoll();
+    this.stopPaymentStatusPoll();
   }
 
   accessRestricted(): boolean {
@@ -192,6 +198,55 @@ export class LicensePaymentComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
+  private startPaymentStatusPoll(): void {
+    if (this.paymentPollTimer) return;
+    void this.pollPaymentStatus();
+    this.paymentPollTimer = setInterval(() => void this.pollPaymentStatus(), this.pollIntervalMs);
+  }
+
+  private stopPaymentStatusPoll(): void {
+    if (this.paymentPollTimer) {
+      clearInterval(this.paymentPollTimer);
+      this.paymentPollTimer = null;
+    }
+  }
+
+  private async pollPaymentStatus(): Promise<void> {
+    if (this.navigatingAfterApproval) return;
+    const st = await this.auth.checkMpesaPaymentStatus();
+    if (st.hasRejected) {
+      this.hasPendingPayment.set(false);
+      this.hasRejectedPayment.set(true);
+      const reason =
+        st.rejectionReason?.trim() ||
+        this.auth.paymentRejectionReason() ||
+        '';
+      this.rejectionReason.set(reason);
+      this.stopPaymentStatusPoll();
+      this.cdr.markForCheck();
+      return;
+    }
+    if (st.completed === true || (st.hasPending === false && this.hasPendingPayment())) {
+      await this.onRenewalPaymentCompleted();
+      return;
+    }
+    this.hasPendingPayment.set(st.hasPending === true);
+    this.cdr.markForCheck();
+  }
+
+  private async onRenewalPaymentCompleted(): Promise<void> {
+    if (this.navigatingAfterApproval) return;
+    this.navigatingAfterApproval = true;
+    this.stopPaymentStatusPoll();
+    this.hasPendingPayment.set(false);
+    this.notification.showSuccess(LicensePaymentStrings.toastRenewalSuccess, 6000);
+    await this.auth.refreshProfile();
+    this.cdr.markForCheck();
+    setTimeout(() => {
+      void this.router.navigate(['/my-license'], { replaceUrl: true });
+    }, 1200);
+  }
+
   private async pollLicenseAccess(): Promise<void> {
     if (this.navigatingAfterApproval) return;
     const st = await this.auth.getLicenseStatus();
@@ -210,7 +265,8 @@ export class LicensePaymentComponent implements OnInit, OnDestroy, AfterViewInit
     await this.auth.refreshProfile();
     this.cdr.markForCheck();
     setTimeout(() => {
-      void this.router.navigate(['/dashboard'], { replaceUrl: true });
+      const dest = this.inAppShell() ? '/my-license' : '/dashboard';
+      void this.router.navigate([dest], { replaceUrl: true });
     }, 1200);
   }
 
@@ -342,8 +398,8 @@ export class LicensePaymentComponent implements OnInit, OnDestroy, AfterViewInit
     this.payModeLoading.set(true);
     try {
       const r = await this.auth.checkMpesaAvailable();
-      this.paySimulated = r.simulated === true || r.manualTransfer === true;
-      this.manualTransfer.set(true);
+      this.paySimulated = r.simulated === true;
+      this.manualTransfer.set(r.manualTransfer === true);
       if (r.mpesaDestinationPhone) this.mpesaDestination.set(r.mpesaDestinationPhone.replace(/\D/g, ''));
       if (r.emolaDestinationPhone) this.emolaDestination.set(r.emolaDestinationPhone.replace(/\D/g, ''));
       if (r.supportWhatsapp) this.supportWhatsapp.set(r.supportWhatsapp.replace(/\D/g, ''));
@@ -435,9 +491,14 @@ export class LicensePaymentComponent implements OnInit, OnDestroy, AfterViewInit
       this.rejectionReason.set('');
       this.showPendingPopup.set(false);
       this.payMessage = '';
-      this.notification.showSuccess(LicensePaymentStrings.toastPendingRegistered, 6000);
+      const pendingMsg = res.simulated
+        ? LicensePaymentStrings.toastPendingRegistered
+        : LicensePaymentStrings.toastConfirmOnPhone;
+      this.notification.showSuccess(pendingMsg, 6000);
       if (this.accessRestricted()) {
         this.startAccessPoll();
+      } else {
+        this.startPaymentStatusPoll();
       }
     } else {
       const msg = res.message?.trim() || LicensePaymentStrings.toastSubmitError;

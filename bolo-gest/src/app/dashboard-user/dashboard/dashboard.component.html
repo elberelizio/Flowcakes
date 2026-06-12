@@ -100,6 +100,7 @@
             <p class="login-summary-license__text">{{ loginSummaryLicenseMessage() }}</p>
             <a
               routerLink="/license-payment"
+              [queryParams]="{ renewed: '1' }"
               class="btn login-summary-license__cta"
               (click)="dismissLoginSummary()"
             >
@@ -173,7 +174,7 @@
 
         <div class="login-summary-popup__actions">
           @if (loginSummaryLicenseWarning()) {
-            <a routerLink="/license-payment" class="btn btn-primary login-summary-popup__btn" (click)="dismissLoginSummary()">Renovar licença</a>
+            <a routerLink="/license-payment" [queryParams]="{ renewed: '1' }" class="btn btn-primary login-summary-popup__btn" (click)="dismissLoginSummary()">Renovar licença</a>
           }
           @if (upcomingRemindersWithDays().length > 0) {
             <a routerLink="/reminders" class="btn btn-secondary login-summary-popup__btn" (click)="dismissLoginSummary()">Ver lembretes</a>

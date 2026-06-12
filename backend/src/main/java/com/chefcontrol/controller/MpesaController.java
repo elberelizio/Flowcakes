@@ -2,6 +2,8 @@ package com.chefcontrol.controller;
 
 import com.chefcontrol.config.CurrentUserId;
 import com.chefcontrol.config.PaymentSimulationProperties;
+import com.chefcontrol.e2payments.E2PaymentsException;
+import com.chefcontrol.e2payments.E2PaymentsService;
 import com.chefcontrol.entity.MpesaPaymentEntity;
 import com.chefcontrol.entity.UserEntity;
 import com.chefcontrol.mpesa.MpesaConfig;
@@ -9,7 +11,6 @@ import com.chefcontrol.mpesa.MpesaException;
 import com.chefcontrol.mpesa.MpesaService;
 import com.chefcontrol.repository.MpesaPaymentRepository;
 import com.chefcontrol.repository.UserRepository;
-import com.chefcontrol.service.AuthService;
 import com.chefcontrol.service.LicenseService;
 import com.chefcontrol.service.SystemNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -33,9 +35,11 @@ import java.util.concurrent.ThreadLocalRandom;
 public class MpesaController {
 
     private static final Logger log = LoggerFactory.getLogger(MpesaController.class);
+    private static final String E2_PREFIX = "E2-";
 
     private final MpesaService mpesaService;
     private final MpesaConfig mpesaConfig;
+    private final E2PaymentsService e2PaymentsService;
     private final MpesaPaymentRepository paymentRepo;
     private final LicenseService licenseService;
     private final UserRepository userRepository;
@@ -43,12 +47,14 @@ public class MpesaController {
     private final SystemNotificationService systemNotificationService;
 
     public MpesaController(MpesaService mpesaService, MpesaConfig mpesaConfig,
+                           E2PaymentsService e2PaymentsService,
                            MpesaPaymentRepository paymentRepo, LicenseService licenseService,
                            UserRepository userRepository,
                            PaymentSimulationProperties paymentSimulation,
                            SystemNotificationService systemNotificationService) {
         this.mpesaService = mpesaService;
         this.mpesaConfig = mpesaConfig;
+        this.e2PaymentsService = e2PaymentsService;
         this.paymentRepo = paymentRepo;
         this.licenseService = licenseService;
         this.userRepository = userRepository;
@@ -56,11 +62,28 @@ public class MpesaController {
         this.systemNotificationService = systemNotificationService;
     }
 
-    /** Verifica se a integração M-Pesa está disponível. */
+    /** Verifica se a integração de pagamento está disponível. */
     @GetMapping("/available")
     public ResponseEntity<Map<String, Object>> available() {
         try {
             Map<String, Object> r = new LinkedHashMap<>();
+            if (e2PaymentsService.isAvailable()) {
+                boolean connected = e2PaymentsService.testConnection();
+                r.put("provider", "e2payments");
+                r.put("environment", "test");
+                r.put("configured", true);
+                r.put("available", connected);
+                r.put("simulated", false);
+                r.put("manualTransfer", false);
+                r.put("licenseAmountMzn", licenseService.getLicenseAmount());
+                r.put("supportWhatsapp", licenseService.getSupportWhatsapp());
+                if (connected) {
+                    r.put("hint", "Pagamento M-Pesa via e2Payments. Indique o número da carteira e confirme com PIN no telemóvel.");
+                } else {
+                    r.put("hint", "e2Payments configurado mas sem ligação ao servidor. Reinicie o backend (iniciar-backend.bat) e verifique internet/DNS.");
+                }
+                return ResponseEntity.ok(r);
+            }
             boolean configured = mpesaConfig.isConfigured();
             String env = mpesaConfig.getEnvironment();
             r.put("environment", env != null ? env : "sandbox");
@@ -101,16 +124,16 @@ public class MpesaController {
     @PostMapping("/pay")
     public ResponseEntity<Map<String, Object>> initiatePayment(
             @CurrentUserId UUID userId,
-            @RequestBody Map<String, Object> body) {
+            @RequestBody Map<String, Object> body,
+            HttpServletRequest request) {
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         String phone = body.get("phone") != null ? body.get("phone").toString() : "";
         int months = parseMonths(body);
-        return runMpesaPayment(userId, phone, months, parseSimulatedChannel(body), body);
+        return runMpesaPayment(userId, phone, months, parseSimulatedChannel(body), body, request);
     }
 
-    /** Canal de simulação: mpesa (omissão) ou emola. Ignorado quando a simulação está desligada. */
     private static String parseSimulatedChannel(Map<String, Object> body) {
         if (body == null) {
             return "mpesa";
@@ -151,7 +174,6 @@ public class MpesaController {
         return s.isEmpty() ? null : s.substring(0, Math.min(s.length(), 120));
     }
 
-    /** Carteira de origem: 9 dígitos; M-Pesa 84|85, e-Mola 86|87. */
     private static String normalizeWalletPhone(String raw) {
         if (raw == null) {
             return "";
@@ -186,7 +208,8 @@ public class MpesaController {
     }
 
     private ResponseEntity<Map<String, Object>> runMpesaPayment(
-        UUID userId, String mpesaPhone, int months, String simulatedChannel, Map<String, Object> body) {
+        UUID userId, String mpesaPhone, int months, String simulatedChannel, Map<String, Object> body,
+        HttpServletRequest request) {
         if (months < 1) {
             months = 1;
         }
@@ -198,89 +221,18 @@ public class MpesaController {
         mpesaPhone = normalizeWalletPhone(mpesaPhone);
         validateWalletPhone(mpesaPhone, channel);
 
+        if (e2PaymentsService.isAvailable()) {
+            if ("emola".equals(channel)) {
+                return ResponseEntity.ok(Map.of(
+                    "success", false,
+                    "message", "Pagamento e-Mola não está disponível. Utilize M-Pesa."
+                ));
+            }
+            return runE2PaymentsPayment(userId, mpesaPhone, months, request);
+        }
+
         if (paymentSimulation.isEnabled()) {
-            var existingPending = paymentRepo.findFirstByUserIdAndStatusOrderByCreatedAtDesc(userId, "pending");
-            if (existingPending.isPresent()
-                && existingPending.get().getThirdPartyId() != null
-                && existingPending.get().getThirdPartyId().startsWith("SIM-")) {
-                Map<String, Object> dup = new LinkedHashMap<>();
-                dup.put("success", false);
-                dup.put("simulated", true);
-                dup.put("message", "Já tem um pagamento pendente de validação. Aguarde a confirmação do administrador ou contacte o suporte.");
-                dup.put("paymentId", existingPending.get().getId().toString());
-                return ResponseEntity.ok(dup);
-            }
-
-            String channelLabel = "emola".equals(channel) ? "e-Mola" : "M-Pesa";
-            String destinationPhone = "emola".equals(channel)
-                ? licenseService.getEMolaPhone()
-                : licenseService.getMpesaPhone();
-            BigDecimal amount = licenseService.getLicenseAmount().multiply(BigDecimal.valueOf(months));
-            String thirdPartyId = "SIM-" + UUID.randomUUID();
-            String transactionId = generateSimulatedTransactionRef(channel);
-            String transferRef = parseTransferReference(body);
-            MpesaPaymentEntity payment = new MpesaPaymentEntity();
-            payment.setUserId(userId);
-            payment.setThirdPartyId(thirdPartyId);
-            payment.setConversationId(thirdPartyId);
-            payment.setTransactionId(transactionId);
-            payment.setAmount(amount);
-            payment.setDurationMonths(months);
-            payment.setCustomerPhone(mpesaPhone != null ? mpesaPhone.trim() : "");
-            payment.setStatus("pending");
-            payment.setMpesaResponseCode("MANUAL");
-            String desc = "Transferência manual " + channelLabel + " → " + destinationPhone
-                + ". Utilizador confirmou envio.";
-            if (transferRef != null && !transferRef.isBlank()) {
-                payment.setUserTransferReference(transferRef.trim());
-                desc += " Ref. indicada pelo cliente: " + transferRef.trim();
-            }
-            payment.setMpesaResponseDesc(desc);
-            payment.setSimulationChannel(channel);
-            paymentRepo.save(payment);
-
-            UserEntity user = userRepository.findById(userId).orElse(null);
-            String uName = user != null && user.getFullName() != null && !user.getFullName().isBlank()
-                ? user.getFullName()
-                : (user != null ? user.getPhone() : "—");
-            String uPhone = user != null ? user.getPhone() : "";
-            String walletPh = payment.getCustomerPhone() != null && !payment.getCustomerPhone().isBlank()
-                ? payment.getCustomerPhone() : "—";
-            String message = String.format(
-                "Pedido de licença aguarda validação (transferência manual).%n"
-                    + "Canal: %s%nNúmero de destino: %s%n"
-                    + "Nome: %s%nTelefone da conta: %s%nNúmero de origem (carteira): %s%n"
-                    + "Valor: %s MZN · %d %s%n"
-                    + "ID do pedido: %s%nReferência interna: %s%n"
-                    + "%s%n"
-                    + "Em «Novos utilizadores» → «Pagamentos pendentes», confirme se o valor foi recebido.",
-                channelLabel,
-                destinationPhone,
-                uName,
-                uPhone.isEmpty() ? "—" : uPhone,
-                walletPh,
-                amount.toPlainString(),
-                months,
-                months == 1 ? "mês" : "meses",
-                payment.getId(),
-                transactionId,
-                transferRef != null && !transferRef.isBlank() ? "Ref. do utilizador: " + transferRef.trim() : "");
-            systemNotificationService.createSystemAlert(
-                "[Licença] Pagamento pendente (" + channelLabel + ")",
-                message,
-                "warning");
-
-            Map<String, Object> r = new LinkedHashMap<>();
-            r.put("success", true);
-            r.put("simulated", true);
-            r.put("manualTransfer", true);
-            r.put("simulatedChannel", channel);
-            r.put("destinationPhone", destinationPhone);
-            r.put("message",
-                "Já registámos o seu pedido. Aguarde a confirmação do administrador ou contacte o suporte se demorar.");
-            r.put("paymentId", payment.getId().toString());
-            r.put("conversationId", payment.getConversationId());
-            return ResponseEntity.ok(r);
+            return runSimulatedPayment(userId, mpesaPhone, months, channel, body);
         }
 
         if (!mpesaService.isAvailable()) {
@@ -290,6 +242,79 @@ public class MpesaController {
             ));
         }
 
+        return runVodacomMpesaPayment(userId, mpesaPhone, months);
+    }
+
+    private ResponseEntity<Map<String, Object>> runE2PaymentsPayment(
+            UUID userId, String mpesaPhone, int months, HttpServletRequest request) {
+        var existingPending = paymentRepo.findFirstByUserIdAndStatusOrderByCreatedAtDesc(userId, "pending");
+        if (existingPending.isPresent()
+            && existingPending.get().getThirdPartyId() != null
+            && existingPending.get().getThirdPartyId().startsWith(E2_PREFIX)) {
+            Map<String, Object> dup = new LinkedHashMap<>();
+            dup.put("success", false);
+            dup.put("simulated", false);
+            dup.put("message", "Já tem um pagamento pendente. Confirme no telemóvel ou aguarde a conclusão.");
+            dup.put("paymentId", existingPending.get().getId().toString());
+            return ResponseEntity.ok(dup);
+        }
+
+        BigDecimal amount = licenseService.getLicenseAmount().multiply(BigDecimal.valueOf(months));
+        String reference = E2PaymentsService.buildReference(userId);
+
+        try {
+            bindE2Origin(request);
+            E2PaymentsService.C2BResult result = e2PaymentsService.initiateC2BPayment(mpesaPhone, amount, reference);
+
+            MpesaPaymentEntity payment = new MpesaPaymentEntity();
+            payment.setUserId(userId);
+            payment.setThirdPartyId(E2_PREFIX + reference);
+            payment.setConversationId(reference);
+            payment.setTransactionId(null);
+            payment.setAmount(amount);
+            payment.setDurationMonths(months);
+            payment.setCustomerPhone(mpesaPhone);
+            payment.setStatus("pending");
+            payment.setMpesaResponseCode("E2P");
+            payment.setMpesaResponseDesc(result.getMessage());
+            paymentRepo.save(payment);
+
+            Map<String, Object> r = new LinkedHashMap<>();
+            r.put("success", true);
+            r.put("simulated", false);
+            r.put("provider", "e2payments");
+            r.put("message", "Pedido enviado. Verifique o telemóvel e confirme o pagamento com o seu PIN M-Pesa.");
+            r.put("paymentId", payment.getId().toString());
+            r.put("reference", reference);
+            return ResponseEntity.ok(r);
+        } catch (E2PaymentsException e) {
+            log.warn("e2Payments C2B falhou para user={}: {}", userId, e.getMessage());
+            Map<String, Object> r = new LinkedHashMap<>();
+            r.put("success", false);
+            r.put("message", e.getMessage());
+            return ResponseEntity.ok(r);
+        } finally {
+            e2PaymentsService.clearRequestOrigin();
+        }
+    }
+
+    private void bindE2Origin(HttpServletRequest request) {
+        if (request == null) {
+            return;
+        }
+        String origin = request.getHeader("Origin");
+        if (origin == null || origin.isBlank()) {
+            String referer = request.getHeader("Referer");
+            if (referer != null && referer.contains("://")) {
+                int schemeEnd = referer.indexOf("://") + 3;
+                int pathStart = referer.indexOf('/', schemeEnd);
+                origin = pathStart > 0 ? referer.substring(0, pathStart) : referer;
+            }
+        }
+        e2PaymentsService.bindRequestOrigin(origin);
+    }
+
+    private ResponseEntity<Map<String, Object>> runVodacomMpesaPayment(UUID userId, String mpesaPhone, int months) {
         BigDecimal amount = licenseService.getLicenseAmount().multiply(BigDecimal.valueOf(months));
         String reference = "LIC-" + userId.toString().substring(0, 8).toUpperCase();
         String description = "Licença Flow Cakes (" + months + " mês" + (months > 1 ? "es" : "") + ")";
@@ -317,7 +342,6 @@ public class MpesaController {
             r.put("paymentId", payment.getId().toString());
             r.put("conversationId", result.getConversationId());
             return ResponseEntity.ok(r);
-
         } catch (MpesaException e) {
             log.warn("M-Pesa C2B falhou para user={}: {}", userId, e.getMessage());
             Map<String, Object> r = new LinkedHashMap<>();
@@ -327,11 +351,108 @@ public class MpesaController {
         }
     }
 
+    private ResponseEntity<Map<String, Object>> runSimulatedPayment(
+        UUID userId, String mpesaPhone, int months, String channel, Map<String, Object> body) {
+        var existingPending = paymentRepo.findFirstByUserIdAndStatusOrderByCreatedAtDesc(userId, "pending");
+        if (existingPending.isPresent()
+            && existingPending.get().getThirdPartyId() != null
+            && existingPending.get().getThirdPartyId().startsWith("SIM-")) {
+            Map<String, Object> dup = new LinkedHashMap<>();
+            dup.put("success", false);
+            dup.put("simulated", true);
+            dup.put("message", "Já tem um pagamento pendente de validação. Aguarde a confirmação do administrador ou contacte o suporte.");
+            dup.put("paymentId", existingPending.get().getId().toString());
+            return ResponseEntity.ok(dup);
+        }
+
+        String channelLabel = "emola".equals(channel) ? "e-Mola" : "M-Pesa";
+        String destinationPhone = "emola".equals(channel)
+            ? licenseService.getEMolaPhone()
+            : licenseService.getMpesaPhone();
+        BigDecimal amount = licenseService.getLicenseAmount().multiply(BigDecimal.valueOf(months));
+        String thirdPartyId = "SIM-" + UUID.randomUUID();
+        String transactionId = generateSimulatedTransactionRef(channel);
+        String transferRef = parseTransferReference(body);
+        MpesaPaymentEntity payment = new MpesaPaymentEntity();
+        payment.setUserId(userId);
+        payment.setThirdPartyId(thirdPartyId);
+        payment.setConversationId(thirdPartyId);
+        payment.setTransactionId(transactionId);
+        payment.setAmount(amount);
+        payment.setDurationMonths(months);
+        payment.setCustomerPhone(mpesaPhone != null ? mpesaPhone.trim() : "");
+        payment.setStatus("pending");
+        payment.setMpesaResponseCode("MANUAL");
+        String desc = "Transferência manual " + channelLabel + " → " + destinationPhone
+            + ". Utilizador confirmou envio.";
+        if (transferRef != null && !transferRef.isBlank()) {
+            payment.setUserTransferReference(transferRef.trim());
+            desc += " Ref. indicada pelo cliente: " + transferRef.trim();
+        }
+        payment.setMpesaResponseDesc(desc);
+        payment.setSimulationChannel(channel);
+        paymentRepo.save(payment);
+
+        UserEntity user = userRepository.findById(userId).orElse(null);
+        String uName = user != null && user.getFullName() != null && !user.getFullName().isBlank()
+            ? user.getFullName()
+            : (user != null ? user.getPhone() : "—");
+        String uPhone = user != null ? user.getPhone() : "";
+        String walletPh = payment.getCustomerPhone() != null && !payment.getCustomerPhone().isBlank()
+            ? payment.getCustomerPhone() : "—";
+        String message = String.format(
+            "Pedido de licença aguarda validação (transferência manual).%n"
+                + "Canal: %s%nNúmero de destino: %s%n"
+                + "Nome: %s%nTelefone da conta: %s%nNúmero de origem (carteira): %s%n"
+                + "Valor: %s MZN · %d %s%n"
+                + "ID do pedido: %s%nReferência interna: %s%n"
+                + "%s%n"
+                + "Em «Novos utilizadores» → «Pagamentos pendentes», confirme se o valor foi recebido.",
+            channelLabel,
+            destinationPhone,
+            uName,
+            uPhone.isEmpty() ? "—" : uPhone,
+            walletPh,
+            amount.toPlainString(),
+            months,
+            months == 1 ? "mês" : "meses",
+            payment.getId(),
+            transactionId,
+            transferRef != null && !transferRef.isBlank() ? "Ref. do utilizador: " + transferRef.trim() : "");
+        systemNotificationService.createSystemAlert(
+            "[Licença] Pagamento pendente (" + channelLabel + ")",
+            message,
+            "warning");
+
+        Map<String, Object> r = new LinkedHashMap<>();
+        r.put("success", true);
+        r.put("simulated", true);
+        r.put("manualTransfer", true);
+        r.put("simulatedChannel", channel);
+        r.put("destinationPhone", destinationPhone);
+        r.put("message",
+            "Já registámos o seu pedido. Aguarde a confirmação do administrador ou contacte o suporte se demorar.");
+        r.put("paymentId", payment.getId().toString());
+        r.put("conversationId", payment.getConversationId());
+        return ResponseEntity.ok(r);
+    }
+
     /**
      * Verifica o estado de um pagamento M-Pesa pendente do utilizador.
      */
     @GetMapping("/status")
-    public ResponseEntity<Map<String, Object>> paymentStatus(@CurrentUserId UUID userId) {
+    public ResponseEntity<Map<String, Object>> paymentStatus(
+            @CurrentUserId UUID userId,
+            HttpServletRequest request) {
+        bindE2Origin(request);
+        try {
+            return paymentStatusInternal(userId);
+        } finally {
+            e2PaymentsService.clearRequestOrigin();
+        }
+    }
+
+    private ResponseEntity<Map<String, Object>> paymentStatusInternal(UUID userId) {
         Map<String, Object> r = new LinkedHashMap<>();
         var payments = paymentRepo.findByUserIdOrderByCreatedAtDesc(userId);
         if (payments.isEmpty()) {
@@ -358,8 +479,22 @@ public class MpesaController {
             }
             return ResponseEntity.ok(r);
         }
+
         var opt = paymentRepo.findFirstByUserIdAndStatusOrderByCreatedAtDesc(userId, "pending");
         r.put("hasRejected", false);
+        if (opt.isPresent()) {
+            MpesaPaymentEntity pending = opt.get();
+            if (isE2Payment(pending)) {
+                tryCompleteE2Payment(pending);
+                if ("completed".equals(pending.getStatus())) {
+                    r.put("hasPending", false);
+                    r.put("completed", true);
+                    return ResponseEntity.ok(r);
+                }
+            }
+        }
+
+        opt = paymentRepo.findFirstByUserIdAndStatusOrderByCreatedAtDesc(userId, "pending");
         if (opt.isEmpty()) {
             r.put("hasPending", false);
             return ResponseEntity.ok(r);
@@ -374,10 +509,50 @@ public class MpesaController {
             r.put("simulatedChannel", p.getSimulationChannel());
             r.put("manualTransfer", true);
         }
+        if (isE2Payment(p)) {
+            r.put("provider", "e2payments");
+            r.put("manualTransfer", false);
+        }
         if (p.getMpesaResponseDesc() != null) {
             r.put("description", p.getMpesaResponseDesc());
         }
         return ResponseEntity.ok(r);
+    }
+
+    private void tryCompleteE2Payment(MpesaPaymentEntity payment) {
+        if (!isE2Payment(payment) || !"pending".equals(payment.getStatus())) {
+            return;
+        }
+        String reference = payment.getConversationId();
+        if (reference == null || reference.isBlank()) {
+            return;
+        }
+
+        var match = e2PaymentsService.findCompletedPayment(reference, payment.getAmount());
+        if (match.isEmpty()) {
+            return;
+        }
+
+        E2PaymentsService.HistoryMatch found = match.get();
+        payment.setStatus("completed");
+        payment.setCompletedAt(Instant.now());
+        payment.setMpesaResponseCode("E2P-OK");
+        if (found.getTransactionId() != null && !found.getTransactionId().isBlank()) {
+            payment.setTransactionId(found.getTransactionId());
+        }
+        paymentRepo.save(payment);
+
+        String txRef = E2PaymentsService.toLicenseTransactionId(payment.getId());
+        try {
+            licenseService.confirmPayment(payment.getUserId(), txRef, payment.getDurationMonths());
+            log.info("e2Payments: licença confirmada automaticamente para user={} ref={}", payment.getUserId(), reference);
+        } catch (Exception e) {
+            log.error("e2Payments: erro ao confirmar licença para user={}: {}", payment.getUserId(), e.getMessage());
+        }
+    }
+
+    private static boolean isE2Payment(MpesaPaymentEntity payment) {
+        return payment.getThirdPartyId() != null && payment.getThirdPartyId().startsWith(E2_PREFIX);
     }
 
     /**
@@ -420,6 +595,11 @@ public class MpesaController {
                 return ResponseEntity.ok().build();
             }
 
+            if (isE2Payment(payment)) {
+                log.info("M-Pesa callback: ignorado para pagamento e2Payments id={}", payment.getThirdPartyId());
+                return ResponseEntity.ok().build();
+            }
+
             if (!transactionId.isBlank()) {
                 payment.setTransactionId(transactionId);
             }
@@ -456,10 +636,6 @@ public class MpesaController {
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * Referência alfanumérica de 18 caracteres (compatível com validação em {@link com.chefcontrol.service.LicenseService#confirmPayment}).
-     * Prefixo SIM = fluxo simulado M-Pesa; EML = fluxo simulado e-Mola.
-     */
     private static String generateSimulatedTransactionRef(String channel) {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         ThreadLocalRandom rnd = ThreadLocalRandom.current();

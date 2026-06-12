@@ -9,6 +9,7 @@ C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontro
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\OrderRequest.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\UserActivityHistoryRowDto.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\RegisterResponse.java
+C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\e2payments\E2PaymentsClientConfig.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\ChangePasswordRequest.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\OrderCloseRequest.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\UpdateProfileRequest.java
@@ -33,6 +34,7 @@ C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontro
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\service\PasswordResetService.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\repository\UserLicenseRepository.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\ChefControlApplication.java
+C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\e2payments\E2PaymentsService.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\entity\UserLicenseEntity.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\service\AccessLogService.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\LoginRequest.java
@@ -52,6 +54,7 @@ C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontro
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\repository\PhoneChangeRequestRepository.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\entity\PasswordResetOtpEntity.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\SystemNotificationRequest.java
+C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\e2payments\E2PaymentsConfig.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\service\SecurityEventService.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\repository\UserRepository.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\repository\UserStoreSettingsRepository.java
@@ -59,6 +62,7 @@ C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontro
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\TreasuryBillingEntryDto.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\AdminUserRow.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\repository\PlatformAdminSettingRepository.java
+C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\e2payments\E2PaymentsException.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\TestNotificationRequest.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\AdminUserDetailDto.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\ReminderResponse.java

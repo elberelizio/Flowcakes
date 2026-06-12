@@ -433,6 +433,52 @@
   color: #b91c1c;
 }
 
+.contact-usage-alert {
+  margin: 0.35rem 0 0;
+  padding: 0.625rem 0.85rem;
+  border-radius: 0.625rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  font-weight: 500;
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  animation: contactUsageAlertIn 0.25s ease-out both;
+}
+
+@keyframes contactUsageAlertIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.contact-message-meta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+}
+
+.contact-message-meta .contact-usage-alert {
+  flex: 1;
+  margin-top: 0;
+}
+
+.contact-char-count {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #0f766e;
+  font-variant-numeric: tabular-nums;
+  padding-top: 0.55rem;
+}
+
 .contact-banner {
   margin: 0;
   padding: 0.75rem 1rem;
@@ -444,6 +490,12 @@
   background: #fef2f2;
   border: 1px solid #fecaca;
   color: #991b1b;
+}
+
+.contact-banner--info {
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  color: #0f766e;
 }
 
 .contact-actions {

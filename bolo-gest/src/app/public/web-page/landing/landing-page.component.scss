@@ -947,13 +947,10 @@
 
 .hero-slider {
   isolation: isolate;
-  aspect-ratio: 3 / 2;
   border-radius: 1rem;
 
-  @media (min-width: 1024px) {
-    aspect-ratio: auto;
-    height: 680px;
-    border-radius: 0;
+  @media (min-width: 640px) {
+    border-radius: 1.25rem;
   }
 }
 
@@ -1884,6 +1881,142 @@
   padding-top: 0.25rem;
 }
 
+.suggestion-form-card--success {
+  text-align: center;
+  justify-content: center;
+  min-height: 22rem;
+  padding-top: 2.5rem;
+  padding-bottom: 2.5rem;
+  animation: suggestionSuccessIn 0.45s ease-out both;
+}
+
+.suggestion-success-icon {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #14b8a6, #0d9488);
+  color: #fff;
+  font-size: 1.35rem;
+  box-shadow: 0 10px 28px rgba(13, 148, 136, 0.35);
+}
+
+.suggestion-success-title {
+  margin: 0 0 0.75rem;
+  font-family: ui-serif, Georgia, 'Fraunces', serif;
+  font-size: clamp(1.35rem, 3vw, 1.65rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  line-height: 1.25;
+}
+
+.suggestion-success-lead {
+  margin: 0 auto;
+  max-width: 26rem;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: #475569;
+}
+
+.suggestion-reset-progress {
+  --reset-duration: 11000ms;
+  width: 100%;
+  max-width: 18rem;
+  height: 5px;
+  margin: 1.75rem auto 0;
+  border-radius: 9999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.suggestion-reset-progress__bar {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #14b8a6, #0d9488, #2dd4bf);
+  box-shadow: 0 0 8px rgba(13, 148, 136, 0.35);
+}
+
+.suggestion-reset-progress__bar--active {
+  animation: suggestionResetProgress var(--reset-duration) linear forwards;
+}
+
+@keyframes suggestionResetProgress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.suggestion-success-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+  padding-top: 0.25rem;
+}
+
+.suggestion-banner {
+  margin: 1rem 0 0;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.suggestion-banner--error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.suggestion-banner--info {
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  color: #0f766e;
+}
+
+.field-usage-alert {
+  margin: 0.375rem 0 0;
+  padding: 0.625rem 0.85rem;
+  border-radius: 0.625rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  font-weight: 500;
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  animation: fieldUsageAlertIn 0.25s ease-out both;
+}
+
+@keyframes fieldUsageAlertIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes suggestionSuccessIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .suggestion-submit-btn {
   display: inline-flex;
   align-items: center;
@@ -1941,6 +2074,21 @@
   &--loading {
     pointer-events: none;
   }
+
+  &--secondary {
+    width: auto;
+    min-width: min(100%, 16rem);
+    background: #fff;
+    color: #0f766e;
+    border: 2px solid #0d9488;
+    box-shadow: none;
+
+    &:hover:not(:disabled) {
+      background: #f0fdfa;
+      filter: none;
+      box-shadow: 0 4px 14px rgba(13, 148, 136, 0.15);
+    }
+  }
 }
 
 .suggestion-submit-btn__icon {
@@ -1993,6 +2141,19 @@
 @media (prefers-reduced-motion: reduce) {
   .team-message-bg {
     animation: none;
+  }
+
+  .suggestion-form-card--success {
+    animation: none;
+  }
+
+  .field-usage-alert {
+    animation: none;
+  }
+
+  .suggestion-reset-progress__bar--active {
+    animation: none;
+    width: 100%;
   }
 
   .suggestion-submit-btn__spinner {

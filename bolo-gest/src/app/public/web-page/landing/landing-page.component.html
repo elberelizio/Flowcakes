@@ -213,7 +213,7 @@
       <div class="absolute bottom-10 right-10 w-96 h-96 bg-brand-500 rounded-full filter blur-3xl"></div>
     </div>
     <div class="w-full relative z-10" data-landing-reveal>
-      <div class="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.75fr)] gap-10 lg:gap-14 items-center">
+      <div class="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 lg:gap-10 items-center">
         <div class="px-6 lg:pl-12 lg:pr-4" data-landing-reveal-child data-reveal-delay="1">
           <p class="text-brand-300 text-xs font-bold uppercase tracking-[0.18em] mb-4">Feito para confeiteiras</p>
           <h2 class="text-3xl md:text-4xl font-serif font-bold mb-6 leading-tight tracking-tight">Haaa djo! Transforme talento em vendas reais com controlo total do seu negócio.</h2>
@@ -233,45 +233,28 @@
             Quero começar agora <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
           </a>
         </div>
-        <div class="hero-slider-wrap" data-landing-reveal-child data-reveal-delay="2">
-          <figure
-            class="hero-slider relative overflow-hidden shadow-2xl ring-1 ring-white/10 bg-brand-950 w-full"
-            aria-label="Imagens do Flow Cakes"
-            aria-live="polite"
-            (touchstart)="onHeroSliderTouchStart($event)"
-            (touchend)="onHeroSliderTouchEnd($event)"
-          >
-            <div class="hero-slider__track">
-              @for (slide of heroSlides; track slide.src; let i = $index) {
-                <img
-                  [src]="slide.src"
-                  [alt]="slide.alt"
-                  class="hero-slider__slide"
-                  [class.hero-slider__slide--active]="i === heroSlideIndex"
-                  [style.--hero-focus]="slide.focus"
-                  [style.--hero-focus-desktop]="slide.focusDesktop"
-                  [attr.loading]="i === 0 ? 'eager' : 'lazy'"
-                  width="1200"
-                  height="800"
-                />
-              }
-            </div>
-            <div class="hero-slider__shade" aria-hidden="true"></div>
-            <div class="hero-slider__dots" role="tablist" aria-label="Imagens em destaque">
-              @for (slide of heroSlides; track slide.src; let i = $index) {
-                <button
-                  type="button"
-                  role="tab"
-                  class="hero-slider__dot"
-                  [class.hero-slider__dot--active]="i === heroSlideIndex"
-                  [attr.aria-selected]="i === heroSlideIndex"
-                  [attr.aria-label]="'Imagem ' + (i + 1)"
-                  (click)="goToHeroSlide(i)"
-                ></button>
-              }
-            </div>
-          </figure>
-        </div>
+        <figure
+          class="hero-slider relative overflow-hidden shadow-2xl ring-1 ring-white/10 h-[260px] sm:h-[340px] lg:h-[420px] bg-brand-950 w-full max-w-2xl lg:max-w-none lg:ml-auto"
+          data-landing-reveal-child
+          data-reveal-delay="2"
+          aria-label="Imagens do ChefControl"
+          aria-live="polite"
+        >
+          <div class="hero-slider__track">
+            @for (slide of heroSlides; track slide.src; let i = $index) {
+              <img
+                [src]="slide.src"
+                [alt]="slide.alt"
+                class="hero-slider__slide"
+                [class.hero-slider__slide--active]="i === heroSlideIndex"
+                [attr.loading]="i === 0 ? 'eager' : 'lazy'"
+                width="1200"
+                height="800"
+              />
+            }
+          </div>
+          <div class="hero-slider__shade" aria-hidden="true"></div>
+        </figure>
       </div>
     </div>
   </section>
@@ -516,93 +499,101 @@
           <div class="suggestion-visual__overlay" aria-hidden="true"></div>
         </figure>
 
-        <div class="suggestion-form-card" data-landing-reveal-child data-reveal-delay="3">
-          <div class="suggestion-form-card__accent" aria-hidden="true"></div>
-          <h3 class="text-2xl font-serif font-bold text-slate-900 mb-2 leading-tight">Ajude-nos a crescer</h3>
-          <p class="text-slate-600 text-sm leading-relaxed mb-6">
-            A sua sugestão ajuda-nos a priorizar melhorias reais no Flow Cakes para as próximas versões.
-          </p>
+        @if (suggestionStep === 'form') {
+          <div class="suggestion-form-card" data-landing-reveal-child data-reveal-delay="3">
+            <div class="suggestion-form-card__accent" aria-hidden="true"></div>
+            <h3 class="text-2xl font-serif font-bold text-slate-900 mb-2 leading-tight">Ajude-nos a crescer</h3>
+            <p class="text-slate-600 text-sm leading-relaxed mb-6">
+              A sua sugestão ajuda-nos a priorizar melhorias reais no ChefControl para as próximas versões.
+            </p>
 
-          <label for="team-suggestion-name" class="block text-sm font-semibold text-slate-700 mb-1.5">O seu nome</label>
-          <input
-            id="team-suggestion-name"
-            #teamSuggestionName
-            type="text"
-            maxlength="120"
-            autocomplete="name"
-            placeholder="Ex.: Maria Fernandes"
-            class="lp-form-field"
-          />
+            <label for="team-suggestion-name" class="block text-sm font-semibold text-slate-700 mb-1.5">O seu nome</label>
+            <input
+              id="team-suggestion-name"
+              #teamSuggestionName
+              type="text"
+              maxlength="120"
+              autocomplete="name"
+              placeholder="Ex.: Maria Fernandes"
+              class="lp-form-field"
+              (input)="handleSuggestionNameInput(teamSuggestionName)"
+            />
+            @if (suggestionNameUsageActive) {
+              <p class="field-usage-alert" role="alert">{{ formNameUsageHint }}</p>
+            }
 
-          <label for="team-suggestion" class="mt-4 block text-sm font-semibold text-slate-700 mb-1.5">A sua sugestão</label>
-          <textarea
-            id="team-suggestion"
-            #teamSuggestion
-            rows="6"
-            [attr.maxlength]="maxSuggestionChars"
-            (input)="handleSuggestionInput(teamSuggestion)"
-            placeholder="Ex.: Gostaria de relatórios semanais automáticos por WhatsApp..."
-            class="lp-form-field min-h-[160px] resize-y"
-          ></textarea>
-          <div class="mt-2 flex items-center justify-between text-xs">
-            <span
-              class="font-medium"
-              [class.text-slate-500]="suggestionCharCount < maxSuggestionChars"
-              [class.text-amber-600]="suggestionCharCount >= maxSuggestionChars"
-            >
-              {{ suggestionCharCount >= maxSuggestionChars ? 'Limite de caracteres atingido.' : 'Escreva uma sugestão curta e direta.' }}
-            </span>
-            <span class="font-semibold text-brand-700 tabular-nums">{{ suggestionCharCount }}/{{ maxSuggestionChars }}</span>
+            <label for="team-suggestion" class="mt-4 block text-sm font-semibold text-slate-700 mb-1.5">A sua sugestão</label>
+            <textarea
+              id="team-suggestion"
+              #teamSuggestion
+              rows="6"
+              [attr.maxlength]="maxSuggestionChars"
+              (input)="handleSuggestionInput(teamSuggestion)"
+              placeholder="Ex.: Gostaria de relatórios semanais automáticos por WhatsApp..."
+              class="lp-form-field min-h-[160px] resize-y"
+            ></textarea>
+            <div class="mt-2 flex items-center justify-end gap-3 text-xs">
+              <span class="font-semibold text-brand-700 tabular-nums shrink-0">{{ suggestionCharCount }}/{{ maxSuggestionChars }}</span>
+            </div>
+            @if (suggestionMessageUsageActive) {
+              <p class="field-usage-alert mt-2" role="alert">{{ formMessageUsageHint }}</p>
+            }
+
+            @if (suggestionFormHint) {
+              <p class="suggestion-banner suggestion-banner--info" role="status">{{ suggestionFormHint }}</p>
+            }
+
+            @if (suggestionFormError) {
+              <p class="suggestion-banner suggestion-banner--error" role="alert">{{ suggestionFormError }}</p>
+            }
+
+            <div class="suggestion-form-card__actions">
+              <button
+                type="button"
+                (click)="sendTeamSuggestion(teamSuggestionName.value, teamSuggestion.value, teamSuggestion, teamSuggestionName)"
+                [disabled]="suggestionSending"
+                class="suggestion-submit-btn"
+                [class.suggestion-submit-btn--loading]="suggestionSending"
+              >
+                @if (suggestionSending) {
+                  <span class="suggestion-submit-btn__spinner" aria-hidden="true"></span>
+                  <span>A enviar…</span>
+                } @else {
+                  <span>Enviar sugestão</span>
+                  <i class="fa-solid fa-paper-plane suggestion-submit-btn__icon" aria-hidden="true"></i>
+                }
+              </button>
+            </div>
           </div>
-
-          <div class="suggestion-form-card__actions">
-            <button
-              type="button"
-              (click)="sendTeamSuggestion(teamSuggestionName.value, teamSuggestion.value, teamSuggestion, teamSuggestionName)"
-              [disabled]="suggestionSending"
-              class="suggestion-submit-btn"
-              [class.suggestion-submit-btn--loading]="suggestionSending"
+        } @else {
+          <div class="suggestion-form-card suggestion-form-card--success" data-landing-reveal-child data-reveal-delay="3" role="status" aria-live="polite">
+            <div class="suggestion-success-icon" aria-hidden="true">
+              <i class="fa-solid fa-heart"></i>
+            </div>
+            <h3 class="suggestion-success-title">Obrigado pela sua sugestão!</h3>
+            <p class="suggestion-success-lead">
+              Recebemos a sua mensagem com carinho. A equipa ChefControl lê cada ideia para moldar as próximas versões do sistema.
+            </p>
+            <div
+              class="suggestion-reset-progress"
+              role="progressbar"
+              aria-label="A repor o formulário"
+              [style.--reset-duration.ms]="suggestionResetDurationMs"
             >
-              @if (suggestionSending) {
-                <span class="suggestion-submit-btn__spinner" aria-hidden="true"></span>
-                <span>A enviar…</span>
-              } @else {
-                <span>Enviar sugestão</span>
-                <i class="fa-solid fa-paper-plane suggestion-submit-btn__icon" aria-hidden="true"></i>
-              }
-            </button>
+              <div
+                class="suggestion-reset-progress__bar"
+                [class.suggestion-reset-progress__bar--active]="suggestionResetAnimating"
+              ></div>
+            </div>
+            <div class="suggestion-success-actions">
+              <button type="button" class="suggestion-submit-btn suggestion-submit-btn--secondary" (click)="resetSuggestionForm()">
+                Enviar outra sugestão
+              </button>
+            </div>
           </div>
-        </div>
+        }
       </div>
     </div>
-
-    @if (suggestionPopup.open) {
-      <div class="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/45 px-4" role="dialog" aria-modal="true">
-        <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl border border-slate-200 p-6 text-center animate-bounce-in">
-          <div
-            class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-4xl animate-pop"
-            [class.bg-emerald-100]="suggestionPopup.type === 'success'"
-            [class.text-emerald-700]="suggestionPopup.type === 'success'"
-            [class.bg-rose-100]="suggestionPopup.type === 'error'"
-            [class.text-rose-700]="suggestionPopup.type === 'error'"
-          >
-            <i class="fa-solid" [class.fa-party-horn]="suggestionPopup.type === 'success'" [class.fa-circle-exclamation]="suggestionPopup.type === 'error'"></i>
-          </div>
-          <h3 class="text-2xl font-bold text-gray-900 mb-2">
-            {{ suggestionPopup.type === 'success' ? '🎉 Sugestão enviada!' : 'Não foi possível enviar' }}
-          </h3>
-          <p class="text-sm text-gray-600 mb-2">{{ suggestionPopup.message }}</p>
-          <p *ngIf="suggestionPopup.type === 'success'" class="text-xs text-gray-500 mb-5">Este popup será fechado automaticamente em 10 segundos</p>
-          <button
-            type="button"
-            (click)="closeSuggestionPopup()"
-            class="inline-flex items-center justify-center rounded-full bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors"
-          >
-            Fechar
-          </button>
-        </div>
-      </div>
-    }
   </section>
 
   <footer class="landing-footer">

@@ -1,16 +1,25 @@
 package com.chefcontrol.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class LandingSuggestionRequest {
 
     @NotBlank(message = "Nome é obrigatório")
     @Size(max = 120, message = "Nome deve ter no máximo 120 caracteres")
+    @Pattern(
+        regexp = "^(?=.*\\p{L})[\\p{L}\\s]{1,120}$",
+        message = "Nome só pode conter letras e espaços (sem números, emojis ou símbolos)"
+    )
     private String personName;
 
     @NotBlank(message = "Mensagem é obrigatória")
     @Size(max = 350, message = "Mensagem deve ter no máximo 350 caracteres")
+    @Pattern(
+        regexp = "^[\\p{L}\\p{N}\\s.,!?;:\\-'\"()/%@#&*+=\\n\\r]+$",
+        message = "Mensagem contém caracteres não permitidos (ex.: emojis ou símbolos especiais)"
+    )
     private String message;
 
     @NotBlank(message = "Identificador do dispositivo é obrigatório")

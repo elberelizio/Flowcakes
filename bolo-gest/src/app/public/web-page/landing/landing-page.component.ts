@@ -20,6 +20,15 @@ import { PublicSiteNavComponent } from '../public-site-nav/public-site-nav.compo
 import { RegistrationFlowService } from '@app/core/registration/registration-flow.service';
 import { PublicPageMotionService } from '../public-page-motion.service';
 import { BRAND_ASSETS } from '@app/core/config/brand-assets';
+import {
+  FORM_MESSAGE_DISALLOWED,
+  FORM_MESSAGE_USAGE_HINT,
+  FORM_NAME_DISALLOWED,
+  FORM_NAME_USAGE_HINT,
+  applySanitizedInput,
+  sanitizeFormMessage,
+  sanitizeFormName,
+} from '@app/core/text/public-form-text.rules';
 
 /** Página inicial pública (marketing). Parte do módulo de rotas `web-page`. */
 @Component({
@@ -149,10 +158,20 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private testimonialTimer: ReturnType<typeof setInterval> | null = null;
 
   readonly maxSuggestionChars = 350;
+  readonly suggestionResetDurationMs = 11000;
+  readonly formNameUsageHint = FORM_NAME_USAGE_HINT;
+  readonly formMessageUsageHint = FORM_MESSAGE_USAGE_HINT;
   suggestionCharCount = 0;
   suggestionSending = false;
-  suggestionPopup = { open: false, type: 'success' as 'success' | 'error', message: '' };
-  private suggestionPopupTimer: any = null;
+  suggestionStep: 'form' | 'success' = 'form';
+  suggestionResetAnimating = false;
+  suggestionFormHint: string | null = null;
+  suggestionFormError: string | null = null;
+  suggestionNameUsageActive = false;
+  suggestionMessageUsageActive = false;
+  private suggestionResetTimer: ReturnType<typeof setTimeout> | null = null;
+  private suggestionNameUsageTimer: ReturnType<typeof setTimeout> | null = null;
+  private suggestionMessageUsageTimer: ReturnType<typeof setTimeout> | null = null;
 
   ngOnInit(): void {
     this.title.setTitle('Flow Cakes - Gestão para Confeiteiras');
@@ -188,6 +207,8 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.teardownLandingMotion = null;
     this.stopHeroSlideAutoplay();
     this.stopTestimonialAutoplay();
+    this.clearSuggestionResetTimer();
+    this.clearSuggestionUsageTimers();
   }
 
   goToTestimonial(index: number): void {
@@ -336,20 +357,34 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async sendTeamSuggestion(name: string, message: string, textarea: HTMLTextAreaElement, nameInput: HTMLInputElement): Promise<void> {
-    const personName = name.trim();
-    const suggestion = message.trim();
+    this.suggestionFormHint = null;
+    this.suggestionFormError = null;
+    const sanitizedName = sanitizeFormName(name);
+    const sanitizedMessage = sanitizeFormMessage(message, this.maxSuggestionChars);
+    if (sanitizedName !== name) {
+      this.flashSuggestionNameUsage();
+    }
+    if (sanitizedMessage !== message) {
+      this.flashSuggestionMessageUsage();
+    }
+    const personName = sanitizedName.trim();
+    const suggestion = sanitizedMessage.trim();
+    nameInput.value = personName;
+    textarea.value = suggestion;
+    this.suggestionCharCount = suggestion.length;
+
     if (!personName) {
-      this.showSuggestionPopup('error', 'Por favor, informe o seu nome.');
+      this.suggestionFormHint = 'Preencha o seu nome para podermos agradecer.';
       return;
     }
 
     if (!suggestion) {
-      this.showSuggestionPopup('error', 'Por favor, escreva a sua sugestão antes de enviar.');
+      this.suggestionFormHint = 'Escreva a sua sugestão antes de enviar.';
       return;
     }
 
     if (suggestion.length > this.maxSuggestionChars) {
-      this.showSuggestionPopup('error', `A sugestão deve ter no máximo ${this.maxSuggestionChars} caracteres.`);
+      this.suggestionFormHint = `A sugestão pode ter no máximo ${this.maxSuggestionChars} caracteres.`;
       return;
     }
 
@@ -365,22 +400,97 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
         pageUrl,
       }));
 
-      this.showSuggestionPopup('success', 'Obrigado! A sua sugestão foi recebida pela nossa equipa.');
       nameInput.value = '';
       textarea.value = '';
       this.suggestionCharCount = 0;
+      this.suggestionStep = 'success';
+      if (isPlatformBrowser(this.platformId)) {
+        this.createConfetti();
+      }
+      this.scheduleSuggestionReset();
     } catch {
-      this.showSuggestionPopup('error', 'Não foi possível enviar a sugestão agora. Tente novamente em alguns instantes.');
+      this.suggestionFormError = 'Não foi possível enviar agora. Verifique a ligação e tente outra vez.';
     } finally {
       this.suggestionSending = false;
     }
   }
 
-  handleSuggestionInput(textarea: HTMLTextAreaElement): void {
-    if (textarea.value.length > this.maxSuggestionChars) {
-      textarea.value = textarea.value.slice(0, this.maxSuggestionChars);
+  resetSuggestionForm(): void {
+    this.clearSuggestionResetTimer();
+    this.clearSuggestionUsageTimers();
+    this.suggestionResetAnimating = false;
+    this.suggestionStep = 'form';
+    this.suggestionFormHint = null;
+    this.suggestionFormError = null;
+    this.suggestionCharCount = 0;
+    this.suggestionNameUsageActive = false;
+    this.suggestionMessageUsageActive = false;
+  }
+
+  private scheduleSuggestionReset(): void {
+    this.clearSuggestionResetTimer();
+    this.suggestionResetAnimating = false;
+    if (isPlatformBrowser(this.platformId)) {
+      requestAnimationFrame(() => {
+        this.suggestionResetAnimating = true;
+      });
     }
-    this.suggestionCharCount = textarea.value.length;
+    this.suggestionResetTimer = setTimeout(() => this.resetSuggestionForm(), this.suggestionResetDurationMs);
+  }
+
+  private clearSuggestionResetTimer(): void {
+    if (this.suggestionResetTimer) {
+      clearTimeout(this.suggestionResetTimer);
+      this.suggestionResetTimer = null;
+    }
+  }
+
+  handleSuggestionNameInput(nameInput: HTMLInputElement): void {
+    const { removedChars } = applySanitizedInput(nameInput, FORM_NAME_DISALLOWED);
+    if (removedChars) {
+      this.flashSuggestionNameUsage();
+    }
+  }
+
+  handleSuggestionInput(textarea: HTMLTextAreaElement): void {
+    const { value, removedChars } = applySanitizedInput(textarea, FORM_MESSAGE_DISALLOWED, this.maxSuggestionChars);
+    this.suggestionCharCount = value.length;
+    if (removedChars) {
+      this.flashSuggestionMessageUsage();
+    }
+  }
+
+  private flashSuggestionNameUsage(): void {
+    this.suggestionNameUsageActive = true;
+    if (this.suggestionNameUsageTimer) {
+      clearTimeout(this.suggestionNameUsageTimer);
+    }
+    this.suggestionNameUsageTimer = setTimeout(() => {
+      this.suggestionNameUsageActive = false;
+      this.suggestionNameUsageTimer = null;
+    }, 4000);
+  }
+
+  private flashSuggestionMessageUsage(): void {
+    this.suggestionMessageUsageActive = true;
+    if (this.suggestionMessageUsageTimer) {
+      clearTimeout(this.suggestionMessageUsageTimer);
+    }
+    this.suggestionMessageUsageTimer = setTimeout(() => {
+      this.suggestionMessageUsageActive = false;
+      this.suggestionMessageUsageTimer = null;
+    }, 4000);
+  }
+
+  private clearSuggestionUsageTimers(): void {
+    if (this.suggestionNameUsageTimer) {
+      clearTimeout(this.suggestionNameUsageTimer);
+      this.suggestionNameUsageTimer = null;
+    }
+    if (this.suggestionMessageUsageTimer) {
+      clearTimeout(this.suggestionMessageUsageTimer);
+      this.suggestionMessageUsageTimer = null;
+    }
   }
 
   private getOrCreateDeviceId(): string {
@@ -403,29 +513,6 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     const randomPart = Math.random().toString(36).slice(2, 10);
     return `device-${Date.now()}-${randomPart}`;
-  }
-
-  closeSuggestionPopup(): void {
-    this.suggestionPopup = { ...this.suggestionPopup, open: false };
-    if (this.suggestionPopupTimer) {
-      clearTimeout(this.suggestionPopupTimer);
-      this.suggestionPopupTimer = null;
-    }
-  }
-
-  private showSuggestionPopup(type: 'success' | 'error', message: string): void {
-    this.suggestionPopup = { open: true, type, message };
-    
-    if (type === 'success') {
-      this.createConfetti();
-      // Auto-fechar após 10 segundos
-      if (this.suggestionPopupTimer) {
-        clearTimeout(this.suggestionPopupTimer);
-      }
-      this.suggestionPopupTimer = setTimeout(() => {
-        this.closeSuggestionPopup();
-      }, 10000);
-    }
   }
 
   private createConfetti(): void {

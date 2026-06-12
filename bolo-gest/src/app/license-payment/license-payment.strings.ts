@@ -70,6 +70,8 @@ export const LicensePaymentStrings = {
 
   toastCopyNumber: 'Número copiado.',
   toastPendingRegistered: 'Pedido registado. Aguarde a confirmação do administrador.',
+  toastConfirmOnPhone: 'Pedido enviado. Confirme o pagamento com o PIN no seu telemóvel.',
+  toastRenewalSuccess: 'Pagamento confirmado. A sua licença foi renovada.',
   toastPaymentApproved:
     'Pagamento aprovado. Obrigado! Já pode usar todos os serviços do Flow Cakes.',
   toastPaymentRejected: 'Pagamento não confirmado. Pode enviar uma nova transferência.',
