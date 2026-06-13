@@ -335,7 +335,8 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     if (url.includes('/recover-password')) return 'Recuperar senha';
     if (url.includes('/reminders')) return 'Lembretes';
     if (url.includes('/notifications')) return 'Comunicado';
-    if (url.includes('/variable-expenses')) return 'Despesas extras';
+    if (url.includes('/variable-expenses/consultar')) return 'Consultar despesas';
+    if (url.includes('/variable-expenses')) return 'Registar despesas';
     if (url.includes('/debts')) return 'Gestão de dívidas';
     if (url.includes('/clients')) return 'Clientes';
     if (url.includes('/profile')) return 'Meu perfil';

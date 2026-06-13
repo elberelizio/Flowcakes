@@ -46,6 +46,7 @@ export class AdminOrdersComponent implements OnInit {
   filterMonth = signal<number>(0); // 0 = todos
   filterYear = signal<number>(0);  // 0 = todos
   filterProduct = signal('');
+  showFilters = signal(false);
 
   /** Converte para Order para usar orderDisplayName/orderDisplaySize (exigem ingredientIds). */
   toOrder(o: AdminOrder): Order {
@@ -250,5 +251,9 @@ export class AdminOrdersComponent implements OnInit {
     this.filterMonth.set(0);
     this.filterYear.set(0);
     this.filterProduct.set('');
+  }
+
+  toggleFilters(): void {
+    this.showFilters.update((v) => !v);
   }
 }

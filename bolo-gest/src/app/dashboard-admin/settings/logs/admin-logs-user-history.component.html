@@ -19,7 +19,22 @@
     }
   </header>
 
-  <section class="al-filters" aria-label="Filtros do histórico">
+  <section class="al-filters" [class.filters-panel--collapsed]="!showFilters()" aria-label="Filtros do histórico">
+    <div class="al-filters__head">
+      <h2 class="al-filters__title">Filtros</h2>
+      <button
+        type="button"
+        class="filters-toggle"
+        [class.filters-toggle--open]="showFilters()"
+        (click)="toggleFilters()"
+        [attr.aria-expanded]="showFilters()">
+        <i class="fa-solid fa-filter" aria-hidden="true"></i>
+        <span>{{ showFilters() ? 'Ocultar filtros' : 'Mostrar filtros' }}</span>
+        <i class="fa-solid fa-chevron-down filters-toggle__chevron" aria-hidden="true"></i>
+      </button>
+    </div>
+    @if (showFilters()) {
+    <div class="al-filters__body">
     <div class="al-filters__row">
       <label class="al-filters__field">
         <span>De</span>
@@ -48,6 +63,8 @@
       <button type="button" class="al-preset" (click)="setPreset(30)">Últimos 30 dias</button>
       <button type="button" class="al-preset" (click)="setPreset('month')">Este mês</button>
     </div>
+    </div>
+    }
   </section>
 
   @if (loading()) {

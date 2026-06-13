@@ -108,28 +108,51 @@ export class DebtsComponent implements OnInit {
   isPaymentAmountValid(): boolean {
     const order = this.orderToConfirmPaid();
     if (!order) return false;
-    const amount = this.paymentAmountInput();
-    const saldo = this.getSaldo(order);
-    return amount > 0 && amount <= saldo;
+    return this.paymentAmountInput() > 0;
   }
 
-  /** Regista o recebimento de um montante (parcial ou total) */
+  /** Pré-visualização do resultado após registar o pagamento. */
+  getPaymentPreviewText(order: Order): string {
+    const amount = this.paymentAmountInput();
+    if (!Number.isFinite(amount) || amount <= 0) return '';
+
+    const nextPaid = order.valuePaid + amount;
+    const remaining = order.valueCharged - nextPaid;
+
+    if (remaining > 0) {
+      return `Após confirmar, ficarão ${Math.round(remaining).toLocaleString('pt-MZ')} MZN por pagar.`;
+    }
+    if (remaining === 0) {
+      return 'Após confirmar, a encomenda fica paga na totalidade.';
+    }
+    const excess = Math.round(-remaining);
+    return `O cliente paga ${excess.toLocaleString('pt-MZ')} MZN a mais (gorjeta). Esse valor entra no lucro — sem dívida pendente.`;
+  }
+
+  /** Regista o recebimento de um montante (parcial, total ou a mais). */
   async confirmMarkPaid(): Promise<void> {
     const order = this.orderToConfirmPaid();
     if (!order) return;
     const amount = this.paymentAmountInput();
-    const saldo = this.getSaldo(order);
-    if (amount <= 0 || amount > saldo) {
+    if (amount <= 0) {
       this.notification.showError('Introduza um valor válido para pagamento.');
       return;
     }
 
     const nextValuePaid = order.valuePaid + amount;
-    const ok = await this.ordersService.updateOrder(order.id, { valuePaid: nextValuePaid });
-    if (ok) {
+    const overpayment = Math.max(0, nextValuePaid - order.valueCharged);
+    const result = await this.ordersService.updateOrder(order.id, { valuePaid: nextValuePaid });
+    if (result.ok) {
       const remaining = Math.max(0, order.valueCharged - nextValuePaid);
-      if (remaining === 0) this.notification.showSuccess('Pagamento registado. Encomenda paga na totalidade.');
-      else this.notification.showSuccess(`Pagamento parcial registado. Saldo em falta: ${remaining.toLocaleString('pt-MZ')} MZN.`);
+      if (overpayment > 0) {
+        this.notification.showSuccess(
+          `Pagamento registado. Encomenda paga. Gorjeta de ${overpayment.toLocaleString('pt-MZ')} MZN associada a ${order.clientName} e incluída no lucro.`,
+        );
+      } else if (remaining === 0) {
+        this.notification.showSuccess('Pagamento registado. Encomenda paga na totalidade.');
+      } else {
+        this.notification.showSuccess(`Pagamento parcial registado. Saldo em falta: ${remaining.toLocaleString('pt-MZ')} MZN.`);
+      }
     } else {
       this.notification.showError('Não foi possível atualizar o pagamento.');
     }

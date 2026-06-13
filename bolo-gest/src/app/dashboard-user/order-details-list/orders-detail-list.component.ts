@@ -22,6 +22,7 @@ export class OrdersDetailListComponent implements OnInit {
   filterCategory = signal('');
   filterStatus = signal('');
   listScope = signal<'active' | 'closed'>('active');
+  showFilters = signal(false);
 
   private splitOrders = computed(() => {
     const all = this.ordersService.allOrders();
@@ -131,5 +132,9 @@ export class OrdersDetailListComponent implements OnInit {
     this.filterClient.set('');
     this.filterCategory.set('');
     this.filterStatus.set('');
+  }
+
+  toggleFilters(): void {
+    this.showFilters.update((v) => !v);
   }
 }

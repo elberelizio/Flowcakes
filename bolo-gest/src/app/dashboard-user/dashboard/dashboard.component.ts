@@ -83,6 +83,7 @@ import { NotificationService } from '../../services/notification.service';
 import { UserSettingsService } from '../../services/user-settings.service';
 import { WithdrawalService } from '../../services/withdrawal.service';
 import { LoginPopupOrchestratorService } from '../../services/login-popup-orchestrator.service';
+import { computeTotalProfit, computeOrderProfit } from '../../core/utils/profit.util';
 import {
   getHolidayOnDate,
   getUpcomingHolidays,
@@ -137,6 +138,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   today = new Date();
   isAdmin = false;
 
+  /** Ano actual do calendário (exposto ao template). */
+  readonly effectiveFilterYear = new Date().getFullYear();
+
   userName = computed(() => this.auth.getDisplayName() || 'Utilizador');
 
   /** Primeira vez que abre o dashboard nesta sessão (depois do login). */
@@ -178,16 +182,22 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Total retirado da caixa (para o popup de resumo). */
   totalWithdrawn = computed(() => this.withdrawalService.totalWithdrawn());
 
+  /** Lucro acumulado das encomendas (antes de retiradas). */
+  totalProfit = computed(() => computeTotalProfit(this.orders.allOrders()));
+
+  /** Lucro que ainda pode ser retirado = lucro acumulado − retiradas. */
+  availableProfit = computed(() =>
+    Math.max(0, this.totalProfit() - this.totalWithdrawn()),
+  );
+
   /** Valor efectivamente recebido (valor pago pelos clientes — o que já está nas mãos). O valor em dívida não conta. */
   totalValuePaid = computed(() => {
     const all = this.orders.allOrders();
     return all.reduce((sum, o) => sum + (o.valuePaid ?? 0), 0);
   });
 
-  /** Lucro final = valor recebido − despesas − retiradas. Se negativo, é prejuízo. */
-  lucroFinal = computed(() =>
-    this.totalValuePaid() - this.totalExpense() - this.totalWithdrawn()
-  );
+  /** Lucro final = lucro acumulado − retiradas (o que fica na caixa). */
+  lucroFinal = computed(() => this.availableProfit());
 
   /**
    * Estado do lucro no popup: prejuízo, zero ou positivo.
@@ -244,52 +254,52 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   });
 
-  /** Filtros do dashboard: painel fechado por defeito, campos zerados */
+  /** Filtros do dashboard: painel fechado por defeito; ano actual por defeito */
   showFilters = signal(false);
   filterDateFrom = signal<string>('');
   filterDateTo = signal<string>('');
-  filterYear = signal<number | null>(null);
+  filterYear = signal<number | null>(this.effectiveFilterYear);
   filterMonth = signal<number | null>(null); // 1-12
   /** Alerta de datas inválidas (data fim &lt; data início) */
   filterDateError = signal<string>('');
 
-  /** Intervalo efectivo para os gráficos. Prioridade: datas → ano+mês → só ano → últimos 30 dias. */
+  /** Intervalo efectivo: datas → ano+mês → ano → ano actual (todos os dados do ano na BD). */
   filterDateRange = computed((): { from: string; to: string } => {
     const from = this.filterDateFrom().trim();
     const to = this.filterDateTo().trim();
     if (from && to) {
-      if (new Date(to) < new Date(from)) return this.getDefaultRange();
+      if (new Date(to) < new Date(from)) return this.getYearRange(this.resolveFilterYear());
       return { from, to };
     }
-    const y = this.filterYear();
+    const y = this.resolveFilterYear();
     const m = this.filterMonth();
-    if (y != null && m != null) {
+    if (m != null) {
       const start = `${y}-${String(m).padStart(2, '0')}-01`;
       const lastDay = new Date(y, m, 0).getDate();
       return { from: start, to: `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}` };
     }
-    if (y != null) {
-      return { from: `${y}-01-01`, to: `${y}-12-31` };
-    }
-    return this.getDefaultRange();
+    return this.getYearRange(y);
   });
 
+  /** Ano seleccionado ou ano actual quando nenhum ano está definido. */
+  private resolveFilterYear(): number {
+    return this.filterYear() ?? this.effectiveFilterYear;
+  }
+
   /** Modo activo do filtro (define período e granularidade do gráfico). */
-  filterMode = computed((): 'range' | 'yearMonth' | 'yearOnly' | 'default' => {
+  filterMode = computed((): 'range' | 'yearMonth' | 'yearOnly' => {
     const from = this.filterDateFrom().trim();
     const to = this.filterDateTo().trim();
     if (from && to) return 'range';
-    const y = this.filterYear();
     const m = this.filterMonth();
-    if (y != null && m != null) return 'yearMonth';
-    if (y != null) return 'yearOnly';
-    return 'default';
+    if (m != null) return 'yearMonth';
+    return 'yearOnly';
   });
 
   /** Agregação do eixo X: dia, mês ou ano conforme o filtro e a extensão do período. */
   chartGranularity = computed((): ChartGranularity => {
     const mode = this.filterMode();
-    if (mode === 'yearMonth' || mode === 'default') return 'day';
+    if (mode === 'yearMonth') return 'day';
     if (mode === 'yearOnly') return 'month';
     const { from, to } = this.filterDateRange();
     const days = this.daysBetween(from, to);
@@ -312,24 +322,29 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (mode === 'yearMonth') {
       const m = this.filterMonth();
       const monthName = this.filterMonths.find((x) => x.value === m)?.label ?? '';
-      return `${gran} · ${monthName} ${this.filterYear()}`;
+      return `${gran} · ${monthName} ${this.resolveFilterYear()}`;
     }
-    if (mode === 'yearOnly') {
-      return `${gran} · ${this.filterYear()}`;
-    }
-    return `${gran} · últimos 30 dias`;
+    return `${gran} · ${this.resolveFilterYear()}`;
   });
 
-  /** Sempre 30 dias de calendário (hoje incluso), para o eixo X ter pontos suficientes para curvas suaves. */
-  private getDefaultRange(): { from: string; to: string } {
-    const end = new Date();
-    end.setHours(0, 0, 0, 0);
-    const start = new Date(end);
-    start.setDate(start.getDate() - 29);
-    return {
-      from: this.toLocalDateKey(start),
-      to: this.toLocalDateKey(end),
-    };
+  /** Rótulo do período activo (KPIs e cartões). */
+  periodLabel = computed(() => {
+    const mode = this.filterMode();
+    if (mode === 'range') {
+      const { from, to } = this.filterDateRange();
+      return `${this.formatDatePt(from)} – ${this.formatDatePt(to)}`;
+    }
+    if (mode === 'yearMonth') {
+      const m = this.filterMonth();
+      const monthName = this.filterMonths.find((x) => x.value === m)?.label ?? '';
+      return `${monthName} ${this.resolveFilterYear()}`;
+    }
+    return `Ano ${this.resolveFilterYear()}`;
+  });
+
+  /** Intervalo de 1 de Janeiro a 31 de Dezembro do ano indicado. */
+  private getYearRange(year: number): { from: string; to: string } {
+    return { from: `${year}-01-01`, to: `${year}-12-31` };
   }
 
   /** Chave YYYY-MM-DD em hora local (evita desvio UTC de toISOString). */
@@ -437,19 +452,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     expense: number;
     debt: number;
   } {
-    const profit = orders.reduce((sum, o) => {
-      let orderProfit = o.profit;
-      if (o.variableExpenses && o.variableExpenses.length > 0) {
-        const varExpensesTotal = o.variableExpenses.reduce((s, e) => s + e.amount, 0);
-        if (o.valuePaid < o.valueCharged && o.valuePaid > 0) {
-          const paymentRatio = o.valuePaid / o.valueCharged;
-          orderProfit = orderProfit - varExpensesTotal * paymentRatio;
-        } else if (o.valuePaid >= o.valueCharged) {
-          orderProfit = orderProfit - varExpensesTotal;
-        }
-      }
-      return sum + Math.max(0, orderProfit);
-    }, 0);
+    const profit = orders.reduce((sum, o) => sum + computeOrderProfit(o), 0);
     const expense = orders.reduce((sum, o) => {
       const baseExpense = o.costTotal;
       const varExpenses = o.variableExpenses?.reduce((s, e) => s + e.amount, 0) || 0;
@@ -462,12 +465,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return { profit, expense, debt };
   }
 
-  /** Utilizador tem filtro activo (datas, ano+mês ou só ano) */
+  /** Utilizador aplicou filtro personalizado (datas, mês ou ano diferente do actual). */
   hasActiveFilter = computed(() => {
     const from = this.filterDateFrom().trim();
     const to = this.filterDateTo().trim();
+    if (from !== '' && to !== '') return true;
+    if (this.filterMonth() != null) return true;
     const y = this.filterYear();
-    return (from !== '' && to !== '') || y != null;
+    return y != null && y !== this.effectiveFilterYear;
   });
 
   /** Há valores não-zero no gráfico */
@@ -506,6 +511,29 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }, 0);
   });
 
+  /** Total cobrado no período filtrado */
+  totalRevenueInRange = computed(() =>
+    this.ordersInRange().reduce((sum, o) => sum + (o.valueCharged ?? 0), 0),
+  );
+
+  /** Lucro no período filtrado */
+  totalProfitInRange = computed(() => computeTotalProfit(this.ordersInRange()));
+
+  /** Retiradas no período filtrado */
+  totalWithdrawnInRange = computed(() => {
+    const { from, to } = this.filterDateRange();
+    return this.withdrawalService.withdrawals().reduce((sum, w) => {
+      const d = w.withdrawalDate;
+      if (d >= from && d <= to) return sum + (w.amount ?? 0);
+      return sum;
+    }, 0);
+  });
+
+  /** Lucro disponível no período = lucro do período − retiradas do período */
+  availableProfitInRange = computed(() =>
+    Math.max(0, this.totalProfitInRange() - this.totalWithdrawnInRange()),
+  );
+
   /** Total dívidas (saldo em falta) no período filtrado */
   totalDebtInRange = computed(() => {
     return this.ordersInRange().reduce((sum, o) => {
@@ -540,25 +568,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       // Incluir despesas variáveis (delivery + outras)
       const varExpenses = o.variableExpenses?.reduce((s, e) => s + e.amount, 0) || 0;
       return sum + baseExpense + varExpenses;
-    }, 0);
-  });
-
-  totalProfit = computed(() => {
-    const allOrders = this.orders.allOrders();
-    return allOrders.reduce((sum, o) => {
-      let orderProfit = o.profit;
-      // Se há despesas variáveis, subtrair do lucro
-      if (o.variableExpenses && o.variableExpenses.length > 0) {
-        const varExpensesTotal = o.variableExpenses.reduce((s, e) => s + e.amount, 0);
-        // Ajustar lucro proporcionalmente se pagamento parcial
-        if (o.valuePaid < o.valueCharged && o.valuePaid > 0) {
-          const paymentRatio = o.valuePaid / o.valueCharged;
-          orderProfit = orderProfit - (varExpensesTotal * paymentRatio);
-        } else if (o.valuePaid >= o.valueCharged) {
-          orderProfit = orderProfit - varExpensesTotal;
-        }
-      }
-      return sum + Math.max(0, orderProfit);
     }, 0);
   });
 
@@ -772,14 +781,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** Anos e meses para os selects do filtro */
   filterYears = computed(() => {
-    const orders = this.orders.allOrders();
     const years = new Set<number>();
-    orders.forEach((o) => {
-      const d = o.deliveryDate || o.createdAt;
-      if (d) years.add(new Date(d).getFullYear());
+    years.add(this.effectiveFilterYear);
+    this.orders.allOrders().forEach((o) => {
+      const key = this.orderDateKey(o);
+      if (key.length >= 4) years.add(Number(key.slice(0, 4)));
     });
-    const arr = Array.from(years).sort((a, b) => b - a);
-    return arr.length ? arr : [new Date().getFullYear()];
+    return Array.from(years).sort((a, b) => b - a);
   });
   readonly filterMonths = [
     { value: 1, label: 'Janeiro' }, { value: 2, label: 'Fevereiro' }, { value: 3, label: 'Março' },
@@ -863,7 +871,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   clearFilter(): void {
     this.filterDateFrom.set('');
     this.filterDateTo.set('');
-    this.filterYear.set(null);
+    this.filterYear.set(this.effectiveFilterYear);
     this.filterMonth.set(null);
     this.filterDateError.set('');
     this.scheduleChartRefresh();

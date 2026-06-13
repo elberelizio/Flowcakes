@@ -51,6 +51,13 @@
 
 .filters-section {
   margin-bottom: 1.25rem;
+
+  &__title {
+    margin: 0;
+    flex: 1;
+    font-size: 1rem;
+    font-weight: 700;
+  }
 }
 
 .search-bar {

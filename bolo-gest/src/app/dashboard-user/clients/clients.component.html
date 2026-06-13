@@ -1,19 +1,35 @@
 <div class="clientes-page">
   <header class="page-hero">
-    <a routerLink="/dashboard" class="btn-back">← Voltar ao dashboard</a>
+    <div class="page-hero__nav">
+      <a routerLink="/dashboard" class="btn-back">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+        Voltar ao dashboard
+      </a>
+    </div>
     <div class="page-hero__main">
-      <p class="page-hero__eyebrow">Gestão comercial</p>
+      <p class="page-hero__eyebrow">
+        <span class="page-hero__eyebrow-icon" aria-hidden="true"><i class="fa-solid fa-handshake"></i></span>
+        Gestão comercial
+      </p>
       <h1>Clientes</h1>
       <p class="page-hero__sub">Lista de clientes, pedidos, pagamentos e perfil de risco por saldo em dívida.</p>
     </div>
   </header>
 
   <section class="kpi-strip" aria-label="Resumo de clientes">
-    <article class="kpi-card">
+    <article class="kpi-card kpi-card--total">
       <span class="kpi-card__icon" aria-hidden="true"><i class="fa-solid fa-users"></i></span>
       <div>
         <span class="kpi-card__label">Clientes</span>
         <p class="kpi-card__value">{{ filteredClients().length }}</p>
+      </div>
+    </article>
+    <article class="kpi-card kpi-card--ok">
+      <span class="kpi-card__icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
+      <div>
+        <span class="kpi-card__label">Em dia</span>
+        <p class="kpi-card__value">{{ clientsInGoodStanding() }}</p>
+        <span class="kpi-card__meta">Sem dívida pendente</span>
       </div>
     </article>
     <article class="kpi-card kpi-card--warn">
@@ -21,6 +37,7 @@
       <div>
         <span class="kpi-card__label">Com dívida</span>
         <p class="kpi-card__value">{{ clientsWithDebt() }}</p>
+        <span class="kpi-card__meta">Aguardam pagamento</span>
       </div>
     </article>
     <article class="kpi-card kpi-card--debt">
@@ -32,14 +49,26 @@
     </article>
   </section>
 
-  <section class="filters-panel card">
-    <div class="panel-head panel-head--compact">
+  <section class="filters-panel card" [class.filters-panel--collapsed]="!showFilters()">
+    <div class="filters-panel__head panel-head panel-head--compact">
       <span class="panel-icon panel-icon--filters" aria-hidden="true"><i class="fa-solid fa-filter"></i></span>
       <div>
         <h2 class="panel-title">Filtros</h2>
         <p class="panel-desc">Refine a lista por nome ou tipo de pedido</p>
       </div>
+      <button
+        type="button"
+        class="filters-toggle"
+        [class.filters-toggle--open]="showFilters()"
+        (click)="toggleFilters()"
+        [attr.aria-expanded]="showFilters()">
+        <i class="fa-solid fa-filter" aria-hidden="true"></i>
+        <span>{{ showFilters() ? 'Ocultar filtros' : 'Mostrar filtros' }}</span>
+        <i class="fa-solid fa-chevron-down filters-toggle__chevron" aria-hidden="true"></i>
+      </button>
     </div>
+    @if (showFilters()) {
+    <div class="filters-panel__body">
     <div class="filters-row">
       <label class="filter-group">
         <span class="filter-label">Cliente</span>
@@ -67,6 +96,8 @@
         Limpar
       </button>
     </div>
+    </div>
+    }
   </section>
 
   <section class="clients-panel card">
@@ -112,10 +143,10 @@
           </thead>
           <tbody>
             @for (c of filteredClients(); track c.name) {
-              <tr>
+              <tr class="client-row" [class]="'client-row--' + getClientProfileKey(c)">
                 <td data-label="Cliente">
                   <span class="client-name">
-                    <span class="client-avatar" aria-hidden="true">{{ c.name.charAt(0).toUpperCase() }}</span>
+                    <span class="client-avatar" [class.client-avatar--ok]="c.totalDebt <= 0" [class.client-avatar--debt]="c.totalDebt > 0" aria-hidden="true">{{ c.name.charAt(0).toUpperCase() }}</span>
                     {{ c.name }}
                   </span>
                 </td>
@@ -127,21 +158,27 @@
                 <td data-label="Recebido">
                   <span class="paid-cell">
                     {{ c.totalPaid | number:'1.0-0' }} MZN
-                    <small class="paid-rate">{{ getPaymentRate(c) | number:'1.0-0' }}%</small>
+                    <small class="paid-rate" [class.paid-rate--ok]="getPaidRateTone(c) === 'ok'" [class.paid-rate--warn]="getPaidRateTone(c) === 'warn'" [class.paid-rate--risk]="getPaidRateTone(c) === 'risk'">
+                      {{ getPaymentRate(c) | number:'1.0-0' }}% pago
+                    </small>
                   </span>
                 </td>
                 <td data-label="Dívida">
-                  <span class="debt-pill" [class.debt-pill--zero]="c.totalDebt <= 0">
+                  <span class="debt-pill" [class.debt-pill--zero]="c.totalDebt <= 0" [class.debt-pill--active]="c.totalDebt > 0">
                     {{ c.totalDebt | number:'1.0-0' }} MZN
                   </span>
                 </td>
                 <td data-label="Perfil">
-                  <span
-                    class="profile-badge"
-                    [class.profile-good]="getClientProfile(c) === 'Excelente' || getClientProfile(c) === 'Bom'"
-                    [class.profile-warn]="getClientProfile(c) === 'Atenção'"
-                    [class.profile-risk]="getClientProfile(c) === 'Risco'"
-                  >
+                  <span class="profile-badge" [class]="'profile-badge--' + getClientProfileKey(c)">
+                    @if (getClientProfileKey(c) === 'ok') {
+                      <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                    } @else if (getClientProfileKey(c) === 'regular') {
+                      <i class="fa-solid fa-clock" aria-hidden="true"></i>
+                    } @else if (getClientProfileKey(c) === 'attention') {
+                      <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                    } @else {
+                      <i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>
+                    }
                     {{ getClientProfile(c) }}
                   </span>
                 </td>
@@ -223,7 +260,7 @@
                   <td data-label="Cobrado">{{ o.valueCharged | number:'1.0-0' }} MZN</td>
                   <td data-label="Pago">{{ o.valuePaid | number:'1.0-0' }} MZN</td>
                   <td data-label="Dívida">
-                    <span class="debt-pill" [class.debt-pill--zero]="getOrderDebt(o) <= 0">
+                    <span class="debt-pill" [class.debt-pill--zero]="getOrderDebt(o) <= 0" [class.debt-pill--active]="getOrderDebt(o) > 0">
                       {{ getOrderDebt(o) | number:'1.0-0' }} MZN
                     </span>
                   </td>

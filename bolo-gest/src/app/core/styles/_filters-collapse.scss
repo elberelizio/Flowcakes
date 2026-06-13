@@ -1,0 +1,90 @@
+/* Botão e painéis de filtros recolhíveis (todas as páginas) */
+
+.filters-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+
+  i {
+    font-size: 0.78rem;
+    color: var(--primary);
+  }
+
+  &__chevron {
+    font-size: 0.68rem !important;
+    color: var(--text-muted) !important;
+    transition: transform 0.2s ease;
+  }
+
+  &--open &__chevron {
+    transform: rotate(180deg);
+  }
+
+  &--open,
+  &:hover {
+    border-color: rgba(13, 148, 136, 0.35);
+    background: var(--primary-light);
+  }
+
+  &--open {
+    color: var(--primary-dark);
+  }
+}
+
+.filters-panel__head,
+.filters-section__head,
+.panel-head--filters-row,
+.orders-filters__head,
+.al-filters__head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  width: 100%;
+
+  > .panel-icon,
+  > .panel-head__text,
+  > div:first-child {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.filters-panel__body,
+.filters-section__body,
+.orders-filters__body,
+.al-filters__body {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
+}
+
+.filters-section__head {
+  margin-bottom: 0;
+
+  .filters-title {
+    margin: 0;
+    flex: 1;
+  }
+}
+
+.filters-panel--collapsed {
+  .filters-panel__head {
+    margin-bottom: 0;
+  }
+}

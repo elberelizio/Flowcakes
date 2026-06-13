@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -269,7 +270,88 @@ public class OrderService {
             order.setCancelled(request.getOrderStatus() != null && request.getOrderStatus().equals("cancelled"));
         }
         
-        // Mapear despesas variáveis
-        order.setVariableExpenses(request.getVariableExpenses());
+        applyVariableExpenses(request, order);
+    }
+
+    /**
+     * Despesas extras pertencem à encomenda (coluna variable_expenses JSONB).
+     * Se o pedido não envia a lista, preserva o que já está na BD.
+     * Encomendas entregues ou canceladas não podem ter despesas alteradas.
+     */
+    private void applyVariableExpenses(OrderRequest request, OrderEntity order) {
+        List<VariableExpense> incoming = request.getVariableExpenses();
+        if (incoming == null) {
+            return;
+        }
+
+        if (order.isDelivered() || order.isCancelled()) {
+            if (!variableExpensesEqual(incoming, order.getVariableExpenses())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Não pode alterar despesas extras de uma encomenda entregue ou cancelada.");
+            }
+            return;
+        }
+
+        order.setVariableExpenses(incoming);
+        recalculateProfitFromExtras(order);
+    }
+
+    private static void recalculateProfitFromExtras(OrderEntity order) {
+        BigDecimal valuePaid = nz(order.getValuePaid());
+        BigDecimal valueCharged = nz(order.getValueCharged());
+        BigDecimal costTotal = nz(order.getCostTotal());
+        BigDecimal varTotal = sumVariableExpenses(order.getVariableExpenses());
+
+        BigDecimal profit;
+        if (valuePaid.compareTo(BigDecimal.ZERO) <= 0) {
+            profit = BigDecimal.ZERO;
+        } else if (valueCharged.compareTo(BigDecimal.ZERO) <= 0) {
+            profit = valuePaid.subtract(costTotal).subtract(varTotal);
+        } else if (valuePaid.compareTo(valueCharged) >= 0) {
+            // Pagamento total ou a mais (gorjeta) — lucro com base no valor recebido
+            profit = valuePaid.subtract(costTotal).subtract(varTotal);
+        } else {
+            BigDecimal ratio = valuePaid.divide(valueCharged, 6, RoundingMode.HALF_UP);
+            BigDecimal margin = valueCharged.subtract(costTotal);
+            profit = margin.multiply(ratio).subtract(varTotal.multiply(ratio));
+        }
+        order.setProfit(profit.max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP));
+    }
+
+    private static boolean variableExpensesEqual(List<VariableExpense> a, List<VariableExpense> b) {
+        List<VariableExpense> normA = normalizeVariableExpenses(a);
+        List<VariableExpense> normB = normalizeVariableExpenses(b);
+        if (normA.size() != normB.size()) {
+            return false;
+        }
+        for (int i = 0; i < normA.size(); i++) {
+            VariableExpense ea = normA.get(i);
+            VariableExpense eb = normB.get(i);
+            String nameA = ea.getName() != null ? ea.getName() : "";
+            String nameB = eb.getName() != null ? eb.getName() : "";
+            if (!nameA.equals(nameB)) {
+                return false;
+            }
+            if (nz(ea.getAmount()).compareTo(nz(eb.getAmount())) != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static List<VariableExpense> normalizeVariableExpenses(List<VariableExpense> list) {
+        if (list == null || list.isEmpty()) {
+            return List.of();
+        }
+        List<VariableExpense> normalized = new ArrayList<>();
+        for (VariableExpense expense : list) {
+            if (expense == null) {
+                continue;
+            }
+            String name = expense.getName() != null ? expense.getName().trim() : "";
+            BigDecimal amount = nz(expense.getAmount()).setScale(2, RoundingMode.HALF_UP);
+            normalized.add(new VariableExpense(name, amount));
+        }
+        return normalized;
     }
 }

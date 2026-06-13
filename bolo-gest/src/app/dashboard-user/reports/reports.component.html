@@ -1,59 +1,99 @@
 <div class="reports-page">
   <header class="page-hero">
-    <a routerLink="/dashboard" class="btn-back">← Voltar ao dashboard</a>
+    <div class="page-hero__nav">
+      <a routerLink="/dashboard" class="btn-back">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+        Voltar ao dashboard
+      </a>
+    </div>
     <div class="page-hero__main">
-      <p class="page-hero__eyebrow">Análise do negócio</p>
+      <p class="page-hero__eyebrow">
+        <span class="page-hero__eyebrow-icon" aria-hidden="true"><i class="fa-solid fa-chart-pie"></i></span>
+        Análise do negócio
+      </p>
       <h1>Relatórios</h1>
       <p class="page-hero__sub">
         @if (isAdmin) {
           Visão consolidada da receita mensal de todos os utilizadores.
         } @else {
-          Acompanhe o lucro por período, o volume de pedidos e a evolução da receita ao longo dos meses.
+          Acompanhe o lucro por período, o volume de pedidos e exporte o relatório em PDF.
         }
       </p>
     </div>
   </header>
 
-  @if (canExport()) {
-    <section class="export-toolbar" aria-label="Exportar relatório">
-      <div class="export-toolbar__text">
-        <span class="export-toolbar__label">Exportar relatório</span>
-        <span class="export-toolbar__hint">PDF, Word ou Excel com resumo e tabela de receita</span>
+  <section class="filters-panel card" [class.filters-panel--collapsed]="!showFilters()" aria-label="Filtros e exportação">
+    <div class="filters-panel__head">
+      <span class="panel-icon panel-icon--blue" aria-hidden="true"><i class="fa-solid fa-filter"></i></span>
+      <div>
+        <h2 class="panel-title">Período do relatório</h2>
+        <p class="panel-desc">
+          @if (filterIsActive()) {
+            Período activo: {{ periodLabel() }} — gráfico e PDF reflectem este intervalo.
+          } @else {
+            Sem filtro aplicado — a mostrar o <strong>total acumulado</strong> na base de dados. Escolha datas e clique em <strong>Aplicar</strong> para filtrar.
+          }
+        </p>
       </div>
-      <div class="export-toolbar__actions">
-        <button
-          type="button"
-          class="export-btn export-btn--pdf"
-          [disabled]="exportBusy()"
-          (click)="exportPdf()"
-        >
-          <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
-          PDF
-        </button>
-        <button
-          type="button"
-          class="export-btn export-btn--word"
-          [disabled]="exportBusy()"
-          (click)="exportWord()"
-        >
-          <i class="fa-solid fa-file-word" aria-hidden="true"></i>
-          Word
-        </button>
-        <button
-          type="button"
-          class="export-btn export-btn--excel"
-          [disabled]="exportBusy()"
-          (click)="exportExcel()"
-        >
-          <i class="fa-solid fa-file-excel" aria-hidden="true"></i>
-          Excel
-        </button>
+      <button
+        type="button"
+        class="btn btn-pdf filters-panel__pdf"
+        [disabled]="!canExport() || !chartHasData()"
+        (click)="exportPdf()">
+        <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
+        {{ exportBusy() ? 'A gerar…' : 'Baixar PDF' }}
+      </button>
+      <button
+        type="button"
+        class="filters-toggle"
+        [class.filters-toggle--open]="showFilters()"
+        (click)="toggleFilters()"
+        [attr.aria-expanded]="showFilters()">
+        <i class="fa-solid fa-filter" aria-hidden="true"></i>
+        <span>{{ showFilters() ? 'Ocultar filtros' : 'Mostrar filtros' }}</span>
+        <i class="fa-solid fa-chevron-down filters-toggle__chevron" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    @if (showFilters()) {
+    <div class="filters-panel__body">
+    <div class="filters-row">
+      <label class="filter-field">
+        <span class="filter-field__label">Data início</span>
+        <input
+          type="date"
+          class="filter-field__input"
+          [value]="filterDateFrom()"
+          (input)="filterDateFrom.set($any($event.target).value)" />
+      </label>
+      <label class="filter-field">
+        <span class="filter-field__label">Data fim</span>
+        <input
+          type="date"
+          class="filter-field__input"
+          [value]="filterDateTo()"
+          (input)="filterDateTo.set($any($event.target).value)" />
+      </label>
+      <div class="filters-row__actions">
+        <button type="button" class="btn btn-secondary" (click)="applyFilters()">Aplicar</button>
+        <button type="button" class="btn btn-ghost" (click)="clearFilters()">Limpar</button>
       </div>
-    </section>
-  }
+    </div>
+    </div>
+    }
+  </section>
 
   @if (!isAdmin) {
     <section class="profit-kpis" aria-label="Lucro por período">
+      <article class="profit-card profit-card--period">
+        <div class="profit-card__icon" aria-hidden="true"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="profit-card__body">
+          <span class="profit-card__label">{{ periodProfitLabel() }}</span>
+          <p class="profit-card__value">{{ profitInPeriod() | number:'1.2-2' }} <small>MZN</small></p>
+          <span class="profit-card__meta">{{ totalOrdersInPeriod() }} {{ totalOrdersInPeriod() === 1 ? 'pedido' : 'pedidos' }}</span>
+        </div>
+      </article>
+
       <article class="profit-card profit-card--day">
         <div class="profit-card__icon" aria-hidden="true"><i class="fa-solid fa-sun"></i></div>
         <div class="profit-card__body">
@@ -81,38 +121,22 @@
         </div>
       </article>
     </section>
-
-    <section class="secondary-stats" aria-label="Resumo de pedidos">
-      <article class="stat-chip">
-        <span class="stat-chip__icon" aria-hidden="true"><i class="fa-solid fa-receipt"></i></span>
-        <div>
-          <span class="stat-chip__value">{{ totalOrders() }}</span>
-          <span class="stat-chip__label">Total de pedidos</span>
-        </div>
-      </article>
-      <article class="stat-chip" [class.stat-chip--warning]="pendingCount() > 0">
-        <span class="stat-chip__icon" aria-hidden="true"><i class="fa-solid fa-clock"></i></span>
-        <div>
-          <span class="stat-chip__value">{{ pendingCount() }}</span>
-          <span class="stat-chip__label">Com saldo pendente</span>
-        </div>
-      </article>
-      @if (pendingCount() > 0) {
-        <a routerLink="/debts" class="stat-chip-link">
-          Ver dívidas <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-        </a>
-      }
-    </section>
   }
 
   <section class="chart-panel card">
     <div class="panel-head">
-      <span class="panel-icon" aria-hidden="true"><i class="fa-solid fa-chart-column"></i></span>
+      <span class="panel-icon panel-icon--teal" aria-hidden="true"><i class="fa-solid fa-chart-pie"></i></span>
       <div>
-        <h2 class="panel-title">
-          {{ isAdmin ? 'Receita por mês (todos os utilizadores)' : 'Receita por mês' }}
-        </h2>
-        <p class="panel-desc">Evolução da receita nos últimos meses</p>
+        <h2 class="panel-title">{{ chartTitle() }}</h2>
+        <p class="panel-desc">
+          @if (isAdmin) {
+            Receita mensal da plataforma — cada mês com cor própria
+          } @else if (filterIsActive()) {
+            Lucro, despesas, dívidas e retiradas — valores visíveis em cada fatia e incluídos no PDF
+          } @else {
+            Lucro, despesas, dívidas e retiradas acumulados — incluído no PDF
+          }
+        </p>
       </div>
     </div>
 
@@ -126,16 +150,26 @@
         <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
         <p>{{ chartError() }}</p>
       </div>
-    } @else if (revenueByMonth().length === 0) {
+    } @else if (!chartHasData()) {
       <div class="chart-state chart-state--empty">
-        <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
-        <p class="chart-state__title">Sem dados de receita</p>
-        <p class="chart-state__text">Quando tiver pedidos registados, a evolução mensal aparecerá aqui.</p>
+        <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
+        <p class="chart-state__title">Sem dados no período</p>
+        <p class="chart-state__text">Ajuste as datas do filtro ou registe encomendas no intervalo seleccionado.</p>
       </div>
     } @else {
       <div class="chart-container">
-        <canvas #revenueChart aria-label="Gráfico de receita por mês"></canvas>
+        <canvas #revenueChart [attr.aria-label]="chartTitle()"></canvas>
       </div>
+      @if (!isAdmin) {
+        <ul class="chart-legend-list" aria-label="Legenda do gráfico">
+          @for (slice of financialChartSlices(); track slice.label) {
+            <li class="chart-legend-list__item">
+              <span class="chart-legend-list__dot" [style.background]="slice.color"></span>
+              <span class="chart-legend-list__label">{{ slice.label }}</span>
+            </li>
+          }
+        </ul>
+      }
     }
   </section>
 </div>

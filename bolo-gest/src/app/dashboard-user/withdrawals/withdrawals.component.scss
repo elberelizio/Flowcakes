@@ -6,33 +6,41 @@
 
 .page-hero {
   margin-bottom: 1.5rem;
-  padding: 1.25rem 1.35rem;
+  padding: 1rem 1.35rem 1.2rem;
   border-radius: 1rem;
-  border: 1px solid var(--border);
-  background: linear-gradient(120deg, #f0fdfa 0%, #ccfbf1 22%, var(--card-bg, #fff) 62%);
+  border: 1px solid rgba(13, 148, 136, 0.15);
+  background: linear-gradient(135deg, #ecfdf5 0%, #eff6ff 45%, var(--card-bg, #fff) 100%);
   box-shadow: 0 8px 26px rgba(15, 23, 42, 0.06);
+
+  &__nav {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.75rem;
+  }
 
   .btn-back {
     display: inline-flex;
     align-items: center;
-    padding: 0.45rem 0.8rem;
-    font-size: 0.88rem;
-    font-weight: 500;
-    color: var(--text-muted);
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    gap: 0.4rem;
+    padding: 0.42rem 0.85rem;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #dc2626;
+    background: #fef2f2;
+    border: 1px solid rgba(220, 38, 38, 0.28);
+    border-radius: 9999px;
     text-decoration: none;
-    margin-bottom: 0.85rem;
-    transition:
-      background 0.2s,
-      color 0.2s,
-      border-color 0.2s;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+
+    i {
+      color: #dc2626;
+      font-size: 0.78rem;
+    }
 
     &:hover {
-      background: var(--secondary);
-      color: var(--text);
-      border-color: rgba(13, 148, 136, 0.35);
+      background: #fee2e2;
+      color: #b91c1c;
+      border-color: rgba(220, 38, 38, 0.45);
     }
   }
 
@@ -41,12 +49,28 @@
   }
 
   &__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
     margin: 0 0 0.35rem;
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: #0f766e;
+  }
+
+  &__eyebrow-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.55rem;
+    height: 1.55rem;
+    border-radius: 0.45rem;
+    background: #ccfbf1;
+    color: #0d9488;
+    border: 1px solid #99f6e4;
+    font-size: 0.72rem;
   }
 
   h1 {
@@ -125,6 +149,71 @@
   margin: 0.2rem 0 0;
   font-size: 0.85rem;
   color: var(--text-muted);
+}
+
+.profit-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.85rem;
+  border: 1px solid #bbf7d0;
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+
+  &--empty {
+    border-color: #fecaca;
+    background: linear-gradient(135deg, #fef2f2, #fff7ed);
+
+    .profit-hint__icon {
+      background: #fee2e2;
+      color: #dc2626;
+      border-color: #fecaca;
+    }
+
+    .profit-hint__value {
+      color: #dc2626;
+    }
+  }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 0.6rem;
+    background: #dcfce7;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+    flex-shrink: 0;
+  }
+
+  &__label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    margin-bottom: 0.15rem;
+  }
+
+  &__value {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #059669;
+    line-height: 1.2;
+  }
+
+  &__after {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: #b45309;
+    font-weight: 600;
+  }
 }
 
 .form-grid {
@@ -277,13 +366,26 @@
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
 }
-
 .kpi-card {
   padding: 1rem 1.1rem;
   border-radius: 0.9rem;
   border: 1px solid var(--border);
   background: var(--card-bg);
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+
+  &--profit {
+    border-color: rgba(22, 163, 74, 0.2);
+    background: linear-gradient(145deg, #f0fdf4, #fff);
+  }
+
+  &--available {
+    border-color: rgba(13, 148, 136, 0.25);
+    background: linear-gradient(145deg, #f0fdfa, #fff);
+
+    .kpi-card__value {
+      color: #0d9488;
+    }
+  }
 
   &--primary {
     border-color: rgba(13, 148, 136, 0.25);

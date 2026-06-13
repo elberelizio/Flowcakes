@@ -63,6 +63,7 @@ export class AdminLogsUserHistoryComponent implements OnInit {
 
   loading = signal(true);
   error = signal('');
+  showFilters = signal(false);
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('userId') ?? '';
@@ -259,5 +260,9 @@ export class AdminLogsUserHistoryComponent implements OnInit {
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${y}-${m}-${day}`;
+  }
+
+  toggleFilters(): void {
+    this.showFilters.update((v) => !v);
   }
 }

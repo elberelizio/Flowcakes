@@ -172,6 +172,12 @@ export function orderActiveDebt(o: Order): number {
   return Math.max(0, o.valueCharged - o.valuePaid);
 }
 
+/** Valor pago acima do acordado (gorjeta / pagamento a mais). */
+export function orderClientOverpayment(o: Order): number {
+  if (o.isCancelled || o.orderStatus === 'cancelled') return 0;
+  return Math.max(0, (o.valuePaid ?? 0) - (o.valueCharged ?? 0));
+}
+
 /** Valor devolvido ao cliente no cancelamento (adiantamento devolvido, não o preço da encomenda). */
 export function orderRefundToClient(o: Order): number {
   if (o.refundAmount != null && o.refundAmount > 0) return o.refundAmount;

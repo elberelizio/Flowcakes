@@ -7,7 +7,22 @@
     <a routerLink="/admin-dashboard" class="gn2-btn gn2-btn-back">Voltar ao painel</a>
   </header>
 
-  <div class="filters-section">
+  <div class="filters-section card" [class.filters-panel--collapsed]="!showFilters()">
+    <div class="filters-section__head">
+      <h2 class="filters-section__title">Filtros</h2>
+      <button
+        type="button"
+        class="filters-toggle"
+        [class.filters-toggle--open]="showFilters()"
+        (click)="toggleFilters()"
+        [attr.aria-expanded]="showFilters()">
+        <i class="fa-solid fa-filter" aria-hidden="true"></i>
+        <span>{{ showFilters() ? 'Ocultar filtros' : 'Mostrar filtros' }}</span>
+        <i class="fa-solid fa-chevron-down filters-toggle__chevron" aria-hidden="true"></i>
+      </button>
+    </div>
+    @if (showFilters()) {
+    <div class="filters-section__body">
     <div class="search-bar">
       <input
         type="search"
@@ -53,6 +68,8 @@
       </div>
       <button type="button" class="gn2-btn gn2-btn--outline gn2-btn-clear" (click)="clearFilters()">Limpar filtros</button>
     </div>
+    </div>
+    }
   </div>
 
   @if (error()) {

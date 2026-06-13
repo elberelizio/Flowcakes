@@ -1,62 +1,107 @@
 <div class="vex-page">
   <header class="page-hero">
-    <a routerLink="/dashboard" class="btn-back">← Voltar</a>
-    <div class="page-hero__main">
-      <p class="page-hero__eyebrow">Custos</p>
-      <h1 class="page-hero__title">Despesas extras</h1>
-      <p class="page-hero__sub">
-        Custos adicionais por encomenda (material, embalagem, delivery, descontos). Só aparecem pedidos em curso — entregues ou
-        cancelados ficam de fora.
-      </p>
-    </div>
-  </header>
-
-  @if (filteredOrders().length === 0) {
-    <div class="vex-empty card">
-      <span class="vex-empty__icon" aria-hidden="true"><i class="fa-solid fa-clipboard-list"></i></span>
-      <p class="vex-empty__title">Nenhuma encomenda em curso</p>
-      <p class="vex-empty__text">Crie uma encomenda ou aguarde pedidos activos para registar despesas extras.</p>
-      <a routerLink="/new-order" class="btn btn-primary">
-        <i class="fa-solid fa-plus" aria-hidden="true"></i>
-        Criar encomenda
+    <div class="page-hero__nav">
+      <a routerLink="/dashboard" class="btn-back">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+        Voltar
       </a>
     </div>
-  } @else {
-    <section class="kpi-strip" aria-label="Resumo de despesas extras">
-      <article class="kpi-card">
-        <span class="kpi-card__icon" aria-hidden="true"><i class="fa-solid fa-box-open"></i></span>
-        <div>
-          <span class="kpi-card__label">Encomendas activas</span>
-          <p class="kpi-card__value">{{ activeOrderCount() }}</p>
-        </div>
-      </article>
-      <article class="kpi-card kpi-card--accent">
-        <span class="kpi-card__icon" aria-hidden="true"><i class="fa-solid fa-receipt"></i></span>
-        <div>
-          <span class="kpi-card__label">Com despesas registadas</span>
-          <p class="kpi-card__value">{{ ordersWithExpensesCount() }}</p>
-        </div>
-      </article>
-      <article class="kpi-card kpi-card--total">
-        <span class="kpi-card__icon" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
-        <div>
-          <span class="kpi-card__label">Total em despesas</span>
-          <p class="kpi-card__value">{{ totalExtrasMzn() | number:'1.0-0' }} <small>MZN</small></p>
-          <span class="kpi-card__meta">soma das encomendas visíveis</span>
-        </div>
-      </article>
-    </section>
+    <div class="page-hero__main">
+      <p class="page-hero__eyebrow">
+        <span class="page-hero__eyebrow-icon" aria-hidden="true"><i class="fa-solid fa-wallet"></i></span>
+        Custos
+      </p>
+      <h1 class="page-hero__title">Despesas extras</h1>
+      <p class="page-hero__sub">
+        Registe custos adicionais nas encomendas em curso ou consulte o histórico completo — só leitura.
+      </p>
+    </div>
 
-    <section class="vex-panel card">
-      <div class="panel-head">
-        <div class="panel-head__text">
-          <span class="panel-icon" aria-hidden="true"><i class="fa-solid fa-list-check"></i></span>
+    <nav class="vex-tabs" aria-label="Secções de despesas extras">
+      <button
+        type="button"
+        class="vex-tabs__btn"
+        [class.vex-tabs__btn--active]="activeTab() === 'register'"
+        (click)="setTab('register')">
+        <span class="vex-tabs__icon vex-tabs__icon--register" aria-hidden="true">
+          <i class="fa-solid fa-pen-to-square"></i>
+        </span>
+        Registar
+      </button>
+      <button
+        type="button"
+        class="vex-tabs__btn"
+        [class.vex-tabs__btn--active]="activeTab() === 'overview'"
+        [class.vex-tabs__btn--overview-active]="activeTab() === 'overview'"
+        (click)="setTab('overview')">
+        <span class="vex-tabs__icon vex-tabs__icon--overview" aria-hidden="true">
+          <i class="fa-solid fa-chart-column"></i>
+        </span>
+        Consultar histórico
+      </button>
+    </nav>
+  </header>
+
+  @if (activeTab() === 'register') {
+    @if (filteredOrders().length === 0) {
+      <div class="vex-empty card">
+        <span class="vex-empty__icon vex-empty__icon--blue" aria-hidden="true"><i class="fa-solid fa-clipboard-list"></i></span>
+        <p class="vex-empty__title">Nenhuma encomenda em curso</p>
+        <p class="vex-empty__text">Crie uma encomenda ou aguarde pedidos activos para registar despesas extras.</p>
+        <a routerLink="/new-order" class="btn btn-primary">
+          <i class="fa-solid fa-plus" aria-hidden="true"></i>
+          Criar encomenda
+        </a>
+      </div>
+    } @else {
+      <section class="kpi-strip" aria-label="Resumo de despesas extras">
+        <article class="kpi-card">
+          <span class="kpi-card__icon kpi-card__icon--blue" aria-hidden="true"><i class="fa-solid fa-box-open"></i></span>
           <div>
-            <h2 class="panel-title">Encomendas em curso</h2>
-            <p class="panel-desc">Seleccione uma linha ou use <strong>Gerir</strong> para adicionar e editar despesas.</p>
+            <span class="kpi-card__label">Encomendas activas</span>
+            <p class="kpi-card__value">{{ activeOrderCount() }}</p>
           </div>
+        </article>
+        <article class="kpi-card kpi-card--accent">
+          <span class="kpi-card__icon kpi-card__icon--teal" aria-hidden="true"><i class="fa-solid fa-receipt"></i></span>
+          <div>
+            <span class="kpi-card__label">Com despesas registadas</span>
+            <p class="kpi-card__value">{{ ordersWithExpensesCount() }}</p>
+          </div>
+        </article>
+        <article class="kpi-card kpi-card--total">
+          <span class="kpi-card__icon kpi-card__icon--sky" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
+          <div>
+            <span class="kpi-card__label">Total em despesas</span>
+            <p class="kpi-card__value">{{ totalExtrasMzn() | number:'1.0-0' }} <small>MZN</small></p>
+            <span class="kpi-card__meta">soma das encomendas em curso</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="vex-panel card">
+        <div class="panel-head">
+          <div class="panel-head__text">
+            <span class="panel-icon panel-icon--teal" aria-hidden="true"><i class="fa-solid fa-list-check"></i></span>
+            <div>
+              <h2 class="panel-title">Encomendas em curso</h2>
+              <p class="panel-desc">Seleccione uma linha ou use <strong>Gerir</strong> para adicionar e editar despesas.</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="filters-toggle"
+            [class.filters-toggle--open]="showFilters()"
+            (click)="toggleFilters()"
+            [attr.aria-expanded]="showFilters()">
+            <i class="fa-solid fa-filter" aria-hidden="true"></i>
+            <span>{{ showFilters() ? 'Ocultar filtros' : 'Mostrar filtros' }}</span>
+            <i class="fa-solid fa-chevron-down filters-toggle__chevron" aria-hidden="true"></i>
+          </button>
         </div>
-        <label class="panel-search">
+
+        @if (showFilters()) {
+        <label class="panel-search panel-search--expanded">
           <span class="visually-hidden">Filtrar encomendas</span>
           <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
           <input
@@ -66,66 +111,250 @@
             [value]="filterText()"
             (input)="filterText.set($any($event.target).value)" />
         </label>
-      </div>
+        }
 
-      <div class="table-wrap">
-        <table class="vex-table">
-          <thead>
-            <tr>
-              <th>Nº</th>
-              <th>Cliente</th>
-              <th>Produto</th>
-              <th>Entrega</th>
-              <th>Despesas</th>
-              <th class="vex-table__actions-col">Acção</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (o of filteredOrders(); track o.id) {
-              <tr
-                class="vex-table__row"
-                [class.vex-table__row--has-expenses]="hasVariableExpenses(o)"
-                tabindex="0"
-                (click)="openModalForOrder(o)"
-                (keydown.enter)="openModalForOrder(o)"
-                (keydown.space)="$event.preventDefault(); openModalForOrder(o)">
-                <td class="vex-table__no" data-label="Nº">{{ getOrderNumber(o) }}</td>
-                <td data-label="Cliente">
-                  <span class="vex-table__client">
-                    <span class="vex-table__avatar" aria-hidden="true">{{ (o.clientName || '?').charAt(0).toUpperCase() }}</span>
-                    {{ o.clientName }}
-                  </span>
-                </td>
-                <td data-label="Produto">
-                  <span class="vex-table__product">{{ displayName(o) }}</span>
-                  <span class="vex-table__size">{{ displaySize(o) }}</span>
-                </td>
-                <td data-label="Entrega">{{ formatDate(o.deliveryDate || o.createdAt) }}</td>
-                <td data-label="Despesas">
-                  @if (hasVariableExpenses(o)) {
-                    <span class="vex-badge vex-badge--ok">
-                      {{ getTotalVariableExpenses(o) | number:'1.0-0' }} MZN
-                    </span>
-                    <span class="vex-table__expense-names">{{ getExpenseNamesPreview(o) }}</span>
-                  } @else {
-                    <span class="vex-badge vex-badge--none">Sem despesas</span>
-                  }
-                </td>
-                <td class="vex-table__actions-col" data-label="Acção">
-                  <button
-                    type="button"
-                    class="btn btn-primary btn-row"
-                    (click)="openModalForOrder(o); $event.stopPropagation()">
-                    <i class="fa-solid" [class.fa-pen-to-square]="hasVariableExpenses(o)" [class.fa-plus]="!hasVariableExpenses(o)" aria-hidden="true"></i>
-                    {{ hasVariableExpenses(o) ? 'Gerir' : 'Adicionar' }}
-                  </button>
-                </td>
+        <div class="table-wrap">
+          <table class="vex-table">
+            <thead>
+              <tr>
+                <th>Nº</th>
+                <th>Cliente</th>
+                <th>Produto</th>
+                <th>Entrega</th>
+                <th>Despesas</th>
+                <th class="vex-table__actions-col">Acção</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (o of filteredOrders(); track o.id) {
+                <tr
+                  class="vex-table__row"
+                  [class.vex-table__row--has-expenses]="hasVariableExpenses(o)"
+                  tabindex="0"
+                  (click)="openModalForOrder(o)"
+                  (keydown.enter)="openModalForOrder(o)"
+                  (keydown.space)="$event.preventDefault(); openModalForOrder(o)">
+                  <td class="vex-table__no" data-label="Nº">{{ getOrderNumber(o) }}</td>
+                  <td data-label="Cliente">
+                    <span class="vex-table__client">
+                      <span class="vex-table__avatar" aria-hidden="true">{{ (o.clientName || '?').charAt(0).toUpperCase() }}</span>
+                      {{ o.clientName }}
+                    </span>
+                  </td>
+                  <td data-label="Produto">
+                    <span class="vex-table__product">{{ displayName(o) }}</span>
+                    <span class="vex-table__size">{{ displaySize(o) }}</span>
+                  </td>
+                  <td data-label="Entrega">{{ formatDate(o.deliveryDate || o.createdAt) }}</td>
+                  <td data-label="Despesas">
+                    @if (hasVariableExpenses(o)) {
+                      <span class="vex-badge vex-badge--ok">
+                        {{ getTotalVariableExpenses(o) | number:'1.0-0' }} MZN
+                      </span>
+                      <span class="vex-table__expense-names">{{ getExpenseNamesPreview(o) }}</span>
+                    } @else {
+                      <span class="vex-badge vex-badge--none">Sem despesas</span>
+                    }
+                  </td>
+                  <td class="vex-table__actions-col" data-label="Acção">
+                    <button
+                      type="button"
+                      class="btn btn-primary btn-row"
+                      (click)="openModalForOrder(o); $event.stopPropagation()">
+                      <i class="fa-solid" [class.fa-pen-to-square]="hasVariableExpenses(o)" [class.fa-plus]="!hasVariableExpenses(o)" aria-hidden="true"></i>
+                      {{ hasVariableExpenses(o) ? 'Gerir' : 'Adicionar' }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  } @else {
+    @if (ordersWithRecordedExpenses().length === 0) {
+      <div class="vex-empty card">
+        <span class="vex-empty__icon vex-empty__icon--teal" aria-hidden="true"><i class="fa-solid fa-receipt"></i></span>
+        <p class="vex-empty__title">Ainda não há despesas registadas</p>
+        <p class="vex-empty__text">Quando registar despesas extras numa encomenda, aparecerão aqui para consulta.</p>
+        <button type="button" class="btn btn-primary" (click)="setTab('register')">
+          <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+          Ir para registo
+        </button>
       </div>
-    </section>
+    } @else {
+      <section class="kpi-strip kpi-strip--overview" aria-label="Resumo do histórico">
+        <article class="kpi-card">
+          <span class="kpi-card__icon kpi-card__icon--blue" aria-hidden="true"><i class="fa-solid fa-layer-group"></i></span>
+          <div>
+            <span class="kpi-card__label">Encomendas com despesas</span>
+            <p class="kpi-card__value">{{ ordersWithRecordedExpenses().length }}</p>
+          </div>
+        </article>
+        <article class="kpi-card kpi-card--total">
+          <span class="kpi-card__icon kpi-card__icon--sky" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
+          <div>
+            <span class="kpi-card__label">Total acumulado</span>
+            <p class="kpi-card__value">{{ overviewTotalMzn() | number:'1.0-0' }} <small>MZN</small></p>
+            <span class="kpi-card__meta">todas as encomendas</span>
+          </div>
+        </article>
+        <article class="kpi-card kpi-card--accent">
+          <span class="kpi-card__icon kpi-card__icon--teal" aria-hidden="true"><i class="fa-solid fa-repeat"></i></span>
+          <div>
+            <span class="kpi-card__label">Tipos recorrentes</span>
+            <p class="kpi-card__value">{{ recurringExpenses().length }}</p>
+            <span class="kpi-card__meta">em 2+ encomendas</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="highlights-grid" aria-label="Destaques de despesas">
+        <article class="highlight-card card">
+          <div class="highlight-card__head">
+            <span class="highlight-card__icon highlight-card__icon--top" aria-hidden="true">
+              <i class="fa-solid fa-arrow-trend-up"></i>
+            </span>
+            <div>
+              <h2 class="highlight-card__title">Maiores despesas</h2>
+              <p class="highlight-card__sub">Os valores individuais mais elevados registados.</p>
+            </div>
+          </div>
+          @if (topExpenseEntries().length === 0) {
+            <p class="highlight-card__empty">Sem dados para mostrar.</p>
+          } @else {
+            <ol class="highlight-list">
+              @for (entry of topExpenseEntries(); track $index) {
+                <li class="highlight-list__item">
+                  <span class="highlight-list__rank">{{ $index + 1 }}</span>
+                  <div class="highlight-list__main">
+                    <span class="highlight-list__name">{{ entry.name }}</span>
+                    <span class="highlight-list__meta">
+                      Encomenda #{{ entry.orderLabel }} · {{ entry.clientName }} — {{ entry.productLabel }}
+                    </span>
+                  </div>
+                  <strong class="highlight-list__amount">{{ entry.amount | number:'1.0-0' }} MZN</strong>
+                </li>
+              }
+            </ol>
+          }
+        </article>
+
+        <article class="highlight-card card">
+          <div class="highlight-card__head">
+            <span class="highlight-card__icon highlight-card__icon--recurring" aria-hidden="true">
+              <i class="fa-solid fa-repeat"></i>
+            </span>
+            <div>
+              <h2 class="highlight-card__title">Despesas recorrentes</h2>
+              <p class="highlight-card__sub">Tipos que aparecem em várias encomendas.</p>
+            </div>
+          </div>
+          @if (recurringExpenses().length === 0) {
+            <p class="highlight-card__empty">Ainda não há tipos repetidos em 2 ou mais encomendas.</p>
+          } @else {
+            <ol class="highlight-list">
+              @for (item of recurringExpenses(); track item.name) {
+                <li class="highlight-list__item">
+                  <span class="highlight-list__rank highlight-list__rank--soft">{{ item.orderCount }}×</span>
+                  <div class="highlight-list__main">
+                    <span class="highlight-list__name">{{ item.name }}</span>
+                    <span class="highlight-list__meta">
+                      {{ item.orderCount }} encomendas · média {{ item.avgPerOrder | number:'1.0-0' }} MZN
+                    </span>
+                  </div>
+                  <strong class="highlight-list__amount">{{ item.totalAmount | number:'1.0-0' }} MZN</strong>
+                </li>
+              }
+            </ol>
+          }
+        </article>
+      </section>
+
+      <section class="vex-panel card">
+        <div class="panel-head">
+          <div class="panel-head__text">
+            <span class="panel-icon panel-icon--blue" aria-hidden="true"><i class="fa-solid fa-eye"></i></span>
+            <div>
+              <h2 class="panel-title">Todas as despesas por encomenda</h2>
+              <p class="panel-desc">Consulta apenas — não é possível alterar valores nesta vista.</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="filters-toggle"
+            [class.filters-toggle--open]="showOverviewFilters()"
+            (click)="toggleOverviewFilters()"
+            [attr.aria-expanded]="showOverviewFilters()">
+            <i class="fa-solid fa-filter" aria-hidden="true"></i>
+            <span>{{ showOverviewFilters() ? 'Ocultar filtros' : 'Mostrar filtros' }}</span>
+            <i class="fa-solid fa-chevron-down filters-toggle__chevron" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        @if (showOverviewFilters()) {
+        <label class="panel-search panel-search--expanded">
+          <span class="visually-hidden">Filtrar histórico</span>
+          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+          <input
+            type="search"
+            class="panel-search__input"
+            placeholder="Cliente, produto ou tipo…"
+            [value]="overviewFilterText()"
+            (input)="overviewFilterText.set($any($event.target).value)" />
+        </label>
+        }
+
+        <div class="table-wrap">
+          <table class="vex-table vex-table--readonly">
+            <thead>
+              <tr>
+                <th>Nº</th>
+                <th>Cliente</th>
+                <th>Produto</th>
+                <th>Estado</th>
+                <th>Itens</th>
+                <th>Total</th>
+                <th class="vex-table__actions-col">Detalhe</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (o of filteredOverviewOrders(); track o.id) {
+                <tr class="vex-table__row vex-table__row--readonly">
+                  <td class="vex-table__no" data-label="Nº">{{ getOrderNumber(o) }}</td>
+                  <td data-label="Cliente">
+                    <span class="vex-table__client">
+                      <span class="vex-table__avatar" aria-hidden="true">{{ (o.clientName || '?').charAt(0).toUpperCase() }}</span>
+                      {{ o.clientName }}
+                    </span>
+                  </td>
+                  <td data-label="Produto">
+                    <span class="vex-table__product">{{ displayName(o) }}</span>
+                    <span class="vex-table__size">{{ displaySize(o) }}</span>
+                  </td>
+                  <td data-label="Estado">
+                    <span class="vex-badge" [class]="getOrderStatusClass(o)">{{ getOrderStatusLabel(o) }}</span>
+                  </td>
+                  <td data-label="Itens">
+                    <span class="vex-table__expense-names vex-table__expense-names--inline">{{ getExpenseNamesPreview(o) }}</span>
+                  </td>
+                  <td data-label="Total">
+                    <span class="vex-badge vex-badge--ok">{{ getTotalVariableExpenses(o) | number:'1.0-0' }} MZN</span>
+                  </td>
+                  <td class="vex-table__actions-col" data-label="Detalhe">
+                    <button type="button" class="btn btn-secondary btn-row" (click)="openViewModal(o)">
+                      <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                      Ver
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
   }
 </div>
 
@@ -204,6 +433,52 @@
         <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="saveModalExpenses()">
           {{ saving() ? 'A guardar…' : 'Guardar alterações' }}
         </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (viewOnlyOrder(); as vo) {
+  <div class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="vex-view-modal-title" (click)="closeViewModal()">
+    <div class="modal-content modal-content--readonly" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <p class="modal-eyebrow">Encomenda #{{ getOrderNumber(vo) }} · só leitura</p>
+          <h3 id="vex-view-modal-title">Despesas registadas</h3>
+        </div>
+        <button type="button" class="modal-close" (click)="closeViewModal()" aria-label="Fechar">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-order-card">
+          <p class="modal-product">{{ vo.clientName }} — {{ displayName(vo) }} · {{ displaySize(vo) }}</p>
+          <p class="modal-meta">
+            Entrega: {{ formatDate(vo.deliveryDate || vo.createdAt) }} ·
+            <span class="vex-badge" [class]="getOrderStatusClass(vo)">{{ getOrderStatusLabel(vo) }}</span>
+          </p>
+        </div>
+
+        <ul class="modal-expenses-list modal-expenses-list--readonly">
+          @for (e of vo.variableExpenses; track $index) {
+            <li class="expense-item expense-item--readonly">
+              <div class="expense-item-main">
+                <span class="expense-item-name">{{ e.name }}</span>
+                <span class="expense-item-amount">{{ e.amount | number:'1.0-2' }} MZN</span>
+              </div>
+            </li>
+          }
+        </ul>
+
+        <div class="modal-total">
+          <span>Total de despesas</span>
+          <strong>{{ getTotalVariableExpenses(vo) | number:'1.0-2' }} MZN</strong>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeViewModal()">Fechar</button>
+        <a [routerLink]="['/orders', vo.id]" class="btn btn-primary" (click)="closeViewModal()">
+          <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+          Ver encomenda
+        </a>
       </div>
     </div>
   </div>

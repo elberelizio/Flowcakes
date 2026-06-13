@@ -25,6 +25,7 @@ export class OrdersComponent implements OnInit {
   filterCategory = signal('');
   filterStatus = signal('');
   filterPayment = signal('');
+  showFilters = signal(false);
   /** Lista activa vs encerradas (as encerradas não somem — mudam de separador). */
   listScope = signal<'active' | 'closed'>('active');
 
@@ -132,8 +133,8 @@ export class OrdersComponent implements OnInit {
   async confirmDeliveryAndReceivePayment(): Promise<void> {
     const order = this.orderToConfirmDelivery();
     if (!order) return;
-    const ok = await this.ordersService.updateOrder(order.id, { valuePaid: order.valueCharged });
-    if (ok) {
+    const result = await this.ordersService.updateOrder(order.id, { valuePaid: order.valueCharged });
+    if (result.ok) {
       await this.ordersService.markDelivered(order.id);
       this.notification.showSuccess('Entrega confirmada e valor registado como pago.');
     } else {
@@ -179,6 +180,10 @@ export class OrdersComponent implements OnInit {
     this.filterCategory.set('');
     this.filterStatus.set('');
     this.filterPayment.set('');
+  }
+
+  toggleFilters(): void {
+    this.showFilters.update((v) => !v);
   }
 
   getClosureReasonShort(o: Order): string {
@@ -232,8 +237,8 @@ export class OrdersComponent implements OnInit {
       return;
     }
     const newPaid = order.valuePaid + extra;
-    const ok = await this.ordersService.updateOrder(order.id, { valuePaid: newPaid });
-    if (ok) {
+    const result = await this.ordersService.updateOrder(order.id, { valuePaid: newPaid });
+    if (result.ok) {
       await this.ordersService.markDelivered(order.id);
       this.notification.showSuccess('Pagamento registado e entrega confirmada.');
     } else {

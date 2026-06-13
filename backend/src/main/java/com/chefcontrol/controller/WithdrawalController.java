@@ -3,6 +3,7 @@ package com.chefcontrol.controller;
 import com.chefcontrol.config.CurrentUserId;
 import com.chefcontrol.dto.WithdrawalRequest;
 import com.chefcontrol.dto.WithdrawalResponse;
+import com.chefcontrol.dto.WithdrawalSummaryDto;
 import com.chefcontrol.service.WithdrawalService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,11 @@ public class WithdrawalController {
     public ResponseEntity<Map<String, BigDecimal>> total(@CurrentUserId UUID userId) {
         BigDecimal total = withdrawalService.getTotalWithdrawnByUserId(userId);
         return ResponseEntity.ok(Map.of("total", total));
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<WithdrawalSummaryDto> summary(@CurrentUserId UUID userId) {
+        return ResponseEntity.ok(withdrawalService.getSummary(userId));
     }
 
     @PostMapping

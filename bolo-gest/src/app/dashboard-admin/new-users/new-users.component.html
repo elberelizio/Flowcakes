@@ -164,6 +164,20 @@
           </nav>
         </header>
 
+        <div class="nu-filters-bar">
+          <button
+            type="button"
+            class="filters-toggle"
+            [class.filters-toggle--open]="showFilters()"
+            (click)="toggleFilters()"
+            [attr.aria-expanded]="showFilters()">
+            <i class="fa-solid fa-filter" aria-hidden="true"></i>
+            <span>{{ showFilters() ? 'Ocultar filtros' : 'Mostrar filtros' }}</span>
+            <i class="fa-solid fa-chevron-down filters-toggle__chevron" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        @if (showFilters()) {
         <label class="nu-search">
           <app-icon name="list" />
           <input
@@ -174,6 +188,7 @@
             placeholder="Pesquisar nome, telefone, email…"
             aria-label="Pesquisar utilizadores" />
         </label>
+        }
 
         @if (listaActual().length === 0) {
           <div class="nu-empty">

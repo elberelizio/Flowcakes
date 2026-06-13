@@ -37,6 +37,7 @@ export class ProfileManagementComponent implements OnInit {
   loading = signal(true);
   error = signal('');
   searchQuery = signal('');
+  showFilters = signal(false);
   openProfile = signal<ProfileRow | null>(null);
   actionLoadingId = signal<string | null>(null);
 
@@ -93,6 +94,10 @@ export class ProfileManagementComponent implements OnInit {
     this.startDate.set('');
     this.endDate.set('');
     this.searchQuery.set('');
+  }
+
+  toggleFilters(): void {
+    this.showFilters.update((v) => !v);
   }
 
   ngOnInit(): void {

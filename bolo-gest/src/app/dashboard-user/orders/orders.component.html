@@ -42,8 +42,22 @@
     }
   </section>
 
-  <section class="filters-section card">
-    <h3 class="filters-title">Filtros</h3>
+  <section class="filters-section card" [class.filters-panel--collapsed]="!showFilters()">
+    <div class="filters-section__head">
+      <h3 class="filters-title">Filtros</h3>
+      <button
+        type="button"
+        class="filters-toggle"
+        [class.filters-toggle--open]="showFilters()"
+        (click)="toggleFilters()"
+        [attr.aria-expanded]="showFilters()">
+        <i class="fa-solid fa-filter" aria-hidden="true"></i>
+        <span>{{ showFilters() ? 'Ocultar filtros' : 'Mostrar filtros' }}</span>
+        <i class="fa-solid fa-chevron-down filters-toggle__chevron" aria-hidden="true"></i>
+      </button>
+    </div>
+    @if (showFilters()) {
+    <div class="filters-section__body">
     <div class="filters-row">
       <div class="filter-group">
         <label>Cliente</label>
@@ -84,6 +98,8 @@
       </div>
       <button type="button" class="btn btn-ghost" (click)="clearFilters()">Limpar filtros</button>
     </div>
+    </div>
+    }
   </section>
 
   @if (filteredOrders().length === 0) {

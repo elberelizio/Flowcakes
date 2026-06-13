@@ -1,11 +1,19 @@
 <div class="withdrawals-page">
   <header class="page-hero">
-    <a routerLink="/dashboard" class="btn-back">← Voltar ao dashboard</a>
+    <div class="page-hero__nav">
+      <a routerLink="/dashboard" class="btn-back">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+        Voltar ao dashboard
+      </a>
+    </div>
     <div class="page-hero__main">
-      <p class="page-hero__eyebrow">Caixa e lucros</p>
+      <p class="page-hero__eyebrow">
+        <span class="page-hero__eyebrow-icon" aria-hidden="true"><i class="fa-solid fa-wallet"></i></span>
+        Caixa e lucros
+      </p>
       <h1>Retiradas de caixa</h1>
       <p class="page-hero__sub">
-        Registe o valor que tira do negócio (uso pessoal, compras, etc.) e acompanhe quanto saiu da empresa ao longo do tempo.
+        Registe o valor que tira do negócio (uso pessoal, compras, etc.). Só pode retirar até ao lucro disponível.
       </p>
     </div>
   </header>
@@ -13,10 +21,23 @@
   <div class="retiradas-layout">
     <section class="form-panel card">
       <div class="panel-head">
-        <span class="panel-icon" aria-hidden="true"><i class="fa-solid fa-wallet"></i></span>
+        <span class="panel-icon" aria-hidden="true"><i class="fa-solid fa-circle-plus"></i></span>
         <div>
           <h2 class="panel-title">Nova retirada</h2>
           <p class="panel-desc">Preencha valor, data e motivo (opcional).</p>
+        </div>
+      </div>
+
+      <div class="profit-hint" [class.profit-hint--empty]="withdrawalService.availableProfit() <= 0">
+        <span class="profit-hint__icon" aria-hidden="true"><i class="fa-solid fa-chart-line"></i></span>
+        <div>
+          <span class="profit-hint__label">Lucro disponível para retirar</span>
+          <strong class="profit-hint__value">{{ withdrawalService.availableProfit() | number:'1.0-2' }} MZN</strong>
+          @if (amount && amount > 0) {
+            <span class="profit-hint__after">
+              Após retirada: {{ profitAfterWithdrawal() | number:'1.0-2' }} MZN
+            </span>
+          }
         </div>
       </div>
 
@@ -30,6 +51,7 @@
                 type="number"
                 step="0.01"
                 min="0.01"
+                [max]="withdrawalService.availableProfit() > 0 ? withdrawalService.availableProfit() : null"
                 [(ngModel)]="amount"
                 name="amount"
                 placeholder="Ex.: 5000"
@@ -62,7 +84,7 @@
         </div>
 
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          <button type="submit" class="btn btn-primary" [disabled]="saving() || withdrawalService.availableProfit() <= 0">
             <i class="fa-solid fa-circle-plus" aria-hidden="true"></i>
             {{ saving() ? 'A registar…' : 'Registar retirada' }}
           </button>
@@ -72,6 +94,14 @@
 
     <div class="retiradas-side">
       <div class="kpi-strip">
+        <article class="kpi-card kpi-card--profit">
+          <span class="kpi-card__label">Lucro acumulado</span>
+          <p class="kpi-card__value">{{ withdrawalService.totalProfit() | number:'1.0-0' }} <small>MZN</small></p>
+        </article>
+        <article class="kpi-card kpi-card--available">
+          <span class="kpi-card__label">Disponível</span>
+          <p class="kpi-card__value">{{ withdrawalService.availableProfit() | number:'1.0-0' }} <small>MZN</small></p>
+        </article>
         <article class="kpi-card kpi-card--primary">
           <span class="kpi-card__label">Total retirado</span>
           <p class="kpi-card__value">{{ withdrawalService.totalWithdrawn() | number:'1.0-0' }} <small>MZN</small></p>

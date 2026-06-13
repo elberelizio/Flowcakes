@@ -61,6 +61,7 @@ export class NewUsersComponent implements OnInit {
   mainTab = signal<MainTab>('transferencias');
   tabFilter = signal<TabFilter>('pendentes');
   searchQuery = signal('');
+  showFilters = signal(false);
 
   pendentes = computed(() => this.allLista().filter((u) => !u.rejectedAt));
   rejeitados = computed(() => this.allLista().filter((u) => u.rejectedAt));
@@ -360,6 +361,10 @@ export class NewUsersComponent implements OnInit {
 
   initials(name: string): string {
     return (name?.charAt(0) || '?').toUpperCase();
+  }
+
+  toggleFilters(): void {
+    this.showFilters.update((v) => !v);
   }
 }
 

@@ -75,7 +75,7 @@
       </div>
     </section>
 
-    <section class="orders-filters" aria-label="Filtros">
+    <section class="orders-filters" [class.filters-panel--collapsed]="!showFilters()" aria-label="Filtros">
       <div class="orders-filters__head">
         <h2>Filtros</h2>
         @if (hasActiveFilters()) {
@@ -83,7 +83,19 @@
             Limpar filtros
           </button>
         }
+        <button
+          type="button"
+          class="filters-toggle"
+          [class.filters-toggle--open]="showFilters()"
+          (click)="toggleFilters()"
+          [attr.aria-expanded]="showFilters()">
+          <i class="fa-solid fa-filter" aria-hidden="true"></i>
+          <span>{{ showFilters() ? 'Ocultar filtros' : 'Mostrar filtros' }}</span>
+          <i class="fa-solid fa-chevron-down filters-toggle__chevron" aria-hidden="true"></i>
+        </button>
       </div>
+      @if (showFilters()) {
+      <div class="orders-filters__body">
       <div class="orders-filters__grid">
         <label class="orders-field">
           <span>Utilizador</span>
@@ -123,6 +135,8 @@
           </select>
         </label>
       </div>
+      </div>
+      }
     </section>
 
     <section class="orders-table-panel">

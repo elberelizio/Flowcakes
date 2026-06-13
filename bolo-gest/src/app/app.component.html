@@ -143,7 +143,8 @@
               <div class="nav-sub">
                 <a routerLink="/new-order" routerLinkActive="active" class="nav-item nav-sub-item">Criar</a>
                 <a routerLink="/orders" routerLinkActive="active" class="nav-item nav-sub-item">Visualizar <span class="nav-badge-inline">@if (orderCount() > 0) { {{ orderCount() }} }</span></a>
-                <a routerLink="/variable-expenses" routerLinkActive="active" class="nav-item nav-sub-item">Despesas extras</a>
+                <a routerLink="/variable-expenses" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item nav-sub-item">Registar despesas</a>
+                <a routerLink="/variable-expenses/consultar" routerLinkActive="active" class="nav-item nav-sub-item">Consultar despesas</a>
               </div>
             }
           </div>

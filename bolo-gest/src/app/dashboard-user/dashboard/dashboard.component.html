@@ -10,9 +10,9 @@
           <p class="welcome-text">{{ welcomeSubline() }}@if (todayHolidayMessage()) { {{ todayHolidayMessage() }} }</p>
         </div>
         <div class="welcome-tools">
-          <button type="button" class="welcome-btn welcome-btn--icon" [class.active]="showFilters()" (click)="toggleFilters()" title="Filtros">
+          <button type="button" class="welcome-btn welcome-btn--icon" [class.active]="showFilters()" (click)="toggleFilters()" [attr.aria-expanded]="showFilters()" title="Filtros">
             <app-icon name="filter" />
-            <span>Filtros</span>
+            <span>{{ showFilters() ? 'Ocultar filtros' : 'Mostrar filtros' }}</span>
           </button>
         </div>
       </div>
@@ -29,8 +29,7 @@
             </label>
             <label class="filter-item">
               <span class="filter-item-label">Ano</span>
-              <select [value]="filterYear() ?? ''" (change)="filterYear.set($any($event.target).value ? +$any($event.target).value : null)">
-                <option value="">—</option>
+              <select [value]="filterYear() ?? effectiveFilterYear" (change)="filterYear.set(+$any($event.target).value)">
                 @for (y of filterYears(); track y) {
                   <option [value]="y">{{ y }}</option>
                 }
@@ -49,7 +48,7 @@
             <button type="button" class="btn btn-clear" (click)="clearFilter()">Limpar filtro</button>
           </div>
           <p class="filter-hint">
-            O gráfico actualiza automaticamente. Intervalo de datas tem prioridade. Só ano → por mês; ano+mês ou padrão → por dia; intervalo longo → por mês ou ano.
+            Sem datas definidas, mostra todos os dados do <strong>ano seleccionado</strong> (por defeito: {{ effectiveFilterYear }}). Intervalo de datas tem prioridade. Só ano → gráfico por mês; ano+mês → por dia.
           </p>
           @if (filterDateError()) {
             <p class="filter-error" role="alert">{{ filterDateError() }}</p>
@@ -261,21 +260,24 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         </div>
         <h3 class="card__title">Total Arrecadado</h3>
-        <p class="card__value">{{ totalRevenue() | number:'1.2-2' }} MZN</p>
+        <p class="card__meta">{{ periodLabel() }}</p>
+        <p class="card__value">{{ totalRevenueInRange() | number:'1.2-2' }} MZN</p>
       </article>
       <article class="card card--expense">
         <div class="card__icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22v-20M17 19H9.5a3.5 3.5 0 0 1 0-7h5a3.5 3.5 0 0 0 0-7H6"/></svg>
         </div>
         <h3 class="card__title">Despesa</h3>
-        <p class="card__value">{{ totalExpense() | number:'1.2-2' }} MZN</p>
+        <p class="card__meta">{{ periodLabel() }}</p>
+        <p class="card__value">{{ totalExpenseInRange() | number:'1.2-2' }} MZN</p>
       </article>
       <article class="card card--profit">
         <div class="card__icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
         </div>
         <h3 class="card__title">Lucro</h3>
-        <p class="card__value">{{ totalProfit() | number:'1.2-2' }} MZN</p>
+        <p class="card__meta">{{ periodLabel() }}</p>
+        <p class="card__value">{{ totalProfitInRange() | number:'1.2-2' }} MZN</p>
       </article>
     </div>
   </section>
@@ -283,7 +285,7 @@
   @if (filterHasNoData()) {
     <div class="dashboard-empty-filter" role="status">
       <app-icon name="alert-circle" />
-      <p>Nenhum dado para o período seleccionado. Pode ajustar os filtros ou usar <button type="button" class="btn-inline" (click)="clearFilter()">Limpar filtro</button> para ver os últimos 30 dias.</p>
+      <p>Nenhum dado para o período seleccionado. Ajuste os filtros ou use <button type="button" class="btn-inline" (click)="clearFilter()">Limpar filtro</button> para voltar ao ano {{ effectiveFilterYear }}.</p>
     </div>
   }
 
@@ -299,7 +301,7 @@
       </div>
       <div class="stat-card__body">
         <h3 class="stat-card__title">Clientes e encomendas</h3>
-        <p class="stat-card__meta">No período do filtro</p>
+        <p class="stat-card__meta">{{ periodLabel() }}</p>
         <p class="stat-card__values">{{ clientsCountInRange() }} clientes · {{ ordersInRange().length }} encomendas</p>
       </div>
     </div>
@@ -314,11 +316,25 @@
       </div>
       <div class="stat-card__body">
         <h3 class="stat-card__title">Retiradas</h3>
-        <p class="stat-card__meta">Total retirado da caixa</p>
-        <p class="stat-card__value">{{ totalWithdrawn() | number:'1.0-0' }} MZN</p>
+        <p class="stat-card__meta">{{ periodLabel() }}</p>
+        <p class="stat-card__value">{{ totalWithdrawnInRange() | number:'1.0-0' }} MZN</p>
         <span class="stat-card__link">Registar retiradas →</span>
       </div>
     </a>
+    <div class="stat-card stat-card--lucro-disponivel">
+      <div class="stat-card__accent"></div>
+      <div class="stat-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+          <polyline points="17 6 23 6 23 12"/>
+        </svg>
+      </div>
+      <div class="stat-card__body">
+        <h3 class="stat-card__title">Lucro disponível</h3>
+        <p class="stat-card__meta">Após retiradas ({{ totalProfitInRange() | number:'1.0-0' }} − {{ totalWithdrawnInRange() | number:'1.0-0' }}) · {{ periodLabel() }}</p>
+        <p class="stat-card__value" [class.stat-card__value--zero]="availableProfitInRange() <= 0">{{ availableProfitInRange() | number:'1.0-0' }} MZN</p>
+      </div>
+    </div>
   </div>
 
   <section class="section charts-section">

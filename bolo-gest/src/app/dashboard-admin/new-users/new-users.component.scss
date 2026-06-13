@@ -192,6 +192,12 @@
   }
 }
 
+.nu-filters-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
 .nu-search {
   display: flex;
   align-items: center;

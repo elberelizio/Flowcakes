@@ -226,32 +226,38 @@ export class OrdersService {
       });
   }
 
-  updatePayment(orderId: string, valuePaid: number): Promise<boolean> {
-    const order = this.orders().find((o) => o.id === orderId);
-    if (!order) return Promise.resolve(false);
-    
-    // Calcular lucro total (valor cobrado - custo total)
-    const totalProfit = order.valueCharged - order.costTotal;
-    
-    // Recalcular lucro proporcional ao valor pago:
-    // - Se não pagou nada: lucro = 0
-    // - Se pagou parcialmente (ex: 50%): lucro = lucro_total * (valor_pago / valor_cobrado)
-    // - Se pagou tudo: lucro = lucro_total
-    let profit = 0;
+  /** Lucro com despesas extras — inclui gorjeta quando valuePaid > valueCharged. */
+  private computeProfitWithExtras(
+    order: Order,
+    valuePaid: number,
+    variableExpenses: { name: string; amount: number }[]
+  ): number {
+    const varExpensesTotal = variableExpenses.reduce((s, e) => s + (e.amount || 0), 0);
+    const charged = order.valueCharged ?? 0;
+    const costTotal = order.costTotal ?? 0;
+    let newProfit = 0;
     if (valuePaid > 0) {
-      if (valuePaid >= order.valueCharged) {
-        // Pagou tudo: lucro total
-        profit = totalProfit;
+      if (charged <= 0) {
+        newProfit = valuePaid - costTotal - varExpensesTotal;
+      } else if (valuePaid >= charged) {
+        newProfit = valuePaid - costTotal - varExpensesTotal;
       } else {
-        // Pagou parcialmente: lucro proporcional
-        const paymentRatio = valuePaid / order.valueCharged;
-        profit = totalProfit * paymentRatio;
+        const paymentRatio = valuePaid / charged;
+        newProfit = (charged - costTotal) * paymentRatio - varExpensesTotal * paymentRatio;
       }
     }
-    
-    const paymentStatus: PaymentStatus =
-      valuePaid >= order.valueCharged ? 'pago' : valuePaid > 0 ? 'parcial' : 'pendente';
-    const body: OrderRequest = {
+    return Math.max(0, newProfit);
+  }
+
+  private buildOrderRequestBody(order: Order, overrides: Partial<OrderRequest> = {}): OrderRequest {
+    const valuePaid = overrides.valuePaid ?? order.valuePaid;
+    const variableExpenses = overrides.variableExpenses ?? order.variableExpenses ?? [];
+    const delivered = overrides.delivered ?? order.delivered;
+    const paymentStatus =
+      overrides.paymentStatus ??
+      (valuePaid >= order.valueCharged ? 'pago' : valuePaid > 0 ? 'parcial' : 'pendente');
+
+    return {
       clientName: order.clientName,
       category: order.category,
       subcategory: order.subcategory,
@@ -262,18 +268,30 @@ export class OrdersService {
       valueCharged: order.valueCharged,
       valuePaid,
       costTotal: order.costTotal,
-      profit, // Lucro recalculado proporcionalmente
+      profit: overrides.profit ?? this.computeProfitWithExtras(order, valuePaid, variableExpenses),
       paymentStatus,
-      delivered: order.delivered,
+      delivered,
       ingredientIds: order.ingredientIds || [],
-      observations: order.observations,
+      observations: overrides.observations ?? order.observations,
       cakeName: order.cakeName,
       cakeSize: order.cakeSize,
-      deliveryDate: order.deliveryDate,
-      hasDelivery: false, // Manter valores existentes
-      deliveryCost: 0,
-      orderStatus: order.orderStatus || 'ordered',
+      deliveryDate: overrides.deliveryDate ?? order.deliveryDate,
+      clientAddress: order.clientAddress,
+      pickupAddress: order.pickupAddress,
+      deliveryAddress: order.deliveryAddress,
+      hasDelivery: order.hasDelivery || false,
+      deliveryCost: order.deliveryCost || 0,
+      orderStatus: overrides.orderStatus ?? order.orderStatus ?? 'ordered',
+      isCancelled: overrides.isCancelled ?? order.isCancelled ?? false,
+      variableExpenses,
     };
+  }
+
+  updatePayment(orderId: string, valuePaid: number): Promise<boolean> {
+    const order = this.orders().find((o) => o.id === orderId);
+    if (!order) return Promise.resolve(false);
+
+    const body = this.buildOrderRequestBody(order, { valuePaid });
     return this.http
       .put<OrderApi>(`${API_URL}/orders/${orderId}`, body)
       .toPromise()
@@ -292,33 +310,7 @@ export class OrdersService {
   markDelivered(orderId: string): Promise<boolean> {
     const order = this.orders().find((o) => o.id === orderId);
     if (!order) return Promise.resolve(false);
-    const body: OrderRequest = {
-      clientName: order.clientName,
-      category: order.category,
-      subcategory: order.subcategory,
-      productName: order.productName,
-      size: order.size,
-      quantityKg: order.quantityKg,
-      unitsPerKg: order.unitsPerKg,
-      valueCharged: order.valueCharged,
-      valuePaid: order.valuePaid,
-      costTotal: order.costTotal,
-      profit: order.profit,
-      paymentStatus: order.paymentStatus,
-      delivered: true,
-      ingredientIds: order.ingredientIds || [],
-      observations: order.observations,
-      cakeName: order.cakeName,
-      cakeSize: order.cakeSize,
-      deliveryDate: order.deliveryDate,
-      clientAddress: order.clientAddress,
-      pickupAddress: order.pickupAddress,
-      deliveryAddress: order.deliveryAddress,
-      hasDelivery: order.hasDelivery || false,
-      deliveryCost: order.deliveryCost || 0,
-      orderStatus: order.orderStatus || 'ordered',
-      isCancelled: order.isCancelled || false,
-    };
+    const body = this.buildOrderRequestBody(order, { delivered: true });
     return this.http
       .put<OrderApi>(`${API_URL}/orders/${orderId}`, body)
       .toPromise()
@@ -366,75 +358,29 @@ export class OrdersService {
     isCancelled?: boolean;
     variableExpenses?: { name: string; amount: number }[];
     valuePaid?: number;
-  }): Promise<boolean> {
+  }): Promise<{ ok: boolean; error?: string }> {
     const order = this.orders().find((o) => o.id === orderId);
-    if (!order) return Promise.resolve(false);
+    if (!order) return Promise.resolve({ ok: false, error: 'Encomenda não encontrada.' });
     
     // Se está restaurando (isCancelled: false), garantir que orderStatus não seja 'cancelled'
     const newOrderStatus = updates.isCancelled === false 
       ? (updates.orderStatus || 'ordered')
       : (updates.orderStatus !== undefined ? updates.orderStatus : (order.orderStatus || 'ordered'));
     
-    const body: OrderRequest = {
-      clientName: order.clientName,
-      category: order.category,
-      subcategory: order.subcategory,
-      productName: order.productName,
-      size: order.size,
-      quantityKg: order.quantityKg,
-      unitsPerKg: order.unitsPerKg,
-      valueCharged: order.valueCharged,
-      valuePaid: updates.valuePaid !== undefined ? updates.valuePaid : order.valuePaid,
-      costTotal: order.costTotal,
-      profit: order.profit,
-      paymentStatus: order.paymentStatus,
-      delivered: order.delivered,
-      ingredientIds: order.ingredientIds || [],
-      observations: updates.observations !== undefined ? updates.observations : order.observations,
-      cakeName: order.cakeName,
-      cakeSize: order.cakeSize,
-      deliveryDate: updates.deliveryDate !== undefined ? updates.deliveryDate : order.deliveryDate,
-      clientAddress: order.clientAddress,
-      pickupAddress: order.pickupAddress,
-      deliveryAddress: order.deliveryAddress,
-      hasDelivery: order.hasDelivery || false,
-      deliveryCost: order.deliveryCost || 0,
+    const body = this.buildOrderRequestBody(order, {
+      valuePaid: updates.valuePaid,
+      observations: updates.observations,
+      deliveryDate: updates.deliveryDate,
       orderStatus: newOrderStatus,
-      isCancelled: updates.isCancelled !== undefined ? updates.isCancelled : order.isCancelled || false,
-      variableExpenses: updates.variableExpenses !== undefined ? updates.variableExpenses : order.variableExpenses,
-    };
-    
-    // Atualizar paymentStatus se valuePaid mudou
+      isCancelled: updates.isCancelled,
+      variableExpenses: updates.variableExpenses,
+      delivered: order.delivered,
+    });
+
     if (updates.valuePaid !== undefined) {
-      const newValuePaid = updates.valuePaid;
-      if (newValuePaid >= order.valueCharged) {
-        body.paymentStatus = 'pago';
-      } else if (newValuePaid > 0) {
-        body.paymentStatus = 'parcial';
-      } else {
-        body.paymentStatus = 'pendente';
-      }
+      body.paymentStatus =
+        body.valuePaid >= order.valueCharged ? 'pago' : body.valuePaid > 0 ? 'parcial' : 'pendente';
     }
-    
-    // Recalcular lucro se despesas variáveis ou pagamento foram atualizados
-    const varExpensesTotal = (updates.variableExpenses || order.variableExpenses || []).reduce((s, e) => s + e.amount, 0);
-    const finalValuePaid = updates.valuePaid !== undefined ? updates.valuePaid : order.valuePaid;
-    const baseCostTotal = order.costTotal;
-    const totalProfit = order.valueCharged - baseCostTotal;
-    
-    let newProfit = 0;
-    if (finalValuePaid > 0) {
-      if (finalValuePaid >= order.valueCharged) {
-        // Pagou tudo: lucro total - despesas variáveis
-        newProfit = totalProfit - varExpensesTotal;
-      } else {
-        // Pagou parcialmente: lucro proporcional - despesas variáveis proporcionais
-        const paymentRatio = finalValuePaid / order.valueCharged;
-        newProfit = (totalProfit * paymentRatio) - (varExpensesTotal * paymentRatio);
-      }
-    }
-    
-    body.profit = Math.max(0, newProfit);
 
     return this.http
       .put<OrderApi>(`${API_URL}/orders/${orderId}`, body)
@@ -447,13 +393,18 @@ export class OrdersService {
           );
           // Recarregar lista completa do backend para garantir sincronização
           this.loadOrders();
-          return true;
+          return { ok: true };
         }
-        return false;
+        return { ok: false, error: 'Resposta inválida do servidor.' };
       })
       .catch((error) => {
         console.error('Erro ao atualizar encomenda:', error);
-        return false;
+        const body = error?.error;
+        const msg =
+          typeof body === 'object' && body?.message
+            ? String(body.message)
+            : error?.message ?? 'Erro ao atualizar encomenda.';
+        return { ok: false, error: msg };
       });
   }
 

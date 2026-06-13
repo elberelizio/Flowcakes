@@ -122,7 +122,7 @@
 
   @if (orderToConfirmPaid()) {
     @let order = orderToConfirmPaid()!;
-    <div class="confirm-overlay" (click)="closeConfirmPaid()" role="presentation">
+    <div class="confirm-overlay" role="presentation">
       <div
         class="confirm-card"
         (click)="$event.stopPropagation()"
@@ -161,13 +161,18 @@
               type="number"
               min="1"
               step="1"
-              [max]="getSaldo(order)"
               [value]="paymentAmountInput()"
               (input)="onPaymentAmountInput($any($event.target).value)"
               placeholder="Ex.: 500"
             />
           </div>
-          <span class="confirm-field__hint">Máximo: {{ getSaldo(order) | number:'1.0-0' }} MZN</span>
+          @if (paymentAmountInput() > 0) {
+            <p class="confirm-field__preview" [class.confirm-field__preview--overpay]="(order.valuePaid + paymentAmountInput()) > order.valueCharged">
+              {{ getPaymentPreviewText(order) }}
+            </p>
+          } @else {
+            <span class="confirm-field__hint">Saldo em falta: {{ getSaldo(order) | number:'1.0-0' }} MZN — pode registar mais se o cliente pagar a mais.</span>
+          }
         </div>
 
         <div class="confirm-actions">

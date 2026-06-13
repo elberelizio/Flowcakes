@@ -169,12 +169,19 @@ export const routes: Routes = [
   },
   { path: 'perfil', redirectTo: 'profile', pathMatch: 'full' },
   {
+    path: 'variable-expenses/consultar',
+    loadComponent: () =>
+      import('./dashboard-user/variable-expenses/variable-expenses.component').then((m) => m.VariableExpensesComponent),
+    canActivate: [authGuard, redirectAdminGuard, licenseGuard],
+  },
+  {
     path: 'variable-expenses',
     loadComponent: () =>
       import('./dashboard-user/variable-expenses/variable-expenses.component').then((m) => m.VariableExpensesComponent),
     canActivate: [authGuard, redirectAdminGuard, licenseGuard],
   },
   { path: 'despesas-variaveis', redirectTo: 'variable-expenses', pathMatch: 'full' },
+  { path: 'despesas-variaveis/consultar', redirectTo: 'variable-expenses/consultar', pathMatch: 'full' },
   {
     path: 'debts',
     loadComponent: () => import('./dashboard-user/debts/debts.component').then((m) => m.DebtsComponent),

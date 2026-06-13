@@ -9,6 +9,7 @@
 @use './app/core/styles/responsive';
 @use './app/core/styles/mobile-responsive';
 @use './app/core/styles/license-payment-lock';
+@use './app/core/styles/filters-collapse';
 
 @tailwind base;
 @tailwind components;

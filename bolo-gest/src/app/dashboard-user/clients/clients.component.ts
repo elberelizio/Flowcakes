@@ -28,6 +28,7 @@ export class ClientsComponent implements OnInit {
   filterClient = signal('');
   filterType = signal<'doces' | 'salgados' | ''>('');
   selectedClientName = signal<string | null>(null);
+  showFilters = signal(false);
 
   clients = computed(() => {
     const orders = this.ordersService.allOrders();
@@ -82,6 +83,8 @@ export class ClientsComponent implements OnInit {
 
   readonly clientsWithDebt = computed(() => this.filteredClients().filter((c) => c.totalDebt > 0).length);
 
+  readonly clientsInGoodStanding = computed(() => this.filteredClients().filter((c) => c.totalDebt <= 0).length);
+
   readonly totalOutstandingDebt = computed(() =>
     this.filteredClients().reduce((sum, c) => sum + c.totalDebt, 0),
   );
@@ -89,6 +92,10 @@ export class ClientsComponent implements OnInit {
   clearFilters(): void {
     this.filterClient.set('');
     this.filterType.set('');
+  }
+
+  toggleFilters(): void {
+    this.showFilters.update((v) => !v);
   }
 
   constructor(public ordersService: OrdersService) {}
@@ -110,11 +117,26 @@ export class ClientsComponent implements OnInit {
   }
 
   getClientProfile(c: ClientSummary): string {
-    if (c.totalDebt <= 0) return 'Excelente';
+    if (c.totalDebt <= 0) return 'Em dia';
     const paymentRate = this.getPaymentRate(c);
-    if (paymentRate >= 85 && c.debtOrders <= 1) return 'Bom';
+    if (paymentRate >= 85 && c.debtOrders <= 1) return 'Regular';
     if (paymentRate >= 60) return 'Atenção';
     return 'Risco';
+  }
+
+  getClientProfileKey(c: ClientSummary): 'ok' | 'regular' | 'attention' | 'risk' {
+    const profile = this.getClientProfile(c);
+    if (profile === 'Em dia') return 'ok';
+    if (profile === 'Regular') return 'regular';
+    if (profile === 'Atenção') return 'attention';
+    return 'risk';
+  }
+
+  getPaidRateTone(c: ClientSummary): 'ok' | 'warn' | 'risk' {
+    if (c.totalDebt <= 0) return 'ok';
+    const rate = this.getPaymentRate(c);
+    if (rate >= 85) return 'warn';
+    return 'risk';
   }
 
   openClientDetails(name: string): void {
