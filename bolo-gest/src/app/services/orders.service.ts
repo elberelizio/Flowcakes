@@ -10,6 +10,7 @@ import {
   OrderRefundType,
   PaymentStatus,
   ProductSize,
+  isOrderClosed,
 } from '../models/order.model';
 
 export interface OrderCloseInput {
@@ -533,6 +534,43 @@ export class OrdersService {
         const tB = new Date(b.deliveryDate!).getTime();
         return tA - tB;
       });
+  }
+
+  /**
+   * Encomendas por entregar: em atraso (data passada) + próximas na janela de dias.
+   * Ordenação: atrasadas primeiro (mais antigas), depois próximas (mais urgentes).
+   */
+  getPendingDeliveries(daysAhead: number): Order[] {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const end = new Date(today);
+    end.setDate(today.getDate() + daysAhead);
+    end.setHours(23, 59, 59, 999);
+
+    const pending = this.orders().filter((o) => {
+      if (isOrderClosed(o)) return false;
+      if (o.delivered) return false;
+      if (!o.deliveryDate) return false;
+      const d = new Date(o.deliveryDate);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime() <= end.getTime();
+    });
+
+    const sortByDelivery = (a: Order, b: Order) =>
+      new Date(a.deliveryDate!).getTime() - new Date(b.deliveryDate!).getTime();
+
+    const overdue = pending.filter((o) => {
+      const d = new Date(o.deliveryDate!);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime() < today.getTime();
+    });
+
+    const upcoming = pending.filter((o) => {
+      const d = new Date(o.deliveryDate!);
+      return d >= today && d <= end;
+    });
+
+    return [...overdue.sort(sortByDelivery), ...upcoming.sort(sortByDelivery)];
   }
 
   getLast7DaysStats(): { date: string; label: string; profit: number; count: number }[] {

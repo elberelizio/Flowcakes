@@ -1,88 +1,101 @@
-<div class="order-details-page order-details-page--compact">
+<div class="odv">
   @if (notFound()) {
-    <div class="not-found card">
+    <div class="odv-empty">
+      <div class="odv-empty__icon" aria-hidden="true"><i class="fa-solid fa-box-open"></i></div>
       <h1>Encomenda não encontrada</h1>
-      <a routerLink="/orders" class="btn-primary">Voltar às encomendas</a>
+      <a routerLink="/orders" class="odv-btn odv-btn--primary">Voltar às encomendas</a>
     </div>
   } @else {
     @if (order(); as o) {
       @if (getAssistantWarnings(o).length > 0 && assistantPopupVisible()) {
-        <div class="assistant-popup-overlay" (click)="closeAssistantPopup()" role="presentation">
-          <div class="assistant-popup" (click)="$event.stopPropagation()" role="dialog">
-            <div class="assistant-header">
-              <span class="assistant-avatar">{{ assistantName.charAt(0) }}</span>
-              <strong>{{ assistantName }}</strong>
-              <button type="button" class="assistant-close" (click)="closeAssistantPopup()" aria-label="Fechar">×</button>
-            </div>
-            <ul class="assistant-warnings">
+        <div class="odv-dialog-backdrop" (click)="closeAssistantPopup()" role="presentation">
+          <div class="odv-dialog" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="odv-dialog-title">
+            <header class="odv-dialog__head">
+              <span class="odv-dialog__avatar" aria-hidden="true"><i class="fa-solid fa-robot"></i></span>
+              <div>
+                <strong id="odv-dialog-title">{{ assistantName }}</strong>
+                <p>Alguns pontos precisam da sua atenção</p>
+              </div>
+              <button type="button" class="odv-dialog__close" (click)="closeAssistantPopup()" aria-label="Fechar">×</button>
+            </header>
+            <ul class="odv-dialog__list">
               @for (msg of getAssistantWarnings(o); track msg) {
-                <li>{{ msg }}</li>
+                <li><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>{{ msg }}</li>
               }
             </ul>
-            <button type="button" class="btn-dismiss" (click)="closeAssistantPopup()">Entendido</button>
+            <button type="button" class="odv-btn odv-btn--primary odv-btn--block" (click)="closeAssistantPopup()">Entendido</button>
           </div>
         </div>
       }
 
-      <header class="od-header">
-        <a routerLink="/orders" class="od-back">
-          <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
-          Encomendas
-        </a>
-        <div class="od-header__main">
-          <div class="od-header__title-row">
-            <h1>
-              <i class="fa-solid fa-receipt od-header__title-icon" aria-hidden="true"></i>
-              Detalhes
-              <span class="order-id">#{{ getOrderIdShort(o) }}</span>
-            </h1>
-          </div>
-          <div class="hero-badges">
-            <span class="badge badge--pay" [class]="o.paymentStatus">
-              <i class="fa-solid fa-wallet" aria-hidden="true"></i>
-              {{ getPaymentStatusLabel(o.paymentStatus) }}
-            </span>
-            <span class="badge badge--status" [class]="'status-' + o.orderStatus">
-              <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
-              {{ getOrderStatusLabel(o.orderStatus) }}
-            </span>
-            <span class="badge badge--muted">
-              <i class="fa-solid" [class.fa-truck]="o.delivered" [class.fa-clock]="!o.delivered" aria-hidden="true"></i>
-              {{ o.delivered ? 'Entregue' : 'Não entregue' }}
-            </span>
-            @if (o.isCancelled) {
-              <span class="badge badge--cancelled">
-                <i class="fa-solid fa-ban" aria-hidden="true"></i>
-                Cancelada
-              </span>
+      <header class="odv-hero" [class.odv-hero--debt]="!o.isCancelled && hasDebt(o)">
+        <nav class="odv-hero__nav">
+          <a routerLink="/orders" class="odv-hero__back">
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            Voltar
+          </a>
+        </nav>
+
+        <div class="odv-hero__row">
+          <div class="odv-hero__badge" [class.odv-hero__badge--salgados]="o.category === 'salgados'" aria-hidden="true">
+            @if (o.category === 'salgados') {
+              <i class="fa-solid fa-burger"></i>
+            } @else {
+              <i class="fa-solid fa-cake-candles"></i>
             }
           </div>
-          @if (!o.isCancelled && !o.delivered) {
-            <button type="button" class="btn-cancelar" (click)="openCloseDialog()">
-              <i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>
-              Cancelar encomenda
-            </button>
-          }
-          @if (!o.isCancelled && o.delivered && hasDebt(o)) {
-            <a routerLink="/debts" class="btn-cancelar btn-cancelar--link">
-              <i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i>
-              Registar pagamento em falta
-            </a>
-          }
+          <div class="odv-hero__body">
+            <div class="odv-hero__top">
+              <h1 class="odv-hero__title">{{ displayName(o) }}</h1>
+              <code class="odv-hero__code">#{{ getOrderIdShort(o) }}</code>
+            </div>
+            <div class="odv-pills">
+              <span class="odv-pill" [class.odv-pill--pendente]="o.paymentStatus === 'pendente'" [class.odv-pill--parcial]="o.paymentStatus === 'parcial'" [class.odv-pill--pago]="o.paymentStatus === 'pago'">
+                <i class="fa-solid fa-wallet" aria-hidden="true"></i>
+                {{ getPaymentStatusLabel(o.paymentStatus) }}
+              </span>
+              @if (o.isCancelled) {
+                <span class="odv-pill odv-pill--cancelled">
+                  <i class="fa-solid fa-ban" aria-hidden="true"></i>
+                  Cancelada
+                </span>
+              } @else {
+                <span class="odv-pill" [class.odv-pill--delivered]="o.delivered">
+                  <i class="fa-solid" [class.fa-truck]="o.delivered" [class.fa-clock]="!o.delivered" aria-hidden="true"></i>
+                  {{ o.delivered ? 'Entregue' : 'Não entregue' }}
+                </span>
+              }
+            </div>
+          </div>
         </div>
+
+        @if (!o.isCancelled) {
+          <div class="odv-hero__foot" [class.odv-hero__foot--debt]="hasDebt(o)" [class.odv-hero__foot--ok]="!hasDebt(o)">
+            <span class="odv-hero__foot-icon" aria-hidden="true">
+              <i class="fa-solid" [class.fa-triangle-exclamation]="hasDebt(o)" [class.fa-circle-check]="!hasDebt(o)"></i>
+            </span>
+            <p class="odv-hero__foot-text">{{ getAssistantDebtMessage(o) }}</p>
+            @if (hasDebt(o)) {
+              <a routerLink="/debts" class="odv-btn odv-btn--sm">
+                <i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i>
+                Registar pagamento
+              </a>
+            }
+          </div>
+        }
       </header>
 
       @if (o.isCancelled) {
-        <section class="closure-summary card" aria-label="Resumo do encerramento">
-          <h2 class="closure-summary__title">
-            <i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>
-            Cancelamento
-          </h2>
-          <dl class="closure-summary__grid">
+        <section class="odv-closure" aria-label="Resumo do cancelamento">
+          <div class="odv-closure__head">
+            <span class="odv-closure__icon" aria-hidden="true"><i class="fa-solid fa-circle-xmark"></i></span>
+            <h2>Cancelamento</h2>
+          </div>
+          <dl class="odv-closure__rows">
             @if (o.closedAt) {
               <div><dt>Data</dt><dd>{{ formatDateTime(o.closedAt) }}</dd></div>
             } @else {
-              <div><dt>Data</dt><dd class="closure-summary__legacy">Registo anterior (sem data de encerramento)</dd></div>
+              <div><dt>Data</dt><dd>Registo anterior (sem data de encerramento)</dd></div>
             }
             @if (o.closureReason) {
               <div><dt>Motivo</dt><dd>{{ getClosureReasonLabel(o.closureReason) }}</dd></div>
@@ -94,277 +107,224 @@
               <div><dt>Devolução</dt><dd>{{ getRefundTypeLabel(o.refundType) }}</dd></div>
             }
             @if (refundToClient(o) > 0) {
-              <div><dt>Adiantamento do cliente</dt><dd>{{ clientAdvanceBeforeCancel(o) | number:'1.0-0' }} MZN</dd></div>
-              <div><dt>Devolvido ao cliente</dt><dd>{{ refundToClient(o) | number:'1.0-0' }} MZN</dd></div>
+              <div><dt>Adiantamento</dt><dd>{{ clientAdvanceBeforeCancel(o) | number:'1.0-0' }} MZN</dd></div>
+              <div><dt>Devolvido</dt><dd>{{ refundToClient(o) | number:'1.0-0' }} MZN</dd></div>
             }
             @if (o.lossAmount != null && o.lossAmount > 0) {
               <div><dt>Prejuízo</dt><dd>{{ o.lossAmount | number:'1.0-0' }} MZN</dd></div>
             }
             @if (o.closureNote) {
-              <div class="closure-summary__note"><dt>Notas</dt><dd>{{ o.closureNote }}</dd></div>
+              <div class="odv-closure__note"><dt>Notas</dt><dd>{{ o.closureNote }}</dd></div>
             }
           </dl>
         </section>
       }
 
-      <div class="od-alert" [class.od-alert--debt]="hasDebt(o)" [class.od-alert--ok]="!hasDebt(o) && !o.isCancelled">
-        <span class="od-alert__icon" aria-hidden="true">
-          @if (hasDebt(o)) {
-            <i class="fa-solid fa-triangle-exclamation"></i>
-          } @else if (o.isCancelled) {
-            <i class="fa-solid fa-circle-info"></i>
-          } @else {
-            <i class="fa-solid fa-circle-check"></i>
-          }
-        </span>
-        <span class="od-alert__text">{{ getAssistantDebtMessage(o) }}</span>
-        @if (hasDebt(o)) {
-          <a routerLink="/debts" class="od-alert__btn">
-            <i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i>
-            Registar pagamento
-          </a>
-        }
-      </div>
-
-      <section class="od-sheet card" aria-label="Resumo da encomenda">
-        <div class="od-finance">
-          <h2 class="od-section-title">
-            <i class="fa-solid fa-coins" aria-hidden="true"></i>
-            Valores
-          </h2>
-
-          <div class="od-finance__group od-finance__group--pay">
-            <p class="od-finance__group-label">Pagamento</p>
-            <div class="od-finance__grid od-finance__grid--pay">
-              @if (o.isCancelled) {
-                @if (originalAgreedBeforeCancel(o); as original) {
-                  <article class="fin-card fin-card--charged">
-                    <div class="fin-card__icon" aria-hidden="true"><i class="fa-solid fa-tag"></i></div>
-                    <div class="fin-card__body">
-                      <span class="fin-card__label">Valor acordado (original)</span>
-                      <span class="fin-card__value">{{ original | number:'1.0-0' }} MZN</span>
-                    </div>
-                  </article>
+      <div class="odv-body">
+        <section class="odv-finance" aria-label="Resumo financeiro">
+          <div class="odv-finance__head" [class.odv-finance__head--solo]="!shouldShowProfitPreview(o)">
+            @if (shouldShowProfitPreview(o)) {
+              <aside class="odv-assist" [class.odv-assist--warn]="getProjectedProfitIfFullyPaid(o) < 0" aria-label="Previsão FlowAssist">
+                <header class="odv-assist__head">
+                  <span class="odv-assist__avatar" aria-hidden="true"><i class="fa-solid fa-robot"></i></span>
+                  <div>
+                    <strong>{{ assistantName }}</strong>
+                    <span>Previsão de lucro</span>
+                  </div>
+                </header>
+                <p class="odv-assist__text">
+                  Pagando os <strong>{{ saldo(o) | number:'1.0-0' }} MZN</strong> em falta, o lucro sobe de
+                  <strong>{{ getCurrentProfit(o) | number:'1.0-0' }}</strong> para
+                  <strong>{{ getProjectedProfitIfFullyPaid(o) | number:'1.0-0' }} MZN</strong>.
+                </p>
+                @if (getProjectedProfitIfFullyPaid(o) < 0) {
+                  <p class="odv-assist__alert">
+                    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                    Mesmo com pagamento total, o lucro será negativo.
+                  </p>
                 }
-                <article class="fin-card fin-card--advance">
-                  <div class="fin-card__icon" aria-hidden="true"><i class="fa-solid fa-hand-holding-dollar"></i></div>
-                  <div class="fin-card__body">
-                    <span class="fin-card__label">Adiantamento do cliente</span>
-                    <span class="fin-card__value">{{ clientAdvanceBeforeCancel(o) | number:'1.0-0' }} MZN</span>
-                  </div>
-                </article>
-                @if (refundToClient(o) > 0) {
-                  <article class="fin-card fin-card--refund">
-                    <div class="fin-card__icon" aria-hidden="true"><i class="fa-solid fa-rotate-left"></i></div>
-                    <div class="fin-card__body">
-                      <span class="fin-card__label">Devolvido ao cliente</span>
-                      <span class="fin-card__value">{{ refundToClient(o) | number:'1.0-0' }} MZN</span>
-                    </div>
-                  </article>
-                }
-                <article class="fin-card fin-card--debt fin-card--zero">
-                  <div class="fin-card__icon" aria-hidden="true"><i class="fa-solid fa-scale-balanced"></i></div>
-                  <div class="fin-card__body">
-                    <span class="fin-card__label">Dívida activa</span>
-                    <span class="fin-card__value">0 MZN</span>
-                  </div>
-                </article>
-              } @else {
-                <article class="fin-card fin-card--charged">
-                  <div class="fin-card__icon" aria-hidden="true"><i class="fa-solid fa-tag"></i></div>
-                  <div class="fin-card__body">
-                    <span class="fin-card__label">Valor cobrado</span>
-                    <span class="fin-card__value">{{ o.valueCharged | number:'1.0-0' }} MZN</span>
-                  </div>
-                </article>
-                <article class="fin-card fin-card--advance">
-                  <div class="fin-card__icon" aria-hidden="true"><i class="fa-solid fa-hand-holding-dollar"></i></div>
-                  <div class="fin-card__body">
-                    <span class="fin-card__label">Valor adiantado</span>
-                    <span class="fin-card__value">{{ o.valuePaid | number:'1.0-0' }} MZN</span>
-                  </div>
-                </article>
-                <article class="fin-card fin-card--debt" [class.fin-card--debt-active]="hasDebt(o)">
-                  <div class="fin-card__icon" aria-hidden="true"><i class="fa-solid fa-scale-balanced"></i></div>
-                  <div class="fin-card__body">
-                    <span class="fin-card__label">Dívida</span>
-                    <span class="fin-card__value">{{ saldo(o) | number:'1.0-0' }} MZN</span>
+              </aside>
+            }
+
+            <div class="odv-spotlight" [class.odv-spotlight--positive]="getProfitTone(getCurrentProfit(o)) === 'positive'" [class.odv-spotlight--negative]="getProfitTone(getCurrentProfit(o)) === 'negative'" [class.odv-spotlight--zero]="getProfitTone(getCurrentProfit(o)) === 'zero'">
+            <span class="odv-spotlight__eyebrow">Resultado actual</span>
+            <div class="odv-spotlight__row">
+              <span class="odv-spotlight__icon" aria-hidden="true"><i class="fa-solid fa-chart-line"></i></span>
+              <div>
+                <span class="odv-spotlight__label">Lucro</span>
+                <span class="odv-spotlight__value">{{ getCurrentProfit(o) | number:'1.0-0' }} <small>MZN</small></span>
+              </div>
+            </div>
+            @if (!o.isCancelled) {
+              <p class="odv-spotlight__formula">
+                <i class="fa-solid fa-calculator" aria-hidden="true"></i>
+                adiantado − custo − despesas extras
+              </p>
+            }
+          </div>
+          </div>
+
+          <div class="odv-kpis">
+            @if (o.isCancelled) {
+              @if (originalAgreedBeforeCancel(o); as original) {
+                <article class="odv-kpi odv-kpi--charged">
+                  <span class="odv-kpi__icon" aria-hidden="true"><i class="fa-solid fa-tag"></i></span>
+                  <div class="odv-kpi__data">
+                    <span class="odv-kpi__label">Valor acordado</span>
+                    <span class="odv-kpi__value">{{ original | number:'1.0-0' }} MZN</span>
                   </div>
                 </article>
               }
-            </div>
+              <article class="odv-kpi odv-kpi--paid">
+                <span class="odv-kpi__icon" aria-hidden="true"><i class="fa-solid fa-hand-holding-dollar"></i></span>
+                <div class="odv-kpi__data">
+                  <span class="odv-kpi__label">Adiantamento</span>
+                  <span class="odv-kpi__value">{{ clientAdvanceBeforeCancel(o) | number:'1.0-0' }} MZN</span>
+                </div>
+              </article>
+              @if (refundToClient(o) > 0) {
+                <article class="odv-kpi odv-kpi--refund">
+                  <span class="odv-kpi__icon" aria-hidden="true"><i class="fa-solid fa-rotate-left"></i></span>
+                  <div class="odv-kpi__data">
+                    <span class="odv-kpi__label">Devolvido</span>
+                    <span class="odv-kpi__value">{{ refundToClient(o) | number:'1.0-0' }} MZN</span>
+                  </div>
+                </article>
+              }
+            } @else {
+              <article class="odv-kpi odv-kpi--charged">
+                <span class="odv-kpi__icon" aria-hidden="true"><i class="fa-solid fa-tag"></i></span>
+                <div class="odv-kpi__data">
+                  <span class="odv-kpi__label">Valor cobrado</span>
+                  <span class="odv-kpi__value">{{ o.valueCharged | number:'1.0-0' }} MZN</span>
+                </div>
+              </article>
+              <article class="odv-kpi odv-kpi--paid">
+                <span class="odv-kpi__icon" aria-hidden="true"><i class="fa-solid fa-hand-holding-dollar"></i></span>
+                <div class="odv-kpi__data">
+                  <span class="odv-kpi__label">Valor adiantado</span>
+                  <span class="odv-kpi__value">{{ o.valuePaid | number:'1.0-0' }} MZN</span>
+                </div>
+              </article>
+              <article class="odv-kpi odv-kpi--debt" [class.odv-kpi--debt-active]="hasDebt(o)">
+                <span class="odv-kpi__icon" aria-hidden="true"><i class="fa-solid fa-scale-balanced"></i></span>
+                <div class="odv-kpi__data">
+                  <span class="odv-kpi__label">Dívida</span>
+                  <span class="odv-kpi__value">{{ saldo(o) | number:'1.0-0' }} MZN</span>
+                </div>
+              </article>
+              <article class="odv-kpi odv-kpi--cost">
+                <span class="odv-kpi__icon" aria-hidden="true"><i class="fa-solid fa-basket-shopping"></i></span>
+                <div class="odv-kpi__data">
+                  <span class="odv-kpi__label">Custo</span>
+                  <span class="odv-kpi__value">{{ o.costTotal | number:'1.0-0' }} MZN</span>
+                </div>
+              </article>
+              <article class="odv-kpi odv-kpi--extra">
+                <span class="odv-kpi__icon" aria-hidden="true"><i class="fa-solid fa-receipt"></i></span>
+                <div class="odv-kpi__data">
+                  <span class="odv-kpi__label">Despesas extras</span>
+                  <span class="odv-kpi__value">{{ getDespesasExtrasTotal(o) | number:'1.0-0' }} MZN</span>
+                </div>
+              </article>
+            }
           </div>
 
-          <div class="od-finance__group od-finance__group--result">
-            <p class="od-finance__group-label">Resultado</p>
-            <div class="od-finance__grid od-finance__grid--result">
-              <article class="fin-card fin-card--cost">
-                <div class="fin-card__icon" aria-hidden="true"><i class="fa-solid fa-basket-shopping"></i></div>
-                <div class="fin-card__body">
-                  <span class="fin-card__label">Custo da encomenda</span>
-                  <span class="fin-card__value">{{ o.costTotal | number:'1.0-0' }} MZN</span>
-                </div>
-              </article>
-              <article class="fin-card fin-card--extra">
-                <div class="fin-card__icon" aria-hidden="true"><i class="fa-solid fa-receipt"></i></div>
-                <div class="fin-card__body">
-                  <span class="fin-card__label">Despesas extras</span>
-                  <span class="fin-card__value">{{ getDespesasExtrasTotal(o) | number:'1.0-0' }} MZN</span>
-                </div>
-              </article>
-              <article class="fin-card fin-card--profit">
-                <div class="fin-card__icon" aria-hidden="true"><i class="fa-solid fa-chart-line"></i></div>
-                <div class="fin-card__body">
-                  <span class="fin-card__label">Lucro</span>
-                  <span class="fin-card__value">
-                    @if (o.delivered || o.isCancelled) {
-                      {{ o.profit | number:'1.0-0' }} MZN
-                    } @else {
-                      —
-                    }
-                  </span>
-                </div>
-              </article>
-            </div>
-          </div>
-        </div>
+        </section>
 
-        <div class="od-details-grid">
-          <section class="od-panel od-panel--client">
-            <h2 class="od-section-title">
-              <i class="fa-solid fa-user-group" aria-hidden="true"></i>
-              Cliente & datas
-            </h2>
-            <ul class="od-fields">
-              <li class="od-field">
-                <span class="od-field__icon" aria-hidden="true"><i class="fa-solid fa-user"></i></span>
-                <div class="od-field__content">
-                  <span class="od-field__label">Cliente</span>
-                  <span class="od-field__value">{{ o.clientName }}</span>
-                </div>
-              </li>
-              <li class="od-field">
-                <span class="od-field__icon" aria-hidden="true"><i class="fa-solid fa-phone"></i></span>
-                <div class="od-field__content">
-                  <span class="od-field__label">Contacto</span>
-                  <span class="od-field__value">{{ getContactFromOrder(o) }}</span>
-                </div>
-              </li>
-              <li class="od-field">
-                <span class="od-field__icon" aria-hidden="true"><i class="fa-solid fa-calendar-plus"></i></span>
-                <div class="od-field__content">
-                  <span class="od-field__label">Criação</span>
-                  <span class="od-field__value">{{ formatDateTime(o.createdAt) }}</span>
-                </div>
-              </li>
-              <li class="od-field">
-                <span class="od-field__icon" aria-hidden="true"><i class="fa-solid fa-calendar-check"></i></span>
-                <div class="od-field__content">
-                  <span class="od-field__label">Entrega</span>
-                  <span class="od-field__value">
-                    {{ formatDate(o.deliveryDate) }}
-                    @if (getDeliveryTime(o); as hora) {
-                      <span class="inline-meta">· {{ hora }}</span>
-                    }
-                  </span>
-                </div>
-              </li>
-              <li class="od-field">
-                <span class="od-field__icon" aria-hidden="true"><i class="fa-solid fa-pen-nib"></i></span>
-                <div class="od-field__content">
-                  <span class="od-field__label">Registado</span>
-                  <span class="od-field__value">{{ getRegistadoPor() }}</span>
-                </div>
-              </li>
-            </ul>
-          </section>
+        <div class="odv-details">
+          <article class="odv-card odv-card--client">
+            <header class="odv-card__head">
+              <span class="odv-card__icon odv-card__icon--teal" aria-hidden="true"><i class="fa-solid fa-user-group"></i></span>
+              <h2>Cliente & datas</h2>
+            </header>
+            <dl class="odv-rows">
+              <div class="odv-row">
+                <dt><i class="fa-solid fa-user" aria-hidden="true"></i> Cliente</dt>
+                <dd>{{ o.clientName }}</dd>
+              </div>
+              <div class="odv-row">
+                <dt><i class="fa-solid fa-phone" aria-hidden="true"></i> Contacto</dt>
+                <dd>{{ getContactFromOrder(o) }}</dd>
+              </div>
+              <div class="odv-row">
+                <dt><i class="fa-solid fa-calendar-plus" aria-hidden="true"></i> Criação</dt>
+                <dd>{{ formatDateTime(o.createdAt) }}</dd>
+              </div>
+              <div class="odv-row">
+                <dt><i class="fa-solid fa-calendar-check" aria-hidden="true"></i> Entrega</dt>
+                <dd>
+                  {{ formatDate(o.deliveryDate) }}
+                  @if (getDeliveryTime(o); as hora) {
+                    <span class="odv-row__meta">· {{ hora }}</span>
+                  }
+                </dd>
+              </div>
+              <div class="odv-row">
+                <dt><i class="fa-solid fa-pen-nib" aria-hidden="true"></i> Registado</dt>
+                <dd>{{ getRegistadoPor() }}</dd>
+              </div>
+            </dl>
+          </article>
 
-          <section class="od-panel od-panel--product">
-            <h2 class="od-section-title">
-              <i class="fa-solid fa-cake-candles" aria-hidden="true"></i>
-              Produto & local
-            </h2>
-            <ul class="od-fields">
-              <li class="od-field">
-                <span class="od-field__icon" aria-hidden="true"><i class="fa-solid fa-layer-group"></i></span>
-                <div class="od-field__content">
-                  <span class="od-field__label">Categoria</span>
-                  <span class="od-field__value">{{ getCategoryLabel(o.category) }}</span>
-                </div>
-              </li>
-              <li class="od-field">
-                <span class="od-field__icon" aria-hidden="true"><i class="fa-solid fa-shapes"></i></span>
-                <div class="od-field__content">
-                  <span class="od-field__label">Tipo</span>
-                  <span class="od-field__value">{{ o.subcategory || '—' }}</span>
-                </div>
-              </li>
-              <li class="od-field">
-                <span class="od-field__icon" aria-hidden="true"><i class="fa-solid fa-star"></i></span>
-                <div class="od-field__content">
-                  <span class="od-field__label">Produto</span>
-                  <span class="od-field__value od-field__value--strong">{{ displayName(o) }}</span>
-                </div>
-              </li>
-              <li class="od-field">
-                <span class="od-field__icon" aria-hidden="true"><i class="fa-solid fa-ruler-combined"></i></span>
-                <div class="od-field__content">
-                  <span class="od-field__label">Tamanho</span>
-                  <span class="od-field__value">{{ displaySize(o) }}</span>
-                </div>
-              </li>
-              <li class="od-field">
-                <span class="od-field__icon" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></span>
-                <div class="od-field__content">
-                  <span class="od-field__label">Local</span>
-                  <span class="od-field__value">{{ getDeliveryLocation(o) }}</span>
-                </div>
-              </li>
-            </ul>
-          </section>
+          <article class="odv-card odv-card--product">
+            <header class="odv-card__head">
+              <span class="odv-card__icon odv-card__icon--blue" aria-hidden="true"><i class="fa-solid fa-cake-candles"></i></span>
+              <h2>Produto & local</h2>
+            </header>
+            <dl class="odv-rows">
+              <div class="odv-row">
+                <dt><i class="fa-solid fa-layer-group" aria-hidden="true"></i> Categoria</dt>
+                <dd>{{ getCategoryLabel(o.category) }}</dd>
+              </div>
+              <div class="odv-row">
+                <dt><i class="fa-solid fa-shapes" aria-hidden="true"></i> Tipo</dt>
+                <dd>{{ o.subcategory || '—' }}</dd>
+              </div>
+              <div class="odv-row odv-row--highlight">
+                <dt><i class="fa-solid fa-star" aria-hidden="true"></i> Produto</dt>
+                <dd>{{ displayName(o) }}</dd>
+              </div>
+              <div class="odv-row">
+                <dt><i class="fa-solid fa-ruler-combined" aria-hidden="true"></i> Tamanho</dt>
+                <dd>{{ displaySize(o) }}</dd>
+              </div>
+              <div class="odv-row">
+                <dt><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Local</dt>
+                <dd>{{ getDeliveryLocation(o) }}</dd>
+              </div>
+            </dl>
+          </article>
 
-          <section class="od-panel od-panel--notes">
-            <h2 class="od-section-title">
-              <i class="fa-solid fa-note-sticky" aria-hidden="true"></i>
-              Despesas & notas
-            </h2>
+          <article class="odv-card odv-card--notes">
+            <header class="odv-card__head">
+              <span class="odv-card__icon odv-card__icon--sky" aria-hidden="true"><i class="fa-solid fa-note-sticky"></i></span>
+              <h2>Despesas & notas</h2>
+            </header>
             @if (o.variableExpenses && o.variableExpenses.length > 0) {
-              <ul class="od-exp-list">
+              <ul class="odv-expenses">
                 @for (exp of o.variableExpenses; track $index) {
-                  <li class="od-exp-item">
-                    <span class="od-exp-item__icon" aria-hidden="true"><i class="fa-solid fa-minus-circle"></i></span>
-                    <span class="od-exp-item__name">{{ exp.name }}</span>
-                    <strong class="od-exp-item__amount">{{ exp.amount | number:'1.0-0' }} MZN</strong>
+                  <li class="odv-expense">
+                    <span class="odv-expense__icon" aria-hidden="true"><i class="fa-solid fa-circle-minus"></i></span>
+                    <span class="odv-expense__name">{{ exp.name }}</span>
+                    <strong class="odv-expense__val">{{ exp.amount | number:'1.0-0' }} MZN</strong>
                   </li>
                 }
               </ul>
             } @else {
-              <p class="od-muted">
-                <i class="fa-regular fa-circle-check" aria-hidden="true"></i>
-                Sem despesas extras.
-              </p>
+              <p class="odv-empty-hint"><i class="fa-regular fa-circle-check" aria-hidden="true"></i> Sem despesas extras.</p>
             }
             @if (getObservationsExtra(o); as extraObs) {
-              <div class="od-notes">
-                <i class="fa-solid fa-comment-dots od-notes__icon" aria-hidden="true"></i>
+              <blockquote class="odv-quote">
+                <i class="fa-solid fa-quote-left" aria-hidden="true"></i>
                 <p>{{ extraObs }}</p>
-              </div>
+              </blockquote>
             } @else if (!o.variableExpenses?.length && !o.observations) {
-              <p class="od-muted">
-                <i class="fa-regular fa-circle-check" aria-hidden="true"></i>
-                Sem notas adicionais.
-              </p>
+              <p class="odv-empty-hint"><i class="fa-regular fa-circle-check" aria-hidden="true"></i> Sem notas adicionais.</p>
             }
-          </section>
+          </article>
         </div>
-      </section>
+      </div>
     }
-  }
-
-  @if (showCloseDialog() && order(); as o) {
-    <app-order-close-dialog
-      [order]="o"
-      (closed)="onOrderClosed()"
-      (dismissed)="dismissCloseDialog()" />
   }
 </div>

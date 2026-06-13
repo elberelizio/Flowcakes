@@ -16,19 +16,17 @@ import {
   orderOriginalAgreedBeforeCancel,
   orderRefundToClient,
 } from '../../models/order.model';
-import { OrderCloseDialogComponent } from '../orders/order-close-dialog/order-close-dialog.component';
 
 @Component({
   selector: 'app-order-details',
   standalone: true,
-  imports: [CommonModule, RouterLink, OrderCloseDialogComponent],
+  imports: [CommonModule, RouterLink],
   templateUrl: './order-details.component.html',
   styleUrl: './order-details.component.scss',
 })
 export class OrderDetailsComponent implements OnInit {
   order = signal<Order | null>(null);
   notFound = signal(false);
-  showCloseDialog = signal(false);
 
   getClosureReasonLabel = getClosureReasonLabel;
   getProductionStageLabel = getProductionStageLabel;
@@ -43,18 +41,15 @@ export class OrderDetailsComponent implements OnInit {
     private auth: AuthService
   ) {}
 
-  /** ID curto da encomenda (8 primeiros caracteres) */
   getOrderIdShort(o: Order): string {
     if (!o?.id) return '—';
     return o.id.slice(0, 8).toUpperCase();
   }
 
-  /** Nome do utilizador que registou (como só vemos as nossas encomendas, é o utilizador atual) */
   getRegistadoPor(): string {
     return this.auth.getDisplayName() || '—';
   }
 
-  /** Extrai contacto das observações (formato "Contacto: xxx") */
   getContactFromOrder(o: Order): string {
     const obs = o.observations ?? '';
     const m = obs.match(/Contacto:\s*([^|]+)/);
@@ -67,7 +62,6 @@ export class OrderDetailsComponent implements OnInit {
     return m ? m[1].trim() : null;
   }
 
-  /** Observações sem campos já mostrados noutros blocos. */
   getObservationsExtra(o: Order): string {
     const obs = (o.observations ?? '').trim();
     if (!obs) return '';
@@ -113,6 +107,10 @@ export class OrderDetailsComponent implements OnInit {
     });
   }
 
+  formatMoney(value: number): string {
+    return `${value.toLocaleString('pt-MZ', { maximumFractionDigits: 0 })} MZN`;
+  }
+
   getPaymentStatusLabel(status: string): string {
     switch (status) {
       case 'pendente': return 'Pendente';
@@ -143,7 +141,6 @@ export class OrderDetailsComponent implements OnInit {
     return order.hasDelivery ? 'Entrega' : 'Recolha do cliente';
   }
 
-  /** Despesas variáveis totais (despesas extras do cadastro) */
   getDespesasExtrasTotal(o: Order): number {
     return this.getVariableExpensesTotal(o);
   }
@@ -153,10 +150,36 @@ export class OrderDetailsComponent implements OnInit {
   clientAdvanceBeforeCancel = orderClientAdvanceBeforeCancel;
   originalAgreedBeforeCancel = orderOriginalAgreedBeforeCancel;
 
-  /** Nome do assistente inteligente */
   readonly assistantName = 'FlowAssist';
 
-  /** Verifica dados em falta e retorna as mensagens do assistente */
+  /** Lucro actual = valor adiantado − custo − despesas extras */
+  getCurrentProfit(o: Order): number {
+    if (o.isCancelled) return o.profit ?? 0;
+    return o.valuePaid - o.costTotal - this.getDespesasExtrasTotal(o);
+  }
+
+  /** Lucro se a dívida for paga = valor cobrado − custo − despesas extras */
+  getProjectedProfitIfFullyPaid(o: Order): number {
+    if (o.isCancelled) return o.profit ?? 0;
+    return o.valueCharged - o.costTotal - this.getDespesasExtrasTotal(o);
+  }
+
+  getProfitTone(value: number): 'positive' | 'zero' | 'negative' {
+    if (value > 0) return 'positive';
+    if (value < 0) return 'negative';
+    return 'zero';
+  }
+
+  getStatusSummary(o: Order): string {
+    const parts: string[] = [this.getPaymentStatusLabel(o.paymentStatus)];
+    if (o.isCancelled) {
+      parts.push('Cancelada');
+    } else {
+      parts.push(o.delivered ? 'Entregue' : 'Não entregue');
+    }
+    return parts.join(' · ');
+  }
+
   getAssistantWarnings(o: Order): string[] {
     const avisos: string[] = [];
     const contacto = this.getContactFromOrder(o);
@@ -184,23 +207,47 @@ export class OrderDetailsComponent implements OnInit {
       avisos.push('Falta o endereço do cliente.');
     }
 
+    avisos.push(...this.getAssistantProfitWarnings(o));
     return avisos;
   }
 
-  /** Controla se o popup do assistente está visível */
+  getAssistantProfitWarnings(o: Order): string[] {
+    if (o.isCancelled) return [];
+
+    const current = this.getCurrentProfit(o);
+    const projected = this.getProjectedProfitIfFullyPaid(o);
+
+    if (current < 0) {
+      return [`O lucro actual é negativo (${this.formatMoney(current)}). Revise custos e despesas.`];
+    }
+
+    if (this.hasDebt(o)) {
+      if (projected < 0) {
+        return [
+          `Mesmo que o cliente pague os ${this.formatMoney(this.saldo(o))} em falta, o lucro será negativo (${this.formatMoney(projected)}).`,
+        ];
+      }
+      if (projected < current) {
+        return [
+          `Mesmo com pagamento total, o lucro estimado (${this.formatMoney(projected)}) é inferior ao actual (${this.formatMoney(current)}).`,
+        ];
+      }
+    }
+
+    return [];
+  }
+
   assistantPopupVisible = signal(true);
 
   closeAssistantPopup(): void {
     this.assistantPopupVisible.set(false);
   }
 
-  /** Retorna true se a encomenda tem dívida (valor em falta) */
   hasDebt(o: Order): boolean {
     if (o.isCancelled || o.orderStatus === 'cancelled') return false;
     return this.saldo(o) > 0;
   }
 
-  /** Mensagem do assistente sobre o estado da dívida */
   getAssistantDebtMessage(o: Order): string {
     if (o.isCancelled) {
       const devolvido = orderRefundToClient(o);
@@ -216,21 +263,7 @@ export class OrderDetailsComponent implements OnInit {
     return 'Esta encomenda está paga na totalidade.';
   }
 
-  openCloseDialog(): void {
-    this.showCloseDialog.set(true);
-  }
-
-  async onOrderClosed(): Promise<void> {
-    this.showCloseDialog.set(false);
-    await this.ordersService.loadOrders();
-    const id = this.order()?.id;
-    if (id) {
-      const found = this.ordersService.getOrderById(id);
-      if (found) this.order.set(found);
-    }
-  }
-
-  dismissCloseDialog(): void {
-    this.showCloseDialog.set(false);
+  shouldShowProfitPreview(o: Order): boolean {
+    return !o.isCancelled && this.hasDebt(o);
   }
 }

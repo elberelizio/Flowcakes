@@ -118,7 +118,14 @@ export interface OrderWithIngredients extends Order {
 
 /** Nome do produto para exibição (compatível com pedidos antigos) */
 export function orderDisplayName(o: Order): string {
-  return o.productName ?? o.cakeName ?? '—';
+  const name = (o.productName ?? o.cakeName ?? '').trim();
+  if (!name) return '—';
+  const sub = (o.subcategory ?? '').trim();
+  if (!sub) return name;
+  const nameLower = name.toLowerCase();
+  const subLower = sub.toLowerCase();
+  if (nameLower === subLower || nameLower.startsWith(`${subLower} `)) return name;
+  return `${sub} ${name}`;
 }
 
 /** Tamanho/quantidade para exibição */

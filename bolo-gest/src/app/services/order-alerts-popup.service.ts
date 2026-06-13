@@ -67,7 +67,7 @@ export class OrderAlertsPopupService {
 
     const ordersService = this.injector.get(OrdersService);
     const reminderService = this.injector.get(ReminderService);
-    const orders = ordersService.ordersByDeliveryDateRange(14).filter((o) => !o.delivered);
+    const orders = ordersService.getPendingDeliveries(14);
     const reminders = reminderService.remindersInNotifyWindow();
     const withDays: UpcomingReminderWithDays[] = reminders.map((r) => ({
       reminder: r,

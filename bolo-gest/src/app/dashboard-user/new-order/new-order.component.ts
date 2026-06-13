@@ -46,6 +46,8 @@ export class NewOrderComponent implements OnInit {
   readonly salgadosSubcategories = SALGADOS_SUBCATEGORIES;
   readonly docesSizesByName = DOCES_SIZES_BY_NAME;
   readonly docesSizesByNumber = DOCES_SIZES_BY_NUMBER;
+  /** Valores do select que abrem campo de tipo personalizado */
+  private static readonly OTHER_SUBCATEGORY_VALUES = new Set(['Outros', 'Outros salgados típicos']);
   /** Doces: por número de forma (15, 20, 47) ou por escala (Pequeno, Médio, Grande) - null = nada selecionado */
   sizeType: 'nome' | 'numero' | null = null;
 
@@ -61,6 +63,12 @@ export class NewOrderComponent implements OnInit {
 
   get isSalgados(): boolean {
     return this.category === 'salgados';
+  }
+
+  /** Tipo = Outros → mostrar campo para especificar. */
+  get isOtherSubcategory(): boolean {
+    const sub = String(this.form?.get('subcategory')?.value ?? '').trim();
+    return NewOrderComponent.OTHER_SUBCATEGORY_VALUES.has(sub);
   }
 
   get categoryMeta() {
@@ -105,6 +113,18 @@ export class NewOrderComponent implements OnInit {
     if (!value) {
       this.form.patchValue({ deliveryAddress: '', deliveryCost: null });
     }
+  }
+
+  onSubcategoryChange(): void {
+    const control = this.form.get('subcategoryCustom');
+    if (!control) return;
+    if (this.isOtherSubcategory) {
+      control.setValidators(Validators.required);
+    } else {
+      control.clearValidators();
+      control.setValue('');
+    }
+    control.updateValueAndValidity();
   }
 
   onClientContactInput(event: Event): void {
@@ -173,6 +193,7 @@ export class NewOrderComponent implements OnInit {
       deliveryTime: [''],        // Hora de entrega do bolo
       deliveryAddress: [''],     // Local de entrega (só quando delivery = Sim)
       subcategory: ['', Validators.required],
+      subcategoryCustom: [''],
       productName: ['', Validators.required],
       size: [''],
       sizeNumberCustom: [null as number | null],
@@ -205,6 +226,7 @@ export class NewOrderComponent implements OnInit {
       deliveryTime: '',
       deliveryAddress: '',
       subcategory: '',
+      subcategoryCustom: '',
       productName: '',
       size: '',
       sizeNumberCustom: null,
@@ -309,8 +331,15 @@ export class NewOrderComponent implements OnInit {
     const subcategory = String(subcategoryRaw ?? '').trim();
     const productName = String(productNameRaw ?? '').trim();
     if (!subcategory || !productName) return productName;
-    const pattern = new RegExp(`^${subcategory}\\s+`, 'i');
+    const pattern = new RegExp(`^${subcategory.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+`, 'i');
     return productName.replace(pattern, '').trim() || productName;
+  }
+
+  private resolveSubcategoryForSubmit(raw: { subcategory?: string; subcategoryCustom?: string }): string {
+    if (NewOrderComponent.OTHER_SUBCATEGORY_VALUES.has(String(raw.subcategory ?? '').trim())) {
+      return String(raw.subcategoryCustom ?? '').trim();
+    }
+    return String(raw.subcategory ?? '').trim();
   }
 
   private scrollToField(targetId: string): void {
@@ -324,11 +353,15 @@ export class NewOrderComponent implements OnInit {
   private validateBeforeSubmit(): boolean {
     this.submitAttempted = true;
     this.sizeTypeError = false;
+    this.onSubcategoryChange();
     this.form.markAllAsTouched();
 
     const fieldChecks: { id: string; label: string; invalid: boolean }[] = [
       { id: 'field-clientName', label: 'Nome do cliente', invalid: !!this.form.get('clientName')?.invalid },
       { id: 'field-subcategory', label: 'Tipo de produto', invalid: !!this.form.get('subcategory')?.invalid },
+      ...(this.isOtherSubcategory
+        ? [{ id: 'field-subcategoryCustom', label: 'Tipo personalizado', invalid: !!this.form.get('subcategoryCustom')?.invalid }]
+        : []),
       { id: 'field-productName', label: 'Descrição do produto', invalid: !!this.form.get('productName')?.invalid },
       { id: 'field-valueCharged', label: 'Valor cobrado', invalid: !!this.form.get('valueCharged')?.invalid },
       { id: 'field-deliveryDate', label: 'Data de entrega', invalid: !!this.form.get('deliveryDate')?.invalid },
@@ -376,14 +409,18 @@ export class NewOrderComponent implements OnInit {
     const ingredients = this.getIngredientsForSubmit();
     const costTotal = this.getCostTotal();
     const energyCost = 0;
-    const normalizedProductName = this.normalizeProductName(raw.subcategory, raw.productName);
+    const normalizedProductName = this.normalizeProductName(
+      this.resolveSubcategoryForSubmit(raw),
+      raw.productName,
+    );
+    const subcategory = this.resolveSubcategoryForSubmit(raw);
 
     const discount = Number(raw.discount ?? 0) || 0;
 
     const order = await this.orders.create({
       clientName: raw.clientName,
       category: this.category,
-      subcategory: raw.subcategory,
+      subcategory,
       productName: normalizedProductName,
       size: this.isDoces ? this.getSizeValueForSubmit() : undefined,
       quantityKg: this.isSalgados && raw.quantityKg != null ? Number(raw.quantityKg) : undefined,

@@ -53,7 +53,6 @@
     @if (step === 2 && category && categoryMeta) {
       <form [formGroup]="form" (ngSubmit)="submit()" class="order-form">
         <div class="order-form-layout">
-          <aside class="order-aside" aria-label="Categoria e resumo">
             <div
               class="category-context"
               [class.category-context--doces]="category === 'doces'"
@@ -71,55 +70,6 @@
                 </button>
               </div>
             </div>
-
-            <div class="order-summary-panel">
-              <h3 class="order-summary-panel__title">Resumo</h3>
-              <dl class="order-summary-panel__list">
-                <div>
-                  <dt>Cliente</dt>
-                  <dd>{{ form.get('clientName')?.value || '—' }}</dd>
-                </div>
-                <div>
-                  <dt>Entrega</dt>
-                  <dd>
-                    @if (form.get('deliveryDate')?.value) {
-                      {{ form.get('deliveryDate')?.value }}
-                      @if (form.get('deliveryTime')?.value; as t) {
-                        <span class="order-summary-panel__meta">· {{ t }}</span>
-                      }
-                    } @else {
-                      —
-                    }
-                  </dd>
-                </div>
-                <div>
-                  <dt>Valor</dt>
-                  <dd>{{ formatSummaryMoney('valueCharged') }}</dd>
-                </div>
-                <div>
-                  <dt>Despesa</dt>
-                  <dd>
-                    @if (costTotalPreview != null) {
-                      {{ costTotalPreview | number:'1.0-0' }} MZN
-                    } @else {
-                      —
-                    }
-                  </dd>
-                </div>
-              </dl>
-            </div>
-
-            @if (submitError) {
-              <p class="form-error form-error--aside">{{ submitError }}</p>
-            }
-
-            <div class="form-actions form-actions--aside">
-              <button type="submit" class="btn btn-primary" [disabled]="submitting">
-                {{ submitting ? 'A guardar...' : 'Criar encomenda' }}
-              </button>
-              <a routerLink="/dashboard" class="btn btn-secondary">Cancelar</a>
-            </div>
-          </aside>
 
           <div class="order-main">
             <section class="form-section form-section--compact">
@@ -159,7 +109,10 @@
               <div class="section-grid section-grid--product">
                 <div class="field-block" id="field-subcategory">
                   <label [attr.for]="category + '-subcategory'">Tipo</label>
-                  <select [id]="category + '-subcategory'" formControlName="subcategory">
+                  <select
+                    [id]="category + '-subcategory'"
+                    formControlName="subcategory"
+                    (change)="onSubcategoryChange()">
                     <option value="">Selecione...</option>
                     @if (isDoces) {
                       @for (sub of docesSubcategories; track sub) {
@@ -175,6 +128,18 @@
                     <span class="field-hint field-hint--error">Seleccione o tipo de produto.</span>
                   }
                 </div>
+                @if (isOtherSubcategory) {
+                  <div class="field-block field-block-wide" id="field-subcategoryCustom">
+                    <label [attr.for]="category + '-subcategoryCustom'">Especifique o tipo</label>
+                    <input
+                      [id]="category + '-subcategoryCustom'"
+                      formControlName="subcategoryCustom"
+                      [placeholder]="isDoces ? 'Ex: Torta, Brownie' : 'Ex: Samosa, Pastel'" />
+                    @if (showFieldError('subcategoryCustom')) {
+                      <span class="field-hint field-hint--error">Indique o tipo de produto.</span>
+                    }
+                  </div>
+                }
                 <div class="field-block field-block-wide" id="field-productName">
                   <label [attr.for]="category + '-productName'">Descrição</label>
                   <input
@@ -327,17 +292,61 @@
                 </div>
               }
             </section>
+          </div>
 
-            @if (submitError) {
-              <p class="form-error form-error--bottom">{{ submitError }}</p>
-            }
+          <div class="order-summary-panel" aria-label="Resumo da encomenda">
+            <h3 class="order-summary-panel__title">Resumo</h3>
+            <dl class="order-summary-panel__list">
+              <div>
+                <dt>Cliente</dt>
+                <dd>{{ form.get('clientName')?.value || '—' }}</dd>
+              </div>
+              <div>
+                <dt>Entrega</dt>
+                <dd>
+                  @if (form.get('deliveryDate')?.value) {
+                    {{ form.get('deliveryDate')?.value }}
+                    @if (form.get('deliveryTime')?.value; as t) {
+                      <span class="order-summary-panel__meta">· {{ t }}</span>
+                    }
+                  } @else {
+                    —
+                  }
+                </dd>
+              </div>
+              <div>
+                <dt>Valor</dt>
+                <dd>{{ formatSummaryMoney('valueCharged') }}</dd>
+              </div>
+              <div>
+                <dt>Despesa</dt>
+                <dd>
+                  @if (costTotalPreview != null) {
+                    {{ costTotalPreview | number:'1.0-0' }} MZN
+                  } @else {
+                    —
+                  }
+                </dd>
+              </div>
+            </dl>
+          </div>
 
-            <div class="form-actions form-actions--bottom">
-              <button type="submit" class="btn btn-primary" [disabled]="submitting">
-                {{ submitting ? 'A guardar...' : 'Criar encomenda' }}
-              </button>
-              <a routerLink="/dashboard" class="btn btn-secondary">Cancelar</a>
-            </div>
+          @if (submitError) {
+            <p class="form-error form-error--submit">{{ submitError }}</p>
+          }
+
+          <div class="form-actions--bottom">
+            <button type="submit" class="btn btn-primary" [disabled]="submitting">
+              {{ submitting ? 'A guardar...' : 'Criar encomenda' }}
+            </button>
+            <a routerLink="/dashboard" class="btn btn-cancel">Cancelar</a>
+          </div>
+
+          <div class="form-actions--aside">
+            <button type="submit" class="btn btn-primary" [disabled]="submitting">
+              {{ submitting ? 'A guardar...' : 'Criar encomenda' }}
+            </button>
+            <a routerLink="/dashboard" class="btn btn-cancel">Cancelar</a>
           </div>
         </div>
       </form>

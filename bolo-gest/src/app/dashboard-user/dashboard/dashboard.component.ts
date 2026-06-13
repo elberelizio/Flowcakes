@@ -77,7 +77,7 @@ const profitExpenseSplineLabelsPlugin: Plugin<'line'> = {
 import { OrdersService } from '../../services/orders.service';
 import { ReminderService } from '../../services/reminder.service';
 import { AuthService, LicenseStatusResponse } from '../../services/auth.service';
-import { Order, orderDisplayName, orderDisplaySize } from '../../models/order.model';
+import { Order, isOrderClosed, orderDisplayName, orderDisplaySize } from '../../models/order.model';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { NotificationService } from '../../services/notification.service';
 import { UserSettingsService } from '../../services/user-settings.service';
@@ -102,7 +102,10 @@ const LOGIN_SUMMARY_DISMISSED_KEY = 'chefcontrol_login_summary_dismissed';
 type ChartGranularity = 'day' | 'month' | 'year';
 
 /** Estado financeiro no popup «Resumo da situação». */
-export type ProfitMoodTier = 'loss' | 'zero' | 'modest' | 'good' | 'excellent';
+export type ProfitMoodTier = 'loss' | 'zero' | 'positive';
+
+/** Máximo de encomendas listadas no popup (o contador mostra o total real). */
+const LOGIN_SUMMARY_MAX_DELIVERIES = 5;
 
 interface ProfitExpensePoint {
   date: string;
@@ -186,56 +189,46 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.totalValuePaid() - this.totalExpense() - this.totalWithdrawn()
   );
 
-  /** Limiares em MZN para mensagens do popup (valor arredondado). */
-  private static readonly PROFIT_MODEST_MAX = 4_999;
-  private static readonly PROFIT_EXCELLENT_MIN = 25_000;
-  private static readonly PROFIT_EXCELLENT_MARGIN = 0.25;
-
   /**
-   * Comportamento do popup conforme o lucro:
-   * prejuízo → alerta; zero → sem lucro, motivação; positivo → encorajamento; muito alto → destaque.
+   * Estado do lucro no popup: prejuízo, zero ou positivo.
    */
   profitMoodTier = computed((): ProfitMoodTier => {
     const lucro = Math.round(this.lucroFinal());
     if (lucro < 0) return 'loss';
     if (lucro === 0) return 'zero';
-
-    const revenue = this.totalValuePaid();
-    const margin = revenue > 0 ? lucro / revenue : 0;
-    if (lucro >= DashboardComponent.PROFIT_EXCELLENT_MIN || margin >= DashboardComponent.PROFIT_EXCELLENT_MARGIN) {
-      return 'excellent';
-    }
-    if (lucro <= DashboardComponent.PROFIT_MODEST_MAX) return 'modest';
-    return 'good';
+    return 'positive';
   });
 
-  summaryMoodEmoji = computed(() => {
+  summaryMoodImage = computed(() => {
     switch (this.profitMoodTier()) {
       case 'loss':
-        return '😰';
+        return '/assents/mood/mood-loss.png';
       case 'zero':
-        return '💪';
-      case 'modest':
-        return '🙂';
-      case 'good':
-        return '😊';
-      case 'excellent':
-        return '🎉';
+        return '/assents/mood/mood-zero.png';
+      case 'positive':
+        return '/assents/mood/mood-good.png';
     }
   });
 
-  summaryMoodMessage = computed(() => {
+  summaryMoodHeadline = computed(() => {
     switch (this.profitMoodTier()) {
       case 'loss':
-        return 'Situação crítica: despesas e retiradas superam o que já recebeu. Revise custos, cobranças e evite novas retiradas até recuperar.';
+        return 'Prejuízo';
       case 'zero':
-        return 'Ainda não há lucro — o que entrou só cobre custos e retiradas. Feche encomendas, receba valores em falta e registe todas as despesas.';
-      case 'modest':
-        return 'Lucro positivo, ainda modesto. Bom sinal — continue a fechar encomendas e a controlar despesas para fazer o negócio crescer.';
-      case 'good':
-        return 'Bom trabalho! O negócio está a gerar lucro. Mantenha o registo em dia e acompanhe o dashboard.';
-      case 'excellent':
-        return 'Resultado excelente! O lucro está forte — considere reservar parte para reinvestir ou para épocas mais calmas.';
+        return 'Sem lucro';
+      case 'positive':
+        return 'Lucro positivo';
+    }
+  });
+
+  summaryMoodDetail = computed(() => {
+    switch (this.profitMoodTier()) {
+      case 'loss':
+        return 'Revê custos e cobranças.';
+      case 'zero':
+        return 'Fecha encomendas e cobra o que falta.';
+      case 'positive':
+        return 'Continua a registar e a crescer.';
     }
   });
 
@@ -572,11 +565,34 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Dias para mostrar entregas/lembretes (usa definição das configurações). */
   reminderDaysBefore = this.userSettings.reminderDays;
 
-  // Encomendas por entregar – usa o mesmo número de dias que lembretes (mín. 7)
+  // Encomendas por entregar – atrasadas + janela de dias (mín. 7)
   upcomingDeliveries = computed(() => {
     const days = Math.max(7, this.userSettings.getReminderDaysBefore());
-    const inRange = this.orders.ordersByDeliveryDateRange(days);
-    return inRange.filter(o => !o.delivered);
+    return this.orders.getPendingDeliveries(days);
+  });
+
+  /** Encomendas com data de entrega já passada e ainda não entregues. */
+  overdueDeliveries = computed(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return this.upcomingDeliveries().filter((o) => {
+      const d = new Date(o.deliveryDate!);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime() < today.getTime();
+    });
+  });
+
+  /** Encomendas por entregar dentro da janela (hoje até N dias). */
+  upcomingInWindowDeliveries = computed(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const end = new Date(today);
+    end.setDate(today.getDate() + this.deliveryWindowDays());
+    end.setHours(23, 59, 59, 999);
+    return this.upcomingDeliveries().filter((o) => {
+      const d = new Date(o.deliveryDate!);
+      return d >= today && d <= end;
+    });
   });
 
   /** Lembretes na janela de aviso (cada um com o seu «notificar X dias antes»). */
@@ -644,7 +660,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return total > this.displayedDeliveries().length;
   });
 
-  // Alertas de entrega próxima (próximos 3 dias)
+  // Alertas de entrega: em atraso ou nos próximos 3 dias
   deliveryAlerts = computed(() => {
     const deliveries = this.upcomingDeliveries();
     const today = new Date();
@@ -657,7 +673,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         if (!o.deliveryDate) return false;
         const deliveryDate = new Date(o.deliveryDate);
         deliveryDate.setHours(0, 0, 0, 0);
-        return deliveryDate >= today && deliveryDate <= threeDaysLater;
+        return deliveryDate <= threeDaysLater;
       })
       .map(o => {
         const deliveryDate = new Date(o.deliveryDate!);
@@ -708,14 +724,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Janela de dias para encomendas por entregar (alinhada às configurações). */
   deliveryWindowDays = computed(() => Math.max(7, this.userSettings.getReminderDaysBefore()));
 
-  /** Encomendas por entregar, ordenadas pela data de entrega. */
+  /** Encomendas por entregar no popup (máx. 5; o KPI mostra o total). */
   loginSummaryDeliveries = computed(() =>
-    [...this.upcomingDeliveries()]
-      .sort((a, b) => (a.deliveryDate || '').localeCompare(b.deliveryDate || ''))
-      .slice(0, 6)
+    this.upcomingDeliveries()
+      .slice(0, LOGIN_SUMMARY_MAX_DELIVERIES)
       .map((order) => ({
         order,
-        dateLabel: this.formatDeliveryDate(order.deliveryDate || ''),
         urgency: this.getDeliveryUrgency(order.deliveryDate || ''),
         daysUntil: this.daysUntilDate(order.deliveryDate || ''),
         pendingDebt: Math.max(0, (order.valueCharged ?? 0) - (order.valuePaid ?? 0)),
@@ -725,10 +739,19 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Total de encomendas por entregar na janela. */
   pendingDeliveryCount = computed(() => this.upcomingDeliveries().length);
 
-  /** Encomendas por entregar com saldo em aberto. */
-  pendingDeliveryWithDebtCount = computed(() =>
-    this.upcomingDeliveries().filter((o) => (o.valueCharged ?? 0) > (o.valuePaid ?? 0)).length
-  );
+  /** Clientes únicos com saldo em aberto (encomendas activas). */
+  clientsWithDebtCount = computed(() => {
+    const clients = new Set<string>();
+    for (const o of this.orders.allOrders()) {
+      if (isOrderClosed(o)) continue;
+      const debt = Math.max(0, (o.valueCharged ?? 0) - (o.valuePaid ?? 0));
+      if (debt > 0) {
+        const name = (o.clientName ?? '').trim();
+        if (name) clients.add(name);
+      }
+    }
+    return clients.size;
+  });
 
   /** Fecha o popup e grava em sessionStorage para não reaparecer até o próximo login. */
   dismissLoginSummary(): void {
@@ -951,19 +974,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  getDeliveryUrgency(dateStr: string): 'today' | 'soon' | 'normal' {
+  getDeliveryUrgency(dateStr: string): 'overdue' | 'today' | 'soon' | 'normal' {
     if (!dateStr) return 'normal';
-    const date = new Date(dateStr);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const deliveryDate = new Date(date);
-    deliveryDate.setHours(0, 0, 0, 0);
-    
-    const diffTime = deliveryDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
+    const diffDays = this.daysUntilDate(dateStr);
+    if (diffDays < 0) return 'overdue';
     if (diffDays === 0) return 'today';
-    if (diffDays <= 2) return 'soon';
+    if (diffDays <= 3) return 'soon';
     return 'normal';
   }
 
@@ -976,10 +992,16 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return Math.ceil((deliveryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   }
 
-  urgencyLabel(urgency: 'today' | 'soon' | 'normal'): string {
-    if (urgency === 'today') return 'Hoje';
-    if (urgency === 'soon') return 'Urgente';
-    return 'Agendada';
+  deliveryUrgencyLabel(urgency: 'overdue' | 'today' | 'soon' | 'normal', daysUntil: number): string {
+    if (urgency === 'overdue') {
+      const days = Math.abs(daysUntil);
+      return days === 1 ? '1 dia em atraso' : `${days} dias em atraso`;
+    }
+    if (urgency === 'today') return 'Entrega hoje';
+    if (urgency === 'soon') {
+      return daysUntil === 1 ? 'Entrega amanhã' : `Faltam ${daysUntil} dias`;
+    }
+    return '';
   }
 
   ngOnDestroy(): void {

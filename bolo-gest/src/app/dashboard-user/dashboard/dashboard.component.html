@@ -62,34 +62,62 @@
     <div class="login-summary-overlay" role="dialog" aria-modal="true" aria-labelledby="login-summary-title">
       <div class="login-summary-popup popup--{{ profitMoodTier() }}">
         <div class="login-summary-popup__header">
-          <h2 id="login-summary-title" class="login-summary-popup__title">Resumo da situação</h2>
+          <div class="login-summary-popup__title-wrap">
+            <app-icon name="chart" />
+            <h2 id="login-summary-title" class="login-summary-popup__title">Resumo da situação</h2>
+          </div>
           <button type="button" class="login-summary-popup__close" (click)="dismissLoginSummary()" aria-label="Fechar">×</button>
         </div>
 
-        <div class="login-summary-mood mood--{{ profitMoodTier() }}">
-          <div class="login-summary-mood__figure" aria-hidden="true">
+        <section class="login-summary-hero mood--{{ profitMoodTier() }}">
+          <img
+            class="login-summary-hero__avatar"
+            [class.login-summary-hero__avatar--pulse]="profitMoodTier() === 'positive'"
+            [class.login-summary-hero__avatar--shake]="profitMoodTier() === 'loss'"
+            [src]="summaryMoodImage()"
+            alt=""
+            aria-hidden="true"
+          />
+          <div class="login-summary-hero__message">
+            <p class="login-summary-hero__headline">{{ summaryMoodHeadline() }}</p>
+            <p class="login-summary-hero__detail">{{ summaryMoodDetail() }}</p>
+          </div>
+          <div class="login-summary-hero__profit">
+            <span class="login-summary-hero__profit-label">{{ profitFinanceLabel() }}</span>
             <span
-              class="mood-emoji"
-              [class.mood-emoji--pulse]="profitMoodTier() === 'excellent'"
-              [class.mood-emoji--shake]="profitMoodTier() === 'loss'">
-              {{ summaryMoodEmoji() }}
+              class="login-summary-hero__profit-value"
+              [class.value--bad]="profitMoodTier() === 'loss'"
+              [class.value--neutral]="profitMoodTier() === 'zero'"
+              [class.value--positive]="profitMoodTier() === 'positive'">
+              {{ lucroFinal() | number:'1.0-0' }} MZN
             </span>
           </div>
-          <p class="login-summary-mood__message">{{ summaryMoodMessage() }}</p>
-        </div>
+        </section>
 
-        <div class="login-summary-popup__finance">
-          <span class="login-summary-popup__label">{{ profitFinanceLabel() }}</span>
-          <span
-            class="login-summary-popup__value"
-            [class.value--bad]="profitMoodTier() === 'loss'"
-            [class.value--neutral]="profitMoodTier() === 'zero'"
-            [class.value--modest]="profitMoodTier() === 'modest'"
-            [class.value--good]="profitMoodTier() === 'good'"
-            [class.value--excellent]="profitMoodTier() === 'excellent'">
-            {{ lucroFinal() | number:'1.0-0' }} MZN
-          </span>
-        </div>
+        <section class="login-summary-kpis" aria-label="Resumo operacional">
+          <article
+            class="login-summary-kpi login-summary-kpi--debt"
+            [class.login-summary-kpi--active]="clientsWithDebtCount() > 0">
+            <span class="login-summary-kpi__icon" aria-hidden="true">
+              <app-icon name="wallet" />
+            </span>
+            <div class="login-summary-kpi__body">
+              <span class="login-summary-kpi__value">{{ clientsWithDebtCount() }}</span>
+              <span class="login-summary-kpi__label">Clientes com dívida</span>
+            </div>
+          </article>
+          <article
+            class="login-summary-kpi login-summary-kpi--delivery"
+            [class.login-summary-kpi--active]="pendingDeliveryCount() > 0">
+            <span class="login-summary-kpi__icon" aria-hidden="true">
+              <app-icon name="package" />
+            </span>
+            <div class="login-summary-kpi__body">
+              <span class="login-summary-kpi__value">{{ pendingDeliveryCount() }}</span>
+              <span class="login-summary-kpi__label">Encomendas por entregar</span>
+            </div>
+          </article>
+        </section>
 
         @if (loginSummaryLicenseWarning()) {
           <div class="login-summary-license" role="alert">
@@ -115,32 +143,73 @@
               <div class="login-summary-ops__block">
                 <div class="login-summary-ops__head">
                   <app-icon name="package" />
-                  <h3>Encomendas por entregar</h3>
-                  <span class="login-summary-ops__count">{{ pendingDeliveryCount() }}</span>
+                  <h3>Próximas entregas</h3>
                 </div>
                 <p class="login-summary-ops__hint">
-                  Próximos {{ deliveryWindowDays() }} dias · ordenadas pela data de entrega
+                  @if (overdueDeliveries().length > 0) {
+                    <span class="login-summary-ops__hint--overdue">{{ overdueDeliveries().length }} em atraso</span>
+                    @if (upcomingInWindowDeliveries().length > 0) {
+                      <span> · {{ upcomingInWindowDeliveries().length }} nos próximos {{ deliveryWindowDays() }} dias</span>
+                    }
+                  } @else {
+                    {{ pendingDeliveryCount() }} nos próximos {{ deliveryWindowDays() }} dias
+                  }
                 </p>
                 <ul class="login-summary-orders">
                   @for (row of loginSummaryDeliveries(); track row.order.id) {
-                    <li class="login-summary-orders__row" [class.login-summary-orders__row--today]="row.urgency === 'today'" [class.login-summary-orders__row--soon]="row.urgency === 'soon'">
-                      <div class="login-summary-orders__main">
-                        <span class="login-summary-orders__client">{{ row.order.clientName }}</span>
-                        <span class="login-summary-orders__product">{{ getProductName(row.order) }}</span>
+                    <li
+                      class="login-summary-orders__row"
+                      [class.login-summary-orders__row--overdue]="row.urgency === 'overdue'"
+                      [class.login-summary-orders__row--today]="row.urgency === 'today'"
+                      [class.login-summary-orders__row--soon]="row.urgency === 'soon'">
+                      <div class="login-summary-orders__client-block">
+                        <div class="login-summary-orders__info-row">
+                          <span class="login-summary-orders__info-label">Cliente</span>
+                          <span class="login-summary-orders__client">{{ row.order.clientName }}</span>
+                        </div>
+                        <div class="login-summary-orders__info-row">
+                          <span class="login-summary-orders__info-label">Encomenda</span>
+                          <span class="login-summary-orders__product">{{ getProductName(row.order) }}</span>
+                        </div>
                       </div>
-                      <div class="login-summary-orders__meta">
-                        <span class="login-summary-orders__badge" [attr.data-urgency]="row.urgency">{{ urgencyLabel(row.urgency) }}</span>
-                        <span class="login-summary-orders__date">{{ row.dateLabel }}</span>
-                        <span class="login-summary-orders__value">{{ row.order.valueCharged | number:'1.0-0' }} MZN</span>
+                      <div class="login-summary-orders__date-block">
+                        <span class="login-summary-orders__date-label">Entrega</span>
+                        <span
+                          class="login-summary-orders__date"
+                          [class.login-summary-orders__date--urgent]="row.urgency === 'overdue' || row.urgency === 'today' || row.urgency === 'soon'">
+                          {{ row.order.deliveryDate | date:'dd/MM/yyyy' }}
+                        </span>
+                        @if (row.urgency !== 'normal') {
+                          <span
+                            class="login-summary-orders__urgency"
+                            [class.login-summary-orders__urgency--overdue]="row.urgency === 'overdue'"
+                            [class.login-summary-orders__urgency--soon]="row.urgency === 'today' || row.urgency === 'soon'">
+                            {{ deliveryUrgencyLabel(row.urgency, row.daysUntil) }}
+                          </span>
+                        }
+                      </div>
+                      <div class="login-summary-orders__finance-block">
+                        <div class="login-summary-orders__amount-row login-summary-orders__amount-row--total">
+                          <span class="login-summary-orders__amount-label">Total</span>
+                          <span class="login-summary-orders__total">{{ row.order.valueCharged | number:'1.0-0' }} MZN</span>
+                        </div>
                         @if (row.pendingDebt > 0) {
-                          <span class="login-summary-orders__debt">Falta {{ row.pendingDebt | number:'1.0-0' }} MZN</span>
+                          <div class="login-summary-orders__amount-row login-summary-orders__amount-row--debt">
+                            <span class="login-summary-orders__amount-label">Em falta</span>
+                            <span class="login-summary-orders__debt">{{ row.pendingDebt | number:'1.0-0' }} MZN</span>
+                          </div>
+                        } @else {
+                          <span class="login-summary-orders__paid">Pago</span>
                         }
                       </div>
                     </li>
                   }
                 </ul>
                 @if (pendingDeliveryCount() > loginSummaryDeliveries().length) {
-                  <p class="login-summary-ops__more">+ {{ pendingDeliveryCount() - loginSummaryDeliveries().length }} encomenda(s) na janela.</p>
+                  <p class="login-summary-ops__more">
+                    + {{ pendingDeliveryCount() - loginSummaryDeliveries().length }} encomenda(s) por entregar ·
+                    <a routerLink="/orders" (click)="dismissLoginSummary()">ver todas</a>
+                  </p>
                 }
               </div>
             }
@@ -172,6 +241,7 @@
           </div>
         }
 
+        @if (loginSummaryLicenseWarning() || upcomingRemindersWithDays().length > 0) {
         <div class="login-summary-popup__actions">
           @if (loginSummaryLicenseWarning()) {
             <a routerLink="/license-payment" [queryParams]="{ renewed: '1' }" class="btn btn-primary login-summary-popup__btn" (click)="dismissLoginSummary()">Renovar licença</a>
@@ -179,8 +249,8 @@
           @if (upcomingRemindersWithDays().length > 0) {
             <a routerLink="/reminders" class="btn btn-secondary login-summary-popup__btn" (click)="dismissLoginSummary()">Ver lembretes</a>
           }
-          <button type="button" class="btn login-summary-popup__btn login-summary-popup__btn--close" (click)="dismissLoginSummary()">Fechar</button>
         </div>
+        }
       </div>
     </div>
     }

@@ -4,6 +4,7 @@ C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontro
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\service\AdminService.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\controller\OrderController.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\TreasuryInvestmentRequest.java
+C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\entity\ContactMessageEntity.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\AdminConfirmPaymentRequest.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\entity\LicenseTransactionEntity.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\OrderRequest.java
@@ -40,6 +41,7 @@ C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontro
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\LoginRequest.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\service\SmsService.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\controller\AuthController.java
+C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\ContactMessageDto.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\RegisterRequest.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\repository\TreasuryInvestmentRepository.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\config\CurrentUserId.java
@@ -58,9 +60,11 @@ C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontro
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\service\SecurityEventService.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\repository\UserRepository.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\repository\UserStoreSettingsRepository.java
+C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\controller\RootController.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\RecoverPasswordRequestOtpDto.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\TreasuryBillingEntryDto.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\AdminUserRow.java
+C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\ContactMessageRequest.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\repository\PlatformAdminSettingRepository.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\e2payments\E2PaymentsException.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\TestNotificationRequest.java
@@ -88,6 +92,7 @@ C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontro
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\entity\TreasuryInvestmentEntity.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\entity\UserStoreSettingsEntity.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\OrderResponse.java
+C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\service\ContactMessageService.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\TreasurySettingsRequest.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\entity\MpesaPaymentEntity.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\entity\SecurityEventEntity.java
@@ -106,6 +111,7 @@ C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontro
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\FeedbackPromptStatusDto.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\mpesa\MpesaConfig.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\entity\PhoneChangeRequestEntity.java
+C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\ContactMessageAdminDto.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\repository\AccessLogRepository.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\config\SessionInfo.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\AdminOrderResponse.java
@@ -132,6 +138,7 @@ C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontro
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\mpesa\MpesaService.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\ExtendLicenseRequest.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\LicenseExpiringUserDto.java
+C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\repository\ContactMessageRepository.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\controller\PublicController.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\entity\WithdrawalEntity.java
 C:\Users\Guilherme\Documents\projectos\bolo\backend\src\main\java\com\chefcontrol\dto\TreasuryBillingPeriodDto.java

@@ -16,6 +16,7 @@ com\chefcontrol\dto\RecoverPasswordVerifyOtpDto.class
 com\chefcontrol\dto\LicenseInfoPublicDto.class
 com\chefcontrol\repository\SecurityEventRepository.class
 com\chefcontrol\dto\UserActivityHistoryPageDto.class
+com\chefcontrol\dto\ContactMessageRequest.class
 com\chefcontrol\dto\TreasurySuggestionDto.class
 com\chefcontrol\dto\TrackActivityRequest.class
 com\chefcontrol\entity\UserFeedbackEntity.class
@@ -28,6 +29,7 @@ com\chefcontrol\entity\WithdrawalEntity.class
 com\chefcontrol\dto\BlockedAccountRowDto.class
 com\chefcontrol\service\LandingSuggestionService.class
 com\chefcontrol\config\WebConfig.class
+com\chefcontrol\entity\ContactMessageEntity.class
 com\chefcontrol\controller\WithdrawalController.class
 com\chefcontrol\dto\AdminLoginSummaryDto.class
 com\chefcontrol\repository\UserNotificationDismissalRepository.class
@@ -58,12 +60,14 @@ com\chefcontrol\dto\ExtendLicenseRequest.class
 com\chefcontrol\mpesa\MpesaConfig.class
 com\chefcontrol\controller\ReminderController.class
 com\chefcontrol\service\AccessLogService$UserSummaryAccumulator.class
+com\chefcontrol\service\ContactMessageService.class
 com\chefcontrol\repository\PlatformAdminSettingRepository.class
 com\chefcontrol\controller\NotificationsController.class
 com\chefcontrol\controller\AuthController.class
 com\chefcontrol\dto\WithdrawalRequest.class
 com\chefcontrol\entity\UserNotificationDismissalEntity.class
 com\chefcontrol\dto\UpdateProfileRequest.class
+com\chefcontrol\dto\ContactMessageAdminDto.class
 com\chefcontrol\dto\TreasurySettingsRequest.class
 com\chefcontrol\dto\AdminConfirmPaymentRequest.class
 com\chefcontrol\dto\AdminStatsResponse.class
@@ -113,6 +117,7 @@ com\chefcontrol\dto\ChangePasswordRequest.class
 com\chefcontrol\dto\AdminAlertItemDto.class
 com\chefcontrol\entity\SystemNotificationEntity.class
 com\chefcontrol\dto\AdminAlertsDto.class
+com\chefcontrol\dto\ContactMessageDto.class
 com\chefcontrol\service\PasswordResetService.class
 com\chefcontrol\dto\TreasuryBillingPeriodDto.class
 com\chefcontrol\e2payments\E2PaymentsException.class
@@ -125,6 +130,7 @@ com\chefcontrol\controller\PublicController.class
 com\chefcontrol\dto\AdminUserDetailDto.class
 com\chefcontrol\dto\UserActivityHistoryRowDto.class
 com\chefcontrol\repository\LicenseTransactionRepository.class
+com\chefcontrol\controller\RootController.class
 com\chefcontrol\entity\UserNotificationDismissalEntity$Pk.class
 com\chefcontrol\repository\ReminderRepository.class
 com\chefcontrol\e2payments\E2PaymentsService.class
@@ -149,6 +155,7 @@ com\chefcontrol\entity\MpesaPaymentEntity.class
 com\chefcontrol\repository\OperationalExpenseRepository.class
 com\chefcontrol\dto\RecoverPasswordResetDto.class
 com\chefcontrol\entity\UserActivityLogEntity.class
+com\chefcontrol\repository\ContactMessageRepository.class
 com\chefcontrol\repository\UserFeedbackRepository.class
 com\chefcontrol\controller\AdminController.class
 com\chefcontrol\entity\PhoneChangeRequestEntity.class

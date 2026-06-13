@@ -222,20 +222,67 @@ a.btn-back,
   gap: 1rem;
   align-items: start;
 
+  .category-context {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .order-summary-panel {
+    grid-column: 1;
+    grid-row: 2;
+    position: sticky;
+    top: 0.75rem;
+  }
+
+  .form-error--submit {
+    grid-column: 1;
+    grid-row: 3;
+    margin: 0;
+  }
+
+  .form-actions--aside {
+    grid-column: 1;
+    grid-row: 4;
+  }
+
+  .order-main {
+    grid-column: 2;
+    grid-row: 1 / span 4;
+  }
+
+  .form-actions--bottom {
+    display: none;
+  }
+
   @media (max-width: 960px) {
     grid-template-columns: 1fr;
-  }
-}
+    grid-template-rows: none;
 
-.order-aside {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  position: sticky;
-  top: 0.75rem;
+    .category-context,
+    .order-summary-panel,
+    .form-error--submit,
+    .form-actions--aside,
+    .order-main,
+    .form-actions--bottom {
+      grid-column: auto;
+      grid-row: auto;
+    }
 
-  @media (max-width: 960px) {
-    position: static;
+    .order-summary-panel {
+      position: static;
+    }
+
+    .form-actions--aside {
+      display: none;
+    }
+
+    .form-actions--bottom {
+      display: flex;
+    }
+
+    .order-main {
+      grid-row: auto;
+    }
   }
 }
 
@@ -417,7 +464,7 @@ a.btn-back,
   margin-bottom: 0.65rem;
 }
 
-.form-error--aside {
+.form-error--submit {
   margin: 0;
   font-size: 0.82rem;
   padding: 0.55rem 0.65rem;
@@ -435,27 +482,19 @@ a.btn-back,
     width: 100%;
     justify-content: center;
   }
-
-  @media (max-width: 960px) {
-    display: none;
-  }
 }
 
 .form-actions--bottom {
   display: none;
   flex-direction: column;
   gap: 0.5rem;
-  margin-top: 0.25rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border);
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
 
   .btn {
     width: 100%;
     justify-content: center;
-  }
-
-  @media (max-width: 960px) {
-    display: flex;
   }
 }
 
@@ -866,6 +905,18 @@ a.btn-back,
       color: var(--text);
       background: var(--secondary);
       border-color: var(--border);
+    }
+  }
+
+  &.btn-cancel {
+    background: rgba(220, 38, 38, 0.08);
+    color: #dc2626;
+    border: 1px solid rgba(220, 38, 38, 0.35);
+
+    &:hover {
+      background: #dc2626;
+      color: #fff;
+      border-color: #dc2626;
     }
   }
 }
