@@ -4,6 +4,7 @@ import com.chefcontrol.dto.SystemNotificationDto;
 import com.chefcontrol.dto.SystemNotificationRequest;
 import com.chefcontrol.entity.SystemNotificationEntity;
 import com.chefcontrol.entity.UserEntity;
+import com.chefcontrol.entity.MpesaPaymentEntity;
 import com.chefcontrol.entity.UserNotificationDismissalEntity;
 import com.chefcontrol.repository.SystemNotificationRepository;
 import com.chefcontrol.repository.UserNotificationDismissalRepository;
@@ -19,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -113,6 +115,69 @@ public class SystemNotificationService {
         createOperationAlert(title, message, type, "payment_simulation");
     }
 
+    /** Categoria única por pagamento pendente — permite actualizar o alerta em vez de criar duplicados. */
+    public static String paymentPendingCategory(UUID paymentId) {
+        return "payment_pending:" + paymentId;
+    }
+
+    /**
+     * Cria ou actualiza alerta interno para o admin sobre um pagamento manual pendente.
+     * Chamado na submissão e repetido a cada minuto pelo scheduler até aprovação/rejeição.
+     */
+    public void upsertPaymentPendingAdminReminder(MpesaPaymentEntity payment, String userLabel) {
+        if (payment == null || payment.getId() == null) {
+            return;
+        }
+        String category = paymentPendingCategory(payment.getId());
+        long minutes = PendingPaymentReminderService.minutesWaiting(payment);
+        String channel = "emola".equalsIgnoreCase(payment.getSimulationChannel()) ? "e-Mola" : "M-Pesa";
+        String title = "[Licença] Pagamento pendente (" + channel + ")";
+        String reminder = minutes <= 0
+            ? "Novo pedido — aguarda validação."
+            : "Lembrete: aguarda há " + minutes + " min.";
+        StringBuilder message = new StringBuilder();
+        message.append(reminder).append('\n');
+        message.append("Utilizador: ").append(userLabel != null ? userLabel : "—").append('\n');
+        message.append("Valor: ").append(payment.getAmount() != null ? payment.getAmount().toPlainString() : "—")
+            .append(" MZN · ").append(payment.getDurationMonths())
+            .append(payment.getDurationMonths() == 1 ? " mês" : " meses").append('\n');
+        message.append("Canal: ").append(channel).append('\n');
+        if (payment.getCustomerPhone() != null && !payment.getCustomerPhone().isBlank()) {
+            message.append("Carteira de origem: ").append(payment.getCustomerPhone()).append('\n');
+        }
+        if (payment.getUserTransferReference() != null && !payment.getUserTransferReference().isBlank()) {
+            message.append("Ref. indicada: ").append(payment.getUserTransferReference().trim()).append('\n');
+        }
+        message.append("ID do pedido: ").append(payment.getId()).append('\n');
+        message.append("Em «Novos utilizadores» → «Pagamentos pendentes», confirme se o valor foi recebido.");
+
+        Optional<SystemNotificationEntity> existing = repository.findFirstByCategoryAndActiveTrue(category);
+        SystemNotificationEntity e = existing.orElseGet(SystemNotificationEntity::new);
+        e.setTitle(title);
+        e.setMessage(message.toString());
+        e.setType("warning");
+        e.setCategory(category);
+        e.setAudience("admins");
+        e.setCreatedBy(null);
+        e.setActive(true);
+        if (e.getCreatedAt() == null) {
+            e.setCreatedAt(Instant.now());
+        }
+        repository.save(e);
+    }
+
+    /** Desactiva lembretes automáticos quando o pagamento é aprovado ou rejeitado. */
+    public void deactivatePaymentPendingAlerts(UUID paymentId) {
+        if (paymentId == null) {
+            return;
+        }
+        repository.findFirstByCategoryAndActiveTrue(paymentPendingCategory(paymentId))
+            .ifPresent(e -> {
+                e.setActive(false);
+                repository.save(e);
+            });
+    }
+
     /** Alerta interno visível apenas na área de administração (pagamentos simulados, etc.). */
     public void createOperationAlert(String title, String message, String type, String alertCategory) {
         SystemNotificationEntity e = new SystemNotificationEntity();
@@ -147,6 +212,7 @@ public class SystemNotificationService {
     private boolean isOperationAlert(SystemNotificationEntity n) {
         if ("admins".equals(n.getAudience())) return true;
         if ("payment_simulation".equals(n.getCategory())) return true;
+        if (n.getCategory() != null && n.getCategory().startsWith("payment_pending:")) return true;
         if ("registration".equals(n.getCategory())) return true;
         String title = n.getTitle();
         if (title != null && title.startsWith("[Simulação]")) return true;

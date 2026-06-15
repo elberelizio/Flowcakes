@@ -6,8 +6,7 @@
   @if (accessRestricted()) {
     <header class="pay-topbar" aria-label="Renovação de licença">
       <a class="pay-topbar__brand" routerLink="/license-payment" title="Pagamento da licença">
-        <img [src]="brand.logoIcon" alt="Flow Cakes" class="pay-topbar__logo" width="44" height="44" decoding="async" />
-        <span class="pay-topbar__app">Flow Cakes</span>
+        <app-brand-lockup layout="compact" [emblemSize]="44" />
       </a>
       <div class="pay-topbar__end">
         <div class="pay-topbar__user" [attr.aria-label]="'Sessão de ' + userDisplayName()">
@@ -264,7 +263,7 @@
         <div class="pay-pending-overlay" role="dialog" aria-modal="true">
           <div class="pay-pending-popup">
             <h2 class="pay-pending-popup__title">{{ str.pendingPopupTitle }}</h2>
-            <p class="pay-pending-popup__text">{{ str.pendingPopupText }}</p>
+            <p class="pay-pending-popup__text">{{ pendingPopupText() }}</p>
             <button type="button" class="pay-pending-popup__btn" (click)="dismissPendingPopup()">OK</button>
           </div>
         </div>

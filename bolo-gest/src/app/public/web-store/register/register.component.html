@@ -117,6 +117,16 @@
             @if (form.get('phone')?.invalid && form.get('phone')?.touched) {
               <span class="text-xs text-red-600 mt-1 block"><i class="fa-solid fa-circle-exclamation mr-1"></i>{{ form.get('phone')?.errors?.['mzPhone'] ? 'Use 9 dígitos ou 12 com prefixo 258.' : 'Contacto é obrigatório.' }}</span>
             }
+            <div class="register-phone-notice" role="note">
+              <i class="fa-solid fa-circle-info register-phone-notice__icon" aria-hidden="true"></i>
+              <p>
+                <strong>Use o seu número real de telemóvel.</strong>
+                É o login da conta — pedidos, clientes e licença ficam ligados a ela.
+                Não use números temporários ou de terceiros.
+                Se mais tarde alterar o contacto em «Meu perfil», mantém a mesma conta;
+                o número antigo, se libertado, pode ser usado noutro registo como conta nova.
+              </p>
+            </div>
           </div>
 
           <!-- Email -->

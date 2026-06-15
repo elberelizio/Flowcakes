@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Regista cada tentativa de pagamento M-Pesa C2B para rastreio entre o pedido e o callback.
+ * Regista pedidos de pagamento de licença por transferência manual (M-Pesa / e-Mola).
  */
 @Entity
 @Table(name = "mpesa_payments")
@@ -47,7 +47,7 @@ public class MpesaPaymentEntity {
     @Column(name = "mpesa_response_desc", length = 500)
     private String mpesaResponseDesc;
 
-    /** Em modo simulação: mpesa ou emola; nulo para pagamentos reais. */
+    /** Em transferência manual: mpesa ou emola. */
     @Column(name = "simulation_channel", length = 20)
     private String simulationChannel;
 

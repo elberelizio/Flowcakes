@@ -16,11 +16,12 @@ import { LoginPopupOrchestratorService } from '../services/login-popup-orchestra
 import { AdminLoginSummaryPopupService } from '../dashboard-admin/services/admin-login-summary-popup.service';
 import { RegistrationFlowService } from '@app/core/registration/registration-flow.service';
 import { BRAND_ASSETS } from '@app/core/config/brand-assets';
+import { BrandLockupComponent } from '@app/core/brand/brand-lockup.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, BrandLockupComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })

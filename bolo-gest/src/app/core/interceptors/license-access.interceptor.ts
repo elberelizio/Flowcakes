@@ -3,6 +3,7 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
+import { LicensePaymentLockService } from '../../services/license-payment-lock.service';
 
 /**
  * Se a API responder 403 por licença inactiva com sessão válida, redirecciona para pagamento.
@@ -25,7 +26,8 @@ export const licenseAccessInterceptor: HttpInterceptorFn = (req, next) => {
         return throwError(() => err);
       }
       const path = router.url.split('?')[0];
-      if (path !== '/license-payment' && !path.endsWith('/license-payment')) {
+      const lock = inject(LicensePaymentLockService);
+      if (!lock.isAllowedWhenLocked(path)) {
         void router.navigate(['/license-payment'], { queryParams: { renewed: '1' } });
       }
       return throwError(() => err);

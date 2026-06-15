@@ -5,13 +5,7 @@ cd /d "%~dp0"
 set "SERVER_PORT=8081"
 set "DB_PASSWORD=admin"
 
-rem Pagamentos: e2Payments (teste). Simulacao manual desligada.
-set "E2PAYMENTS_ENABLED=true"
-set "E2PAYMENTS_CLIENT_ID=a1fdc199-e9bc-4dc5-90ba-1b8463d1bb45"
-set "E2PAYMENTS_CLIENT_SECRET=f1HNp08HmAYJLfsVWYbORZm3hsCuh2GfWFDBQG6p"
-set "E2PAYMENTS_WALLET_ID=302361"
-set "E2PAYMENTS_REDIRECT_ORIGIN=http://localhost:4200"
-set "APP_PAYMENT_SIMULATION_ENABLED=false"
+rem Pagamentos: transferencia manual + validacao pelo administrador.
 
 rem Rede: preferir IPv4 (evita falhas DNS/IPv6 com alguns ISPs em Moçambique)
 set "MAVEN_OPTS=-Djava.net.preferIPv4Stack=true"
@@ -56,7 +50,7 @@ netstat -ano | findstr ":%SERVER_PORT% " | findstr "LISTENING" >nul 2>&1
 if not errorlevel 1 (
   echo.
   echo AVISO: A porta %SERVER_PORT% ja esta em uso.
-  echo        Feche o backend anterior antes de reiniciar ^(necessario apos alterar e2Payments^).
+  echo        Feche o backend anterior antes de reiniciar.
   echo        PowerShell: Get-NetTCPConnection -LocalPort %SERVER_PORT% ^| Select OwningProcess
   echo        Depois: taskkill /PID ^<pid^> /F
   echo.

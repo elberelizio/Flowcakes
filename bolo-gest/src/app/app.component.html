@@ -4,10 +4,10 @@
       <div class="sidebar-header">
         <a [routerLink]="auth.isAdmin() ? '/admin-dashboard' : '/dashboard'" class="brand" title="Flow Cakes — início">
           <span class="brand-mark">
-            <img [src]="brand.logoIcon" alt="Flow Cakes" class="brand-logo" width="40" height="40" decoding="async" />
+            <img [src]="brand.logoEmblem" alt="" class="brand-logo" width="40" height="40" decoding="async" />
           </span>
           <div class="brand-inner">
-            <span class="brand-name">Flow Cakes</span>
+            <app-brand-wordmark [onDark]="true" />
             <span class="brand-tagline">Gestão de doces e salgados</span>
             <span class="brand-role" [class.brand-role--admin]="auth.isAdmin()">
               {{ auth.isAdmin() ? 'Administrador' : 'Utilizador' }}
@@ -346,6 +346,16 @@
           </div>
         </div>
       </header>
+
+      @if (showPaymentValidationBanner()) {
+        <div class="payment-validation-banner" role="status">
+          <app-icon name="clock" />
+          <span>
+            Pagamento em validação — continue a usar o sistema normalmente. A licença será actualizada assim que o administrador confirmar a transferência.
+          </span>
+          <a routerLink="/my-license" class="payment-validation-banner__link">Ver licença</a>
+        </div>
+      }
 
       <main class="main-content">
         <router-outlet />

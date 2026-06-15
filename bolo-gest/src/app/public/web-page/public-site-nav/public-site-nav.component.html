@@ -6,7 +6,7 @@
 >
   <div class="flex w-full max-w-none justify-between items-center">
     <a routerLink="/" class="flex items-center gap-3 group" (click)="closeMobileMenu()">
-      <img [src]="brand.logoIcon" alt="Flow Cakes" class="h-11 w-auto object-contain" />
+      <app-brand-lockup layout="inline" [emblemSize]="44" />
     </a>
     <div class="hidden md:flex items-center gap-8">
       <a [routerLink]="['/']" fragment="features" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">Funcionalidades</a>

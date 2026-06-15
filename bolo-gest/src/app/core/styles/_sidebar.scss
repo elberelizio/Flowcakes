@@ -21,6 +21,7 @@
     min-width: v.$sidebar-collapsed;
 
     .brand-name,
+    .brand-wordmark,
     .brand-tagline,
     .brand-role,
     .nav-label {
@@ -95,9 +96,9 @@
   width: 42px;
   height: 42px;
   border-radius: 0.65rem;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  overflow: hidden;
+  background: transparent;
+  border: none;
+  overflow: visible;
 }
 
 .brand-inner {

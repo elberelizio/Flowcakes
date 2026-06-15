@@ -2,12 +2,13 @@ import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { BRAND_ASSETS } from '@app/core/config/brand-assets';
+import { BrandLockupComponent } from '@app/core/brand/brand-lockup.component';
 
 /** Barra de navegação partilhada entre a landing e páginas públicas (ex.: contacto). */
 @Component({
   selector: 'app-public-site-nav',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, BrandLockupComponent],
   templateUrl: './public-site-nav.component.html',
   styleUrl: './public-site-nav.component.scss',
   host: { class: 'block' },

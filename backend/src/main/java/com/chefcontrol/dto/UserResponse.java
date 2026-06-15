@@ -27,6 +27,8 @@ public class UserResponse {
     private Boolean showPaymentRejectionPopup;
     private String paymentRejectionReason;
     private String supportWhatsapp;
+    /** Pagamento manual registado e a aguardar validação do administrador. */
+    private Boolean pendingPaymentValidation;
 
     public static UserResponse fromEntity(com.chefcontrol.entity.UserEntity u) {
         return fromEntity(u, null);
@@ -85,4 +87,6 @@ public class UserResponse {
     public void setPaymentRejectionReason(String paymentRejectionReason) { this.paymentRejectionReason = paymentRejectionReason; }
     public String getSupportWhatsapp() { return supportWhatsapp; }
     public void setSupportWhatsapp(String supportWhatsapp) { this.supportWhatsapp = supportWhatsapp; }
+    public Boolean getPendingPaymentValidation() { return pendingPaymentValidation; }
+    public void setPendingPaymentValidation(Boolean pendingPaymentValidation) { this.pendingPaymentValidation = pendingPaymentValidation; }
 }

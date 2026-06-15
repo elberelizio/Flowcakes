@@ -43,6 +43,7 @@ const profitExpenseSplineLabelsPlugin: Plugin<'line'> = {
         if (!isPeak && !isLast) return;
         const label = Math.round(value).toLocaleString('pt-MZ', { maximumFractionDigits: 0 });
         const { x, y } = element.getProps(['x', 'y'], true);
+        const chartArea = chart.chartArea;
         ctx.save();
         ctx.font = 'bold 10px "Segoe UI", system-ui, sans-serif';
         const textW = ctx.measureText(label).width;
@@ -50,7 +51,9 @@ const profitExpenseSplineLabelsPlugin: Plugin<'line'> = {
         const boxW = textW + padX * 2;
         const boxH = 16;
         const boxX = x - boxW / 2;
-        const boxY = y - boxH - 10;
+        const labelGap = 10;
+        const boxY =
+          y - boxH - labelGap >= chartArea.top ? y - boxH - labelGap : y + labelGap;
         const r = 4;
         ctx.beginPath();
         ctx.moveTo(boxX + r, boxY);
@@ -1061,6 +1064,38 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return g;
   }
 
+  /** Escala Y com margem para curvas spline e etiquetas nos picos. */
+  private computeChartYAxisRange(maxValue: number): { max: number; stepSize: number } {
+    if (maxValue <= 0) {
+      return { max: 1000, stepSize: 200 };
+    }
+
+    // Curvas com tension podem ultrapassar o valor real entre picos isolados; reserva ~35% acima.
+    const padded = maxValue * 1.35;
+
+    let max: number;
+    if (padded < 100) {
+      max = 100;
+    } else if (padded < 1000) {
+      max = Math.ceil(padded / 50) * 50;
+    } else if (padded < 10000) {
+      max = Math.ceil(padded / 100) * 100;
+    } else {
+      max = Math.ceil(padded / 1000) * 1000;
+    }
+
+    let stepSize: number;
+    if (max <= 100) {
+      stepSize = 20;
+    } else if (max <= 1000) {
+      stepSize = Math.max(50, Math.ceil(max / 5 / 50) * 50);
+    } else {
+      stepSize = Math.ceil(max / 5 / 200) * 200;
+    }
+
+    return { max, stepSize };
+  }
+
   private buildProfitExpenseChartConfig(
     data: ProfitExpensePoint[],
     canvas: HTMLCanvasElement
@@ -1072,26 +1107,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const allValues = [...profitData, ...expenseData, ...debtData];
     const maxValue = allValues.length > 0 ? Math.max(0, ...allValues) : 0;
-
-    let maxYAxis: number;
-    if (maxValue === 0) {
-      maxYAxis = 1000;
-    } else if (maxValue < 100) {
-      maxYAxis = 100;
-    } else if (maxValue < 1000) {
-      maxYAxis = Math.ceil(maxValue / 100) * 100;
-    } else {
-      maxYAxis = Math.ceil(maxValue / 1000) * 1000;
-    }
-
-    let stepSize: number;
-    if (maxYAxis <= 100) {
-      stepSize = 20;
-    } else if (maxYAxis <= 1000) {
-      stepSize = Math.ceil(maxYAxis / 5 / 50) * 50;
-    } else {
-      stepSize = Math.ceil(maxYAxis / 5 / 200) * 200;
-    }
+    const { max: maxYAxis, stepSize } = this.computeChartYAxisRange(maxValue);
 
     const g = this.chartGranularity();
     const ctx = canvas.getContext('2d');
@@ -1144,6 +1160,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        layout: {
+          padding: {
+            top: 28,
+          },
+        },
         interaction: {
           intersect: false,
           mode: 'index',

@@ -6,7 +6,7 @@ export const LicensePaymentStrings = {
   backToChoosePlan: '← Voltar a escolher plano',
   heading: 'Pagamento da licença',
   leadLoggedShort: 'Escolha a operadora, transfira o valor e confirme. Validação manual pelo administrador.',
-  restrictedLockNote: 'O resto do sistema fica bloqueado até o administrador confirmar o pagamento.',
+  restrictedLockNote: 'O acesso ao sistema só é restaurado após o administrador confirmar o pagamento.',
   stepNavChoose: 'Operadora',
   stepNavTransfer: 'Transferir',
   stepNavConfirm: 'Confirmar',
@@ -47,10 +47,13 @@ export const LicensePaymentStrings = {
   footLiveLogged: 'Confirme no telemóvel, se aplicável, e volte ao painel para continuar.',
 
   pendingPopupTitle: 'Pagamento pendente de validação',
-  pendingPopupText:
-    'Já registámos o seu pedido. Aguarde a confirmação do administrador ou contacte o suporte se demorar.',
+  pendingPopupTextRestricted:
+    'Registámos o seu pedido. Aguarde a confirmação do administrador — o acesso ao sistema será restaurado após aprovação.',
+  pendingPopupTextRenewal:
+    'Registámos o seu pedido. Pode continuar a usar o Flow Cakes — a licença será actualizada assim que o administrador confirmar.',
   pendingPopupBtn: 'Entendi',
-  pendingPanelNote: 'Pedido pendente — aguarda validação do administrador.',
+  pendingPanelNoteRestricted: 'Pedido pendente — aguarda validação do administrador para restaurar o acesso.',
+  pendingPanelNoteRenewal: 'Renovação em validação — continue a usar o sistema normalmente.',
   rejectedBannerTitle: 'Pagamento não confirmado',
   rejectedBannerHint: 'Pode efectuar uma nova transferência com os dados correctos.',
   rejectedPopupTitle: 'Pagamento não confirmado',
@@ -70,7 +73,7 @@ export const LicensePaymentStrings = {
 
   toastCopyNumber: 'Número copiado.',
   toastPendingRegistered: 'Pedido registado. Aguarde a confirmação do administrador.',
-  toastConfirmOnPhone: 'Pedido enviado. Confirme o pagamento com o PIN no seu telemóvel.',
+  toastPendingRegisteredRenewal: 'Pedido registado. Pode continuar a usar o sistema enquanto validamos o pagamento.',
   toastRenewalSuccess: 'Pagamento confirmado. A sua licença foi renovada.',
   toastPaymentApproved:
     'Pagamento aprovado. Obrigado! Já pode usar todos os serviços do Flow Cakes.',

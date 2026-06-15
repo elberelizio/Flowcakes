@@ -49,13 +49,17 @@ public class AdminService {
     private final MpesaPaymentRepository mpesaPaymentRepository;
     private final SecurityEventService securityEventService;
     private final AccountSecurityService accountSecurityService;
+    private final SystemNotificationService systemNotificationService;
+    private final NotificationService notificationService;
 
     public AdminService(UserRepository userRepository, UserLicenseRepository licenseRepository,
                         LicenseService licenseService, OrderRepository orderRepository,
                         AccessLogService accessLogService, UserActivityService userActivityService,
                         MpesaPaymentRepository mpesaPaymentRepository,
                         SecurityEventService securityEventService,
-                        AccountSecurityService accountSecurityService) {
+                        AccountSecurityService accountSecurityService,
+                        SystemNotificationService systemNotificationService,
+                        NotificationService notificationService) {
         this.userRepository = userRepository;
         this.licenseRepository = licenseRepository;
         this.licenseService = licenseService;
@@ -65,6 +69,8 @@ public class AdminService {
         this.mpesaPaymentRepository = mpesaPaymentRepository;
         this.securityEventService = securityEventService;
         this.accountSecurityService = accountSecurityService;
+        this.systemNotificationService = systemNotificationService;
+        this.notificationService = notificationService;
     }
 
     public void requireAdmin(UUID userId) {
@@ -314,6 +320,7 @@ public class AdminService {
         String desc = p.getMpesaResponseDesc();
         p.setMpesaResponseDesc(desc != null && !desc.isBlank() ? desc + extra : extra.trim());
         mpesaPaymentRepository.save(p);
+        systemNotificationService.deactivatePaymentPendingAlerts(p.getId());
     }
 
     private static String normalizeOperatorTransactionRef(String raw) {
@@ -347,6 +354,12 @@ public class AdminService {
         p.setAdminRejectionReason(trimmed);
         p.setRejectedAt(Instant.now());
         mpesaPaymentRepository.save(p);
+        systemNotificationService.deactivatePaymentPendingAlerts(p.getId());
+        userRepository.findById(p.getUserId()).ifPresent(u -> {
+            String phone = u.getPhone();
+            String name = u.getFullName();
+            notificationService.sendPaymentRejectedToUser(phone, name, trimmed);
+        });
     }
 
     private SimulatedPaymentPendingDto toSimulatedPendingDto(MpesaPaymentEntity p) {

@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { SnackbarComponent } from '../../ui/snackbar/snackbar.component';
 import { NotificationService } from '../../services/notification.service';
+import { BrandLockupComponent } from '@app/core/brand/brand-lockup.component';
 
 /** Contacto Moçambique: exactamente 9 dígitos */
 const PHONE_PATTERN = /^[0-9]{9}$/;
@@ -11,7 +12,7 @@ const PHONE_PATTERN = /^[0-9]{9}$/;
 @Component({
   selector: 'app-recover-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, SnackbarComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, SnackbarComponent, BrandLockupComponent],
   templateUrl: './recover-password.component.html',
   styleUrl: './recover-password.component.scss',
 })

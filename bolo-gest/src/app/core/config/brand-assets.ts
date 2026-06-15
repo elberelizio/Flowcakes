@@ -4,10 +4,10 @@ export const BRAND_ASSETS = {
   logoFull: '/logotipo.png',
   /** Logótipo vertical (emblema + «Flow Cakes») — painel esquerdo do login. */
   logoAuth: '/logotipo%205.png',
-  /** Emblema circular (ficheiro horizontal `logotipo 5.png` — só o círculo). */
-  logoEmblem: '/logotipo-emblem.png',
-  /** Ícone vertical (emblema + «Flow Cakes») — navbar, sidebar. */
-  logoIcon: '/logotipo-icon.png',
+  /** Emblema circular (PNG transparente) — navbar, sidebar, login. */
+  logoEmblem: '/flowcakes-emblem.png',
+  /** Ícone compacto (só emblema). */
+  logoIcon: '/flowcakes-emblem.png',
   /** Favicon do browser. */
   favicon: '/favicon.png',
   /** Hero da landing (confeiteira com tablet). */

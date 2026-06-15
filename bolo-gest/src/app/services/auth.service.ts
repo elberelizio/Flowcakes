@@ -50,6 +50,7 @@ export interface UserResponse {
   showPaymentRejectionPopup?: boolean;
   paymentRejectionReason?: string;
   supportWhatsapp?: string;
+  pendingPaymentValidation?: boolean;
   createdAt?: string;
 }
 
@@ -71,6 +72,7 @@ export interface CurrentUser {
   showPaymentRejectionPopup?: boolean;
   paymentRejectionReason?: string;
   supportWhatsapp?: string;
+  pendingPaymentValidation?: boolean;
   createdAt?: string;
 }
 
@@ -95,6 +97,7 @@ export interface LicenseStatusResponse {
   lastPaymentRejected?: boolean;
   paymentRejectionReason?: string;
   paymentRejectedAt?: string;
+  pendingPaymentValidation?: boolean;
 }
 
 export interface LicensePaymentRow {
@@ -185,6 +188,7 @@ export class AuthService {
       showPaymentRejectionPopup: u.showPaymentRejectionPopup === true,
       paymentRejectionReason: u.paymentRejectionReason,
       supportWhatsapp: u.supportWhatsapp,
+      pendingPaymentValidation: u.pendingPaymentValidation === true,
       createdAt: u.createdAt,
     };
   }
@@ -494,6 +498,10 @@ export class AuthService {
     return this.currentUser()?.accountFinalized ?? false;
   }
 
+  pendingPaymentValidation(): boolean {
+    return this.currentUser()?.pendingPaymentValidation === true;
+  }
+
   licenseRestrictedCode(): string | undefined {
     return this.currentUser()?.licenseRestrictedCode;
   }
@@ -522,11 +530,12 @@ export class AuthService {
   applyLicenseAccessFromStatus(status: LicenseStatusResponse | null): boolean {
     if (!status?.accountFinalized) return false;
     const u = this.currentUser();
-    if (!u || u.accountFinalized) return status.accountFinalized;
+    if (!u) return status.accountFinalized;
     this.currentUser.set({
       ...u,
       accountFinalized: true,
       licenseRestrictedCode: undefined,
+      pendingPaymentValidation: status.pendingPaymentValidation === true,
     });
     return true;
   }
@@ -635,6 +644,7 @@ export class AuthService {
     hasPending: boolean;
     hasRejected?: boolean;
     completed?: boolean;
+    pendingPaymentValidation?: boolean;
     status?: string;
     amount?: number;
     rejectionReason?: string;
@@ -646,6 +656,7 @@ export class AuthService {
         hasPending: boolean;
         hasRejected?: boolean;
         completed?: boolean;
+        pendingPaymentValidation?: boolean;
         status?: string;
         amount?: number;
         rejectionReason?: string;

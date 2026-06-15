@@ -78,30 +78,35 @@ public class NotificationService {
         );
     }
 
-    /**
-     * Avisa o admin que um utilizador indicou ter efectuado o pagamento da licença (e-Mola).
-     */
-    public void sendLicensePaymentReported(String fullName, String userPhone, java.math.BigDecimal amountMzn) {
-        String nome = (fullName != null && !fullName.isBlank()) ? fullName.trim() : "—";
-        String amt = amountMzn != null ? amountMzn.toPlainString() : "500";
-        String message = String.format(
-            "Flow Cakes: O utilizador %s (%s) indicou que transferiu %s MZN para a licença. Consulte e confirme o pagamento na gestão de licenças.",
-            nome, userPhone != null ? userPhone : "—", amt
-        );
-        if (isTwilioConfigured()) {
-            boolean ok = sendSms(normalizePhone(adminPhone), message);
-            if (!ok) {
-                log.warn("Falha ao enviar SMS ao admin sobre pagamento de licença.");
-            }
-        } else {
-            log.info("SMS não configurado. Mensagem ao admin ({}): {}", adminPhone, message);
-        }
-    }
-
     private boolean isTwilioConfigured() {
         return twilioAccountSid != null && !twilioAccountSid.isBlank()
             && twilioAuthToken != null && !twilioAuthToken.isBlank()
             && twilioFromNumber != null && !twilioFromNumber.isBlank();
+    }
+
+    /**
+     * Avisa o utilizador que o pagamento manual não foi confirmado (SMS se Twilio configurado).
+     */
+    public void sendPaymentRejectedToUser(String phone, String fullName, String reason) {
+        if (phone == null || phone.isBlank()) {
+            return;
+        }
+        String nome = (fullName != null && !fullName.isBlank()) ? fullName.trim() : "Utilizador";
+        String motivo = (reason != null && !reason.isBlank())
+            ? reason.trim()
+            : "O pagamento não foi confirmado.";
+        String message = String.format(
+            "Flow Cakes: Olá %s. O seu pagamento de licença não foi confirmado. Motivo: %s "
+                + "Pode efectuar uma nova transferência em «Licença e Pagamentos».",
+            nome, motivo);
+        if (isTwilioConfigured()) {
+            boolean ok = sendSms(normalizePhone(phone), message);
+            if (!ok) {
+                log.warn("Falha ao enviar SMS de rejeição de pagamento para {}", phone);
+            }
+        } else {
+            log.info("SMS não configurado. Rejeição de pagamento para {}: {}", phone, message);
+        }
     }
 
     private String normalizePhone(String phone) {

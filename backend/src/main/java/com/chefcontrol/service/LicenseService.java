@@ -163,6 +163,19 @@ public class LicenseService {
             .orElse(false);
     }
 
+    /** Utilizador pode usar a app — apenas com licença activa (teste ou paga, não expirada). */
+    public boolean hasAppAccess(UUID userId) {
+        return hasActiveLicenseAccess(userId);
+    }
+
+    /**
+     * Pagamento manual pendente só permite continuar a usar a app se a licença ainda estiver activa (renovação).
+     * Contas expiradas ou sem dias ficam bloqueadas até o admin aprovar o pagamento.
+     */
+    public boolean canUseAppWhilePaymentPending(UUID userId) {
+        return hasActiveLicenseAccess(userId);
+    }
+
     /**
      * Código de restrição para UI (login permitido, app bloqueada até pagamento aprovado).
      */
@@ -192,8 +205,10 @@ public class LicenseService {
             resp.setLicenseRestrictedCode(null);
             return;
         }
+        boolean pendingValidation = hasPendingManualPayment(userId);
         boolean active = hasActiveLicenseAccess(userId);
         resp.setAccountFinalized(active);
+        resp.setPendingPaymentValidation(pendingValidation);
         resp.setLicenseRestrictedCode(active ? null : resolveRestrictionCode(userId));
         applyLicenseExpiryToUserResponse(userId, resp);
         applyPaymentRejectionLoginHint(userId, resp);
@@ -206,8 +221,9 @@ public class LicenseService {
      * Regras de login:
      * <ul>
      *   <li>Licença activa (teste ou paga) → acesso completo ({@code accountFinalized=true}).</li>
-     *   <li>Sem licença activa (teste expirado, licença expirada, pendente, transferência pendente/rejeitada)
-     *       → permite iniciar sessão; o front restringe a {@code /license-payment} até o admin confirmar o pagamento.</li>
+     *   <li>Teste/licença expirada ou pendente → sem acesso à app até pagamento aprovado pelo admin
+     *       (registar transferência pendente não desbloqueia contas expiradas).</li>
+     *   <li>Renovação com licença ainda activa → mantém acesso enquanto o novo pagamento é validado.</li>
      * </ul>
      */
     public void assertLoginAllowed(UUID userId, boolean isAdmin) {
@@ -307,6 +323,7 @@ public class LicenseService {
         r.setMpesaPhone(mpesaPhone);
         r.setSupportWhatsapp(supportWhatsapp);
         r.setAccountFinalized(hasActiveLicenseAccess(userId));
+        r.setPendingPaymentValidation(hasPendingManualPayment(userId));
         licenseRepository.findByUserId(userId).ifPresent(lic -> {
             r.setStatus(lic.getStatus());
             r.setLicenseToken(lic.getLicenseToken());
@@ -388,8 +405,9 @@ public class LicenseService {
 
     /**
      * Confirma pagamento da licença com o ID da transacção e-Mola e duração em meses.
-     * Regista o ID em license_transactions. Se já existir licença paga com valid_until no futuro,
-     * soma o tempo restante + nova duração; senão define valid_until = now + duração.
+     * Regista o ID em license_transactions.
+     * Renovação (licença paga activa): soma dias ao valid_until actual (ex.: 10 + 30 = 40).
+     * Primeiro pagamento (teste, expirada ou pendente): valid_until = now + duração (ex.: 30 dias).
      */
     public UserLicenseEntity confirmPayment(UUID userId, String eMolaTransactionId, int durationMonths) {
         String txId = eMolaTransactionId != null ? eMolaTransactionId.trim().replaceAll("[^A-Za-z0-9]", "").toUpperCase() : null;
@@ -412,10 +430,15 @@ public class LicenseService {
         UserLicenseEntity lic = licenseRepository.findByUserId(userId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Licença não encontrada"));
         Instant now = Instant.now();
+        long extraDays = (long) durationMonths * DAYS_PER_MONTH;
 
-        if ((STATUS_PAID.equals(lic.getStatus()) || STATUS_TRIAL.equals(lic.getStatus()))
-                && lic.getValidUntil() != null && lic.getValidUntil().isAfter(now)) {
-            long extraDays = durationMonths * DAYS_PER_MONTH;
+        // Renovação: só soma dias se já for licença PAGA activa (não teste).
+        // Teste → pago, expirada ou pendente: começa do zero (now + 30 dias por mês).
+        boolean activePaidRenewal = STATUS_PAID.equals(lic.getStatus())
+            && lic.getValidUntil() != null
+            && lic.getValidUntil().isAfter(now);
+
+        if (activePaidRenewal) {
             lic.setValidUntil(lic.getValidUntil().plus(extraDays, ChronoUnit.DAYS));
             if (lic.getLicenseToken() == null || lic.getLicenseToken().isBlank()) {
                 lic.setLicenseToken(generateLicenseToken());
@@ -425,7 +448,7 @@ public class LicenseService {
             }
         } else {
             lic.setStatus(STATUS_PAID);
-            lic.setPaidAt(lic.getPaidAt() != null ? lic.getPaidAt() : now);
+            lic.setPaidAt(now);
             lic.setPaymentReference(txId);
             lic.setRejectedAt(null);
             if (lic.getLicenseToken() == null || lic.getLicenseToken().isBlank()) {
@@ -434,7 +457,7 @@ public class LicenseService {
             if (lic.getActivationToken() == null || lic.getActivationToken().isBlank()) {
                 lic.setActivationToken(generateActivationToken());
             }
-            lic.setValidUntil(now.plus((long) durationMonths * DAYS_PER_MONTH, ChronoUnit.DAYS));
+            lic.setValidUntil(now.plus(extraDays, ChronoUnit.DAYS));
         }
 
         lic = licenseRepository.save(lic);

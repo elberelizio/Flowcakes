@@ -4,11 +4,12 @@ import { RouterLink } from '@angular/router';
 import { AdminTreasuryService, type AdminLoginSummary } from '../../dashboard-admin/services/admin-treasury.service';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { BRAND_ASSETS } from '@app/core/config/brand-assets';
+import { BrandLockupComponent } from '@app/core/brand/brand-lockup.component';
 
 @Component({
   selector: 'app-admin-login-summary-modal',
   standalone: true,
-  imports: [CommonModule, RouterLink, DecimalPipe, IconComponent],
+  imports: [CommonModule, RouterLink, DecimalPipe, IconComponent, BrandLockupComponent],
   templateUrl: './admin-login-summary-modal.component.html',
   styleUrl: './admin-login-summary-modal.component.scss',
 })

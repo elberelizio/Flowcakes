@@ -322,7 +322,7 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
     this.showFilters.update((v) => !v);
   }
 
-  exportPdf(): void {
+  async exportPdf(): Promise<void> {
     if (this.exportBusy()) return;
     if (!this.chartHasData()) {
       this.notification.showWarning('Sem dados para exportar.');
@@ -332,17 +332,17 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
     this.exportBusy.set(true);
     try {
       const chartImage = this.chart?.toBase64Image('image/png', 1) ?? '';
-      this.reportExport.exportPdf({
+      await this.reportExport.exportPdf({
         ...this.buildExportPayload(),
         chartImageDataUrl: chartImage,
         chartTitle: this.chartTitle(),
         chartBreakdown: this.chartSlices(),
       });
-      this.notification.showSuccess('Relatório PDF pronto para impressão ou gravação.');
+      this.notification.showSuccess('Relatório PDF descarregado.');
     } catch {
       this.notification.showError('Não foi possível exportar o relatório.');
     } finally {
-      setTimeout(() => this.exportBusy.set(false), 400);
+      this.exportBusy.set(false);
     }
   }
 

@@ -1,0 +1,30 @@
+.brand-wordmark {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  white-space: nowrap;
+
+  &__flow {
+    color: #475569;
+  }
+
+  &__cakes {
+    color: #0d9488;
+  }
+
+  &--on-dark &__flow {
+    color: #cbd5e1;
+  }
+
+  &--on-dark &__cakes {
+    color: #5eead4;
+  }
+
+  &--lg {
+    font-size: 1.65rem;
+  }
+
+  &:not(.brand-wordmark--lg) {
+    font-size: 1.05rem;
+  }
+}

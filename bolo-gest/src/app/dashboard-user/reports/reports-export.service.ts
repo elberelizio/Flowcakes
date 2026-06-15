@@ -1,4 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { BRAND_ASSETS } from '@app/core/config/brand-assets';
 
 export interface RevenueByMonthDto {
@@ -30,27 +32,237 @@ export interface ChartSlice {
   color: string;
 }
 
+type JsPdfWithAutoTable = jsPDF & { lastAutoTable?: { finalY: number } };
+
 @Injectable({ providedIn: 'root' })
 export class ReportsExportService {
+  private readonly brand: [number, number, number] = [15, 118, 110];
+  private readonly margin = 18;
   private readonly logoUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}${BRAND_ASSETS.logoFull}`;
   private logoBase64Cache: string | null = null;
 
-  exportPdf(payload: ReportsExportPayload): void {
-    void this.exportWithLogo(payload, (logo) => {
-      const w = window.open('', '_blank');
-      if (!w) return;
-      w.document.write(this.buildPrintHtml(payload, logo));
-      w.document.close();
-      w.onload = () => w.print();
-    });
+  async exportPdf(payload: ReportsExportPayload): Promise<void> {
+    const logo = await this.loadLogoBase64();
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    let y = this.drawHeader(doc, payload, logo);
+
+    y = this.drawSectionTitle(doc, y, 'Informação do documento');
+    const metaRows: [string, string][] = [
+      ['Data de extracção', this.formatDateTime(payload.extractedAt)],
+      ['Período do relatório', payload.periodLabel],
+      ...(payload.userName ? [['Utilizador', payload.userName] as [string, string]] : []),
+    ];
+    y = this.drawMetaTable(doc, y, metaRows) + 6;
+
+    if (payload.summary.length > 0) {
+      y = this.ensureSpace(doc, y, 24);
+      y = this.drawSectionTitle(doc, y, 'Resumo do período');
+      y = this.drawSummaryTable(doc, y, payload.summary) + 6;
+    }
+
+    if (payload.chartImageDataUrl) {
+      y = this.ensureSpace(doc, y, 78);
+      y = this.drawSectionTitle(doc, y, payload.chartTitle ?? 'Distribuição financeira');
+      y = this.drawChartImage(doc, y, payload.chartImageDataUrl) + 4;
+
+      if (payload.chartBreakdown?.length) {
+        y = this.ensureSpace(doc, y, 24);
+        y = this.drawBreakdownTable(doc, y, payload.chartBreakdown) + 6;
+      }
+    }
+
+    if (payload.revenueByMonth.length > 0) {
+      y = this.ensureSpace(doc, y, 24);
+      y = this.drawSectionTitle(
+        doc,
+        y,
+        payload.isAdmin ? 'Receita por mês (plataforma)' : 'Receita por mês',
+      );
+      this.drawRevenueTable(doc, y, payload.revenueByMonth);
+    }
+
+    this.drawFooter(doc);
+    doc.save(this.buildFilename(payload));
   }
 
-  private async exportWithLogo(
-    payload: ReportsExportPayload,
-    action: (logoDataUrl: string) => void
-  ): Promise<void> {
-    const logo = await this.loadLogoBase64();
-    action(logo);
+  private drawHeader(doc: jsPDF, payload: ReportsExportPayload, logoDataUrl: string): number {
+    const pageW = doc.internal.pageSize.getWidth();
+    let textX = this.margin;
+
+    if (logoDataUrl) {
+      try {
+        doc.addImage(logoDataUrl, 'PNG', this.margin, 12, 18, 18);
+        textX = this.margin + 22;
+      } catch {
+        // Logo opcional — continua só com texto
+      }
+    }
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.setTextColor(...this.brand);
+    doc.text('Flow Cakes', textX, 20);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text(
+      `Relatório financeiro — ${payload.isAdmin ? 'Administração' : 'Análise do negócio'}`,
+      textX,
+      26,
+    );
+
+    doc.setDrawColor(...this.brand);
+    doc.setLineWidth(0.6);
+    doc.line(this.margin, 32, pageW - this.margin, 32);
+
+    return 38;
+  }
+
+  private drawSectionTitle(doc: jsPDF, y: number, title: string): number {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(...this.brand);
+    doc.text(title.toUpperCase(), this.margin, y);
+    return y + 6;
+  }
+
+  private drawMetaTable(doc: jsPDF, y: number, rows: [string, string][]): number {
+    autoTable(doc, {
+      startY: y,
+      body: rows,
+      theme: 'grid',
+      margin: { left: this.margin, right: this.margin },
+      styles: { fontSize: 10, cellPadding: 3 },
+      columnStyles: {
+        0: {
+          cellWidth: 62,
+          fillColor: [248, 250, 252],
+          textColor: [71, 85, 105],
+          fontStyle: 'bold',
+        },
+        1: { fontStyle: 'bold', textColor: [15, 23, 42] },
+      },
+    });
+    return (doc as JsPdfWithAutoTable).lastAutoTable?.finalY ?? y + 20;
+  }
+
+  private drawSummaryTable(doc: jsPDF, y: number, summary: ReportsExportSummary[]): number {
+    autoTable(doc, {
+      startY: y,
+      head: [['Indicador', 'Valor', 'Detalhe']],
+      body: summary.map((row) => [row.label, row.value, row.detail ?? '—']),
+      margin: { left: this.margin, right: this.margin },
+      styles: { fontSize: 10, cellPadding: 3 },
+      headStyles: {
+        fillColor: [236, 253, 245],
+        textColor: this.brand,
+        fontStyle: 'bold',
+      },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      columnStyles: {
+        1: { halign: 'right', fontStyle: 'bold', textColor: this.brand },
+        2: { textColor: [100, 116, 139] },
+      },
+    });
+    return (doc as JsPdfWithAutoTable).lastAutoTable?.finalY ?? y + 20;
+  }
+
+  private drawChartImage(doc: jsPDF, y: number, dataUrl: string): number {
+    const pageW = doc.internal.pageSize.getWidth();
+    const maxW = pageW - this.margin * 2;
+    const imgH = 68;
+    doc.addImage(dataUrl, 'PNG', this.margin, y, maxW, imgH);
+    return y + imgH;
+  }
+
+  private drawBreakdownTable(
+    doc: jsPDF,
+    y: number,
+    slices: { label: string; value: number; color: string }[],
+  ): number {
+    const total = slices.reduce((sum, slice) => sum + slice.value, 0);
+    autoTable(doc, {
+      startY: y,
+      head: [['Indicador', 'Valor (MZN)', 'Peso']],
+      body: slices.map((slice) => {
+        const pct = total > 0 ? ((slice.value / total) * 100).toFixed(1) : '0.0';
+        return [slice.label, this.formatMoney(slice.value), `${pct}%`];
+      }),
+      margin: { left: this.margin, right: this.margin },
+      styles: { fontSize: 10, cellPadding: 3 },
+      headStyles: {
+        fillColor: [236, 253, 245],
+        textColor: this.brand,
+        fontStyle: 'bold',
+      },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      columnStyles: {
+        1: { halign: 'right', fontStyle: 'bold', textColor: this.brand },
+        2: { textColor: [100, 116, 139] },
+      },
+    });
+    return (doc as JsPdfWithAutoTable).lastAutoTable?.finalY ?? y + 20;
+  }
+
+  private drawRevenueTable(doc: jsPDF, y: number, revenueByMonth: RevenueByMonthDto[]): number {
+    autoTable(doc, {
+      startY: y,
+      head: [['Mês', 'Receita (MZN)']],
+      body: revenueByMonth.map((row) => [
+        this.formatMonthLabel(row.month),
+        this.formatMoney(row.revenue),
+      ]),
+      margin: { left: this.margin, right: this.margin },
+      styles: { fontSize: 10, cellPadding: 3 },
+      headStyles: {
+        fillColor: [236, 253, 245],
+        textColor: this.brand,
+        fontStyle: 'bold',
+      },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      columnStyles: {
+        1: { halign: 'right', fontStyle: 'bold', textColor: this.brand },
+      },
+    });
+    return (doc as JsPdfWithAutoTable).lastAutoTable?.finalY ?? y + 20;
+  }
+
+  private ensureSpace(doc: jsPDF, y: number, needed: number): number {
+    const pageH = doc.internal.pageSize.getHeight();
+    if (y + needed > pageH - 22) {
+      doc.addPage();
+      return this.margin + 4;
+    }
+    return y;
+  }
+
+  private drawFooter(doc: jsPDF): void {
+    const pageCount = doc.getNumberOfPages();
+    for (let page = 1; page <= pageCount; page += 1) {
+      doc.setPage(page);
+      const pageH = doc.internal.pageSize.getHeight();
+      const pageW = doc.internal.pageSize.getWidth();
+      const y = pageH - 14;
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.3);
+      doc.line(this.margin, y - 4, pageW - this.margin, y - 4);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(
+        'Documento gerado automaticamente pelo Flow Cakes · Valores em meticais (MZN)',
+        pageW / 2,
+        y,
+        { align: 'center' },
+      );
+    }
+  }
+
+  private buildFilename(payload: ReportsExportPayload): string {
+    const stamp = payload.extractedAt.toISOString().slice(0, 10);
+    const scope = payload.isAdmin ? 'admin' : 'negocio';
+    return `relatorio-flow-cakes-${scope}-${stamp}.pdf`;
   }
 
   private async loadLogoBase64(): Promise<string> {
@@ -70,146 +282,6 @@ export class ReportsExportService {
     } catch {
       return '';
     }
-  }
-
-  private buildPrintHtml(payload: ReportsExportPayload, logoDataUrl: string): string {
-    const extracted = this.formatDateTime(payload.extractedAt);
-    const logoImg = logoDataUrl
-      ? `<img src="${logoDataUrl}" alt="Flow Cakes" width="72" height="72" />`
-      : '';
-
-    const metaRows = [
-      ['Data de extracção', extracted],
-      ['Período do relatório', this.escape(payload.periodLabel)],
-      ...(payload.userName ? [['Utilizador', this.escape(payload.userName)]] : []),
-    ]
-      .map(
-        ([l, v]) =>
-          `<tr><td class="meta-label">${l}</td><td class="meta-value">${v}</td></tr>`
-      )
-      .join('');
-
-    const summaryRows = payload.summary
-      .map(
-        (r) =>
-          `<tr>
-            <td>${this.escape(r.label)}</td>
-            <td class="num">${this.escape(r.value)}</td>
-            <td class="muted">${this.escape(r.detail ?? '—')}</td>
-          </tr>`
-      )
-      .join('');
-
-    const summarySection =
-      payload.summary.length > 0
-        ? `<section class="block">
-        <h2>Resumo do período</h2>
-        <table class="data"><thead><tr><th>Indicador</th><th>Valor</th><th>Detalhe</th></tr></thead><tbody>${summaryRows}</tbody></table>
-      </section>`
-        : '';
-
-    const chartSection = payload.chartImageDataUrl
-      ? `<section class="block">
-        <h2>${this.escape(payload.chartTitle ?? 'Distribuição financeira')}</h2>
-        <div class="chart-print"><img src="${payload.chartImageDataUrl}" alt="Gráfico financeiro" /></div>
-        ${this.buildBreakdownTable(payload.chartBreakdown)}
-      </section>`
-      : '';
-
-    const revenueRows = payload.revenueByMonth
-      .map(
-        (r) =>
-          `<tr><td>${this.escape(this.formatMonthLabel(r.month))}</td><td class="num">${this.formatMoney(r.revenue)}</td></tr>`
-      )
-      .join('');
-
-    const revenueSection =
-      payload.revenueByMonth.length > 0
-        ? `<section class="block">
-        <h2>${payload.isAdmin ? 'Receita por mês (plataforma)' : 'Receita por mês'}</h2>
-        <table class="data"><thead><tr><th>Mês</th><th>Receita (MZN)</th></tr></thead><tbody>${revenueRows}</tbody></table>
-      </section>`
-        : `<p class="empty">Sem dados de receita no período seleccionado.</p>`;
-
-    return `<!DOCTYPE html>
-<html lang="pt">
-<head>
-  <meta charset="utf-8" />
-  <title>Relatório — Flow Cakes</title>
-  <style>
-    @page { margin: 18mm; }
-    body {
-      font-family: Calibri, 'Segoe UI', Arial, sans-serif;
-      font-size: 12pt;
-      color: #0f172a;
-      margin: 0;
-      padding: 16pt;
-      line-height: 1.4;
-    }
-    .header {
-      display: table;
-      width: 100%;
-      border-bottom: 2pt solid #0d9488;
-      padding-bottom: 12pt;
-      margin-bottom: 14pt;
-    }
-    .header-logo, .header-text { display: table-cell; vertical-align: middle; }
-    .header-logo { width: 84pt; padding-right: 12pt; }
-    .header-logo img { width: 72pt; height: 72pt; object-fit: contain; display: block; }
-    .header-text h1 { margin: 0; font-size: 20pt; color: #0f766e; }
-    .header-text p { margin: 4pt 0 0; font-size: 12pt; color: #475569; }
-    .section-title {
-      margin: 0 0 8pt;
-      font-size: 12pt;
-      font-weight: bold;
-      color: #0f766e;
-      text-transform: uppercase;
-      letter-spacing: 0.5pt;
-    }
-    .meta { width: 100%; border-collapse: collapse; margin-bottom: 18pt; }
-    .meta td { border: 1pt solid #e2e8f0; padding: 8pt 10pt; font-size: 12pt; }
-    .meta-label { width: 32%; background: #f8fafc; color: #475569; }
-    .meta-value { font-weight: bold; }
-    .block { margin-bottom: 18pt; page-break-inside: avoid; }
-    .block h2 { margin: 0 0 8pt; font-size: 12pt; font-weight: bold; color: #0f766e; text-transform: uppercase; }
-    table.data { width: 100%; border-collapse: collapse; font-size: 12pt; }
-    table.data th, table.data td { border: 1pt solid #e2e8f0; padding: 8pt 10pt; text-align: left; }
-    table.data th { background: #f0fdfa; color: #0f766e; font-weight: bold; }
-    table.data tr:nth-child(even) td { background: #f8fafc; }
-    table.data td.num { text-align: right; font-weight: bold; color: #0f766e; }
-    table.data td.muted { color: #64748b; }
-    .chart-print { text-align: center; margin: 8pt 0; }
-    .chart-print img { max-width: 100%; max-height: 280pt; object-fit: contain; }
-    .empty { font-size: 12pt; color: #64748b; }
-    .footer {
-      margin-top: 18pt;
-      padding-top: 10pt;
-      border-top: 1pt solid #e2e8f0;
-      font-size: 10pt;
-      color: #64748b;
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-  <header class="header">
-    <div class="header-logo">${logoImg}</div>
-    <div class="header-text">
-      <h1>Flow Cakes</h1>
-      <p>Relatório financeiro — ${payload.isAdmin ? 'Administração' : 'Análise do negócio'}</p>
-    </div>
-  </header>
-
-  <p class="section-title">Informação do documento</p>
-  <table class="meta"><tbody>${metaRows}</tbody></table>
-
-  ${summarySection}
-  ${chartSection}
-  ${revenueSection}
-
-  <p class="footer">Documento gerado automaticamente pelo Flow Cakes. Valores em meticais (MZN).</p>
-</body>
-</html>`;
   }
 
   private formatDateTime(d: Date): string {
@@ -235,29 +307,5 @@ export class ReportsExportService {
 
   private formatMoney(n: number): string {
     return Number(n).toLocaleString('pt-MZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  }
-
-  private buildBreakdownTable(slices?: { label: string; value: number; color: string }[]): string {
-    if (!slices?.length) return '';
-    const total = slices.reduce((s, x) => s + x.value, 0);
-    const rows = slices
-      .map((s) => {
-        const pct = total > 0 ? ((s.value / total) * 100).toFixed(1) : '0.0';
-        return `<tr>
-          <td><span style="display:inline-block;width:10pt;height:10pt;border-radius:50%;background:${s.color};margin-right:6pt;"></span>${this.escape(s.label)}</td>
-          <td class="num">${this.formatMoney(s.value)}</td>
-          <td class="muted">${pct}%</td>
-        </tr>`;
-      })
-      .join('');
-    return `<table class="data" style="margin-top:10pt;"><thead><tr><th>Indicador</th><th>Valor (MZN)</th><th>Peso</th></tr></thead><tbody>${rows}</tbody></table>`;
-  }
-
-  private escape(text: string): string {
-    return String(text ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
   }
 }

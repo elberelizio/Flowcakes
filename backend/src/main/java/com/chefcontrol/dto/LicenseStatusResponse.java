@@ -20,6 +20,8 @@ public class LicenseStatusResponse {
     private boolean lastPaymentRejected;
     private String paymentRejectionReason;
     private Instant paymentRejectedAt;
+    /** Pagamento manual registado — utilizador pode continuar a usar o sistema enquanto valida. */
+    private boolean pendingPaymentValidation;
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
@@ -47,4 +49,6 @@ public class LicenseStatusResponse {
     public void setPaymentRejectionReason(String paymentRejectionReason) { this.paymentRejectionReason = paymentRejectionReason; }
     public Instant getPaymentRejectedAt() { return paymentRejectedAt; }
     public void setPaymentRejectedAt(Instant paymentRejectedAt) { this.paymentRejectedAt = paymentRejectedAt; }
+    public boolean isPendingPaymentValidation() { return pendingPaymentValidation; }
+    public void setPendingPaymentValidation(boolean pendingPaymentValidation) { this.pendingPaymentValidation = pendingPaymentValidation; }
 }

@@ -22,6 +22,7 @@ import {
 import { LicensePaymentStrings } from './license-payment.strings';
 import { LICENSE_PAYMENT_BRAND_ALTS, LICENSE_PAYMENT_BRAND_IMAGES } from './license-payment.brand-assets';
 import { BRAND_ASSETS } from '@app/core/config/brand-assets';
+import { BrandLockupComponent } from '@app/core/brand/brand-lockup.component';
 import { RegistrationFlowService } from '@app/core/registration/registration-flow.service';
 import { LicensePaymentLockService } from '../services/license-payment-lock.service';
 import { RegistrationProgressComponent } from '@app/core/registration/registration-progress.component';
@@ -39,6 +40,7 @@ import { SnackbarComponent } from '../ui/snackbar/snackbar.component';
     PublicSiteNavComponent,
     RegistrationProgressComponent,
     SnackbarComponent,
+    BrandLockupComponent,
   ],
   templateUrl: './license-payment.component.html',
   styleUrl: './license-payment.component.scss',
@@ -88,7 +90,6 @@ export class LicensePaymentComponent implements OnInit, OnDestroy, AfterViewInit
   rejectionReason = signal('');
   showPendingPopup = signal(false);
   showRejectedPopup = signal(false);
-  paySimulated = false;
   payLoading = false;
   payMessage = '';
   paySuccess = false;
@@ -346,6 +347,29 @@ export class LicensePaymentComponent implements OnInit, OnDestroy, AfterViewInit
       : LicensePaymentStrings.placeholderMpesa;
   }
 
+  /** Renovação com licença ainda activa — pode continuar a usar a app enquanto valida. */
+  isRenewalWhileActive(): boolean {
+    return this.auth.isAccountFinalized();
+  }
+
+  pendingPopupText(): string {
+    return this.isRenewalWhileActive()
+      ? LicensePaymentStrings.pendingPopupTextRenewal
+      : LicensePaymentStrings.pendingPopupTextRestricted;
+  }
+
+  pendingPanelNote(): string {
+    return this.isRenewalWhileActive()
+      ? LicensePaymentStrings.pendingPanelNoteRenewal
+      : LicensePaymentStrings.pendingPanelNoteRestricted;
+  }
+
+  pendingToastMessage(): string {
+    return this.isRenewalWhileActive()
+      ? LicensePaymentStrings.toastPendingRegisteredRenewal
+      : LicensePaymentStrings.toastPendingRegistered;
+  }
+
   formatDisplayPhone(phone: string): string {
     const d = phone.replace(/\D/g, '');
     if (d.length === 9) {
@@ -398,8 +422,7 @@ export class LicensePaymentComponent implements OnInit, OnDestroy, AfterViewInit
     this.payModeLoading.set(true);
     try {
       const r = await this.auth.checkMpesaAvailable();
-      this.paySimulated = r.simulated === true;
-      this.manualTransfer.set(r.manualTransfer === true);
+      this.manualTransfer.set(r.manualTransfer !== false);
       if (r.mpesaDestinationPhone) this.mpesaDestination.set(r.mpesaDestinationPhone.replace(/\D/g, ''));
       if (r.emolaDestinationPhone) this.emolaDestination.set(r.emolaDestinationPhone.replace(/\D/g, ''));
       if (r.supportWhatsapp) this.supportWhatsapp.set(r.supportWhatsapp.replace(/\D/g, ''));
@@ -437,7 +460,7 @@ export class LicensePaymentComponent implements OnInit, OnDestroy, AfterViewInit
       }
     } else if (st.hasPending && !this.pendingInfoShown) {
       this.pendingInfoShown = true;
-      this.notification.showInfo(LicensePaymentStrings.toastPendingRegistered, 5000);
+      this.notification.showInfo(this.pendingToastMessage(), 5000);
     }
     this.cdr.markForCheck();
   }
@@ -450,7 +473,7 @@ export class LicensePaymentComponent implements OnInit, OnDestroy, AfterViewInit
 
   async submitPayment(): Promise<void> {
     if (this.hasPendingPayment()) {
-      this.notification.showInfo(LicensePaymentStrings.toastPendingRegistered);
+      this.notification.showInfo(this.pendingToastMessage());
       return;
     }
 
@@ -491,11 +514,15 @@ export class LicensePaymentComponent implements OnInit, OnDestroy, AfterViewInit
       this.rejectionReason.set('');
       this.showPendingPopup.set(false);
       this.payMessage = '';
-      const pendingMsg = res.simulated
-        ? LicensePaymentStrings.toastPendingRegistered
-        : LicensePaymentStrings.toastConfirmOnPhone;
-      this.notification.showSuccess(pendingMsg, 6000);
-      if (this.accessRestricted()) {
+      const msg = res.message?.trim() || this.pendingToastMessage();
+      this.notification.showSuccess(msg, 6000);
+      await this.auth.refreshProfile();
+      this.cdr.markForCheck();
+      if (this.auth.isAccountFinalized()) {
+        setTimeout(() => {
+          void this.router.navigate(['/dashboard'], { replaceUrl: true });
+        }, 800);
+      } else if (this.accessRestricted()) {
         this.startAccessPoll();
       } else {
         this.startPaymentStatusPoll();

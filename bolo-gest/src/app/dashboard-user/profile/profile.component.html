@@ -49,8 +49,10 @@
         <div class="info-callout card">
           <app-icon [name]="iconAlert" class="info-callout__icon" />
           <p>
-            Os seus pedidos, clientes e licença permanecem nesta conta. Após alterar o contacto, use apenas o
-            <strong>novo número</strong> no login.
+            O contacto é o login da sua conta. Pedidos, clientes e licença permanecem nesta conta —
+            alterar o número <strong>não cria</strong> uma conta nova.
+            Depois da alteração, entre apenas com o <strong>novo número</strong>.
+            O contacto anterior fica livre e pode ser usado noutro registo (conta separada, sem estes dados).
           </p>
         </div>
 
@@ -170,6 +172,19 @@
             <div class="current-phone-box">
               <span class="current-phone-box__label">Contacto actual</span>
               <span class="current-phone-box__value">{{ formatDisplayPhone(user.phone) }}</span>
+            </div>
+
+            <div class="phone-change-notice" role="note">
+              <app-icon [name]="iconAlert" class="phone-change-notice__icon" />
+              <div>
+                <strong>Antes de confirmar</strong>
+                <p>
+                  Vai continuar na mesma conta, com os mesmos dados e dias de licença restantes.
+                  Só muda o número de login. O contacto actual
+                  (<strong>{{ formatDisplayPhone(user.phone) }}</strong>) deixa de funcionar para entrar
+                  e pode ser registado por outra pessoa como conta nova.
+                </p>
+              </div>
             </div>
 
             <form [formGroup]="phoneForm" class="panel__form phone-form" (ngSubmit)="changePhoneSubmit()">

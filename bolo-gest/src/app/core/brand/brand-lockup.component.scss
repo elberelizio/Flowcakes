@@ -1,0 +1,42 @@
+:host {
+  display: inline-flex;
+}
+
+:host(.card-logo) {
+  display: block;
+  width: 100%;
+  max-width: 12.75rem;
+  margin-inline: auto;
+}
+
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: transparent;
+
+  &__emblem {
+    display: block;
+    flex-shrink: 0;
+    object-fit: contain;
+    background: transparent;
+  }
+
+  &--stacked {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+    text-align: center;
+  }
+
+  &--inline {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  &--compact {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}

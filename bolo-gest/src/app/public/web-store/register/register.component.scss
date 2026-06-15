@@ -303,6 +303,35 @@
   }
 }
 
+.register-phone-notice {
+  display: flex;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(145deg, #eff6ff 0%, #f0fdfa 100%);
+  border: 1px solid rgba(13, 148, 136, 0.22);
+
+  &__icon {
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    color: #0d9488;
+    font-size: 0.95rem;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: #475569;
+
+    strong {
+      color: #0f766e;
+      font-weight: 600;
+    }
+  }
+}
+
 .register-actions .register-submit-btn {
   position: relative;
   overflow: hidden;

@@ -24,6 +24,7 @@ import { isPaidOrTrialStatus } from './core/license/license-status';
 import { PublicPageMotionService } from './public/web-page/public-page-motion.service';
 import { LicensePaymentLockService } from './services/license-payment-lock.service';
 import { BRAND_ASSETS } from './core/config/brand-assets';
+import { BrandWordmarkComponent } from './core/brand/brand-wordmark.component';
 
 @Component({
   selector: 'app-root',
@@ -34,6 +35,7 @@ import { BRAND_ASSETS } from './core/config/brand-assets';
     IconComponent,
     SnackbarComponent,
     SatisfactionSurveyModalComponent,
+    BrandWordmarkComponent,
     DecimalPipe,
     DatePipe,
   ],
@@ -135,7 +137,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => {
       if (this.licensePaymentLock.active()) {
         const path = this.router.url.split('?')[0];
-        if (!this.licensePaymentLock.isLicensePaymentUrl(path)) {
+        if (!this.licensePaymentLock.isAllowedWhenLocked(path)) {
           void this.router.navigate(['/license-payment'], { queryParams: { renewed: '1' } });
         }
         return;
@@ -153,6 +155,17 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private dateTimeInterval: ReturnType<typeof setInterval> | null = null;
+  private paymentStatusPollTimer: ReturnType<typeof setInterval> | null = null;
+  private trackingPendingPayment = false;
+
+  showPaymentValidationBanner(): boolean {
+    if (this.auth.isAdmin() || !this.auth.isLoggedIn()) return false;
+    if (!this.auth.isAccountFinalized()) return false;
+    return (
+      this.auth.pendingPaymentValidation() ||
+      this.licenseStatus()?.pendingPaymentValidation === true
+    );
+  }
 
   ngAfterViewInit(): void {
     if (this.snackbar) this.notificationService.setSnackbar(this.snackbar);
@@ -165,13 +178,15 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
         this.adminStats.loadStats();
       } else if (!this.auth.isAccountFinalized()) {
         const path = this.router.url.split('?')[0];
-        if (!this.licensePaymentLock.isLicensePaymentUrl(path)) {
+        if (!this.licensePaymentLock.isAllowedWhenLocked(path)) {
           void this.router.navigate(['/license-payment'], { queryParams: { renewed: '1' }, replaceUrl: true });
         }
       } else {
         void Promise.all([this.orders.loadOrders(), this.reminders.loadReminders()]).then(() => {
           this.loginPopupOrchestrator.markUserDataReady();
         });
+        this.trackingPendingPayment = this.auth.pendingPaymentValidation();
+        this.startPaymentStatusPoll();
       }
     }
     const updateDateTime = () => {
@@ -188,7 +203,62 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy(): void {
     if (this.dateTimeInterval) clearInterval(this.dateTimeInterval);
+    this.stopPaymentStatusPoll();
     document.body.classList.remove('login-popup-scroll-lock');
+  }
+
+  private startPaymentStatusPoll(): void {
+    if (this.auth.isAdmin() || !this.auth.isLoggedIn()) return;
+    if (this.paymentStatusPollTimer) return;
+    void this.pollPaymentStatus();
+    this.paymentStatusPollTimer = setInterval(() => void this.pollPaymentStatus(), 60_000);
+  }
+
+  private stopPaymentStatusPoll(): void {
+    if (this.paymentStatusPollTimer) {
+      clearInterval(this.paymentStatusPollTimer);
+      this.paymentStatusPollTimer = null;
+    }
+  }
+
+  private async pollPaymentStatus(): Promise<void> {
+    if (this.auth.isAdmin() || !this.auth.isLoggedIn()) return;
+    const st = await this.auth.checkMpesaPaymentStatus();
+    if (st.hasRejected) {
+      this.trackingPendingPayment = false;
+      const reason =
+        st.rejectionReason?.trim() ||
+        'O pagamento não foi confirmado. Pode efectuar uma nova transferência.';
+      this.notificationService.showWarning(
+        `Pagamento não confirmado: ${reason}`,
+        10_000
+      );
+      await this.auth.refreshProfile();
+      const lic = await this.auth.getLicenseStatus();
+      this.licenseStatus.set(lic);
+      if (!this.auth.isAccountFinalized()) {
+        void this.router.navigate(['/license-payment'], { queryParams: { rejected: '1' } });
+      }
+      return;
+    }
+    if (st.hasPending) {
+      this.trackingPendingPayment = true;
+      if (!this.auth.pendingPaymentValidation()) {
+        await this.auth.refreshProfile();
+        const lic = await this.auth.getLicenseStatus();
+        this.licenseStatus.set(lic);
+      }
+      return;
+    }
+    if (this.trackingPendingPayment && !st.hasPending) {
+      this.trackingPendingPayment = false;
+      await this.auth.refreshProfile();
+      const lic = await this.auth.getLicenseStatus();
+      this.licenseStatus.set(lic);
+      if (lic?.accountFinalized) {
+        this.notificationService.showSuccess('Pagamento confirmado. A sua licença foi actualizada.', 8000);
+      }
+    }
   }
 
   formatLicenseExpiry(validUntil?: string): string {
@@ -315,9 +385,8 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     if (url.startsWith('/recover-password')) return true;
     if (url === '/license-payment') {
       if (!this.auth.isLoggedIn()) return true;
-      // Utilizadores com licença activa também acedem aqui para renovar (sem shell bloqueado).
       if (this.auth.isAccountFinalized()) return true;
-      return !this.auth.isAdmin();
+      return true;
     }
     return false;
   }
