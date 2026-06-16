@@ -347,18 +347,16 @@ public class AdminService {
         if (trimmed.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Indique o motivo da rejeição");
         }
-        if (trimmed.length() > 500) {
-            trimmed = trimmed.substring(0, 500);
-        }
+        final String rejectionReason = trimmed.length() > 500 ? trimmed.substring(0, 500) : trimmed;
         p.setStatus("rejected");
-        p.setAdminRejectionReason(trimmed);
+        p.setAdminRejectionReason(rejectionReason);
         p.setRejectedAt(Instant.now());
         mpesaPaymentRepository.save(p);
         systemNotificationService.deactivatePaymentPendingAlerts(p.getId());
         userRepository.findById(p.getUserId()).ifPresent(u -> {
             String phone = u.getPhone();
             String name = u.getFullName();
-            notificationService.sendPaymentRejectedToUser(phone, name, trimmed);
+            notificationService.sendPaymentRejectedToUser(phone, name, rejectionReason);
         });
     }
 
