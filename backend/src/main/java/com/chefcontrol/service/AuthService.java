@@ -22,7 +22,7 @@ public class AuthService {
     private final SecurityEventService securityEventService;
     private final SystemNotificationService systemNotificationService;
 
-    @Value("${app.trial-days:14}")
+    @Value("${app.trial-days:15}")
     private int trialDays;
 
     public AuthService(

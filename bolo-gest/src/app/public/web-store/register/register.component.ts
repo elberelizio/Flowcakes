@@ -10,6 +10,9 @@ import {
   Validators,
 } from '@angular/forms';
 import { AuthService } from '@app/services/auth.service';
+import { OrdersService } from '@app/services/orders.service';
+import { ReminderService } from '@app/services/reminder.service';
+import { LoginPopupOrchestratorService } from '@app/services/login-popup-orchestrator.service';
 import { PROVINCES } from '@app/models/user.model';
 import { normalizeMzPhoneDigits } from '@app/validators/mz-phone.validator';
 import { RegistrationFlowService } from '@app/core/registration/registration-flow.service';
@@ -46,6 +49,9 @@ export class RegisterComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private auth: AuthService,
+    private orders: OrdersService,
+    private reminders: ReminderService,
+    private loginPopupOrchestrator: LoginPopupOrchestratorService,
     private router: Router,
     private registrationFlow: RegistrationFlowService,
   ) {
@@ -151,6 +157,15 @@ export class RegisterComponent implements OnInit {
     this.loading = false;
     if (!result.ok) {
       this.error = result.message || 'Este contacto já está registado.';
+      return;
+    }
+    this.registrationFlow.complete();
+    if (this.auth.isAccountFinalized()) {
+      this.loginPopupOrchestrator.reset();
+      await Promise.all([this.orders.loadOrders(), this.reminders.loadReminders()]);
+      await this.router.navigate(['/dashboard'], { replaceUrl: true });
+      this.loginPopupOrchestrator.markUserDataReady();
+      queueMicrotask(() => this.loginPopupOrchestrator.continueChainAfterShell());
       return;
     }
     const digits = normalizeMzPhoneDigits(raw.phone.replace(/\D/g, ''));

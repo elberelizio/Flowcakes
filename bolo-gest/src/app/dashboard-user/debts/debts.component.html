@@ -46,15 +46,94 @@
       </article>
     </section>
 
+    <section class="filters-section card" [class.filters-panel--collapsed]="!showFilters()">
+      <div class="filters-section__head">
+        <h3 class="filters-title">Filtros</h3>
+        <button
+          type="button"
+          class="filters-toggle"
+          [class.filters-toggle--open]="showFilters()"
+          (click)="toggleFilters()"
+          [attr.aria-expanded]="showFilters()">
+          <i class="fa-solid fa-filter" aria-hidden="true"></i>
+          <span>{{ showFilters() ? 'Ocultar filtros' : 'Mostrar filtros' }}</span>
+          <i class="fa-solid fa-chevron-down filters-toggle__chevron" aria-hidden="true"></i>
+        </button>
+      </div>
+      @if (showFilters()) {
+        <div class="filters-section__body">
+          <div class="filters-row">
+            <div class="filter-group">
+              <label for="debt-filter-client">Cliente</label>
+              <input
+                id="debt-filter-client"
+                type="text"
+                [value]="filterClient()"
+                (input)="filterClient.set($any($event.target).value)"
+                placeholder="Filtrar por nome..."
+                class="filter-input" />
+            </div>
+            <div class="filter-group">
+              <label for="debt-filter-category">Categoria</label>
+              <select
+                id="debt-filter-category"
+                [value]="filterCategory()"
+                (change)="filterCategory.set($any($event.target).value)"
+                class="filter-select">
+                <option value="">Todas</option>
+                <option value="doces">Doces</option>
+                <option value="salgados">Salgados</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="debt-filter-status">Estado</label>
+              <select
+                id="debt-filter-status"
+                [value]="filterStatus()"
+                (change)="filterStatus.set($any($event.target).value)"
+                class="filter-select">
+                <option value="">Todos</option>
+                <option value="ordered">Encomenda feita</option>
+                <option value="in_progress">Em processo</option>
+                <option value="completed">Finalizada</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="debt-filter-payment">Pagamento</label>
+              <select
+                id="debt-filter-payment"
+                [value]="filterPayment()"
+                (change)="filterPayment.set($any($event.target).value)"
+                class="filter-select">
+                <option value="">Todos</option>
+                <option value="pendente">Pendente</option>
+                <option value="parcial">Parcial</option>
+              </select>
+            </div>
+            <button type="button" class="btn btn-outline" (click)="clearFilters()">Limpar filtros</button>
+          </div>
+        </div>
+      }
+    </section>
+
     <section class="debts-panel card">
       <div class="panel-head">
         <span class="panel-icon" aria-hidden="true"><i class="fa-solid fa-file-invoice-dollar"></i></span>
         <div>
           <h2 class="panel-title">Encomendas com saldo em falta</h2>
-          <p class="panel-desc">{{ debtOrderCount() }} {{ debtOrderCount() === 1 ? 'pedido' : 'pedidos' }} aguardam pagamento</p>
+          <p class="panel-desc">
+            @if (filteredOrdersWithDebt().length !== debtOrderCount()) {
+              {{ filteredOrdersWithDebt().length }} de {{ debtOrderCount() }} pedidos (filtro activo)
+            } @else {
+              {{ debtOrderCount() }} {{ debtOrderCount() === 1 ? 'pedido' : 'pedidos' }} aguardam pagamento
+            }
+          </p>
         </div>
       </div>
 
+      @if (filteredOrdersWithDebt().length === 0) {
+        <p class="empty-filtered">Nenhuma dívida corresponde aos filtros seleccionados.</p>
+      } @else {
       <div class="table-wrap">
         <table class="dividas-table">
           <thead>
@@ -72,7 +151,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (o of ordersWithDebt(); track o.id) {
+            @for (o of filteredOrdersWithDebt(); track o.id) {
               <tr>
                 <td data-label="Cliente">
                   <span class="client-cell">
@@ -117,6 +196,7 @@
           </tbody>
         </table>
       </div>
+      }
     </section>
   }
 

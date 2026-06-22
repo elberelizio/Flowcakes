@@ -27,7 +27,7 @@ app:
   e-mola-phone: "871964887"
   mpesa-phone: "846746170"
   support-whatsapp: "871964887"
-  trial-days: 14
+  trial-days: 15
   password-reset:
     otp-expiry-minutes: 10
     reset-token-expiry-minutes: 15

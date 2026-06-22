@@ -2,6 +2,9 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '@app/services/auth.service';
+import { OrdersService } from '@app/services/orders.service';
+import { ReminderService } from '@app/services/reminder.service';
+import { LoginPopupOrchestratorService } from '@app/services/login-popup-orchestrator.service';
 import { normalizeMzPhoneDigits } from '@app/validators/mz-phone.validator';
 import { RegistrationFlowService } from '@app/core/registration/registration-flow.service';
 import { RegistrationProgressComponent } from '@app/core/registration/registration-progress.component';
@@ -19,6 +22,9 @@ export class PostRegisterPlanComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private auth = inject(AuthService);
+  private orders = inject(OrdersService);
+  private reminders = inject(ReminderService);
+  private loginPopupOrchestrator = inject(LoginPopupOrchestratorService);
   private registrationFlow = inject(RegistrationFlowService);
 
   phoneDigits = '';
@@ -60,9 +66,17 @@ export class PostRegisterPlanComponent implements OnInit {
     void this.router.navigate(['/register']);
   }
 
-  chooseFreeTrial(): void {
+  async chooseFreeTrial(): Promise<void> {
     this.registrationFlow.markTrialChosen();
-    this.auth.endSessionWithoutNavigation();
+    if (this.auth.isLoggedIn() && this.auth.isAccountFinalized()) {
+      this.registrationFlow.complete();
+      this.loginPopupOrchestrator.reset();
+      await Promise.all([this.orders.loadOrders(), this.reminders.loadReminders()]);
+      await this.router.navigate(['/dashboard'], { replaceUrl: true });
+      this.loginPopupOrchestrator.markUserDataReady();
+      queueMicrotask(() => this.loginPopupOrchestrator.continueChainAfterShell());
+      return;
+    }
     void this.router.navigate(['/login'], {
       queryParams: this.phoneDigits
         ? { phone: this.phoneDigits, trial: '1' }

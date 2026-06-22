@@ -9,7 +9,7 @@
   <main class="plan-page__main" [class.plan-page__main--single]="!proPlanUiEnabled">
     <app-registration-progress
       [currentStep]="progressStep"
-      hint="Passo 2 de 3: active o teste grátis de 14 dias. A seguir, inicie sessão com o contacto e a senha que acabou de criar."
+      hint="Passo 2 de 3: o teste grátis de 15 dias já está activo na sua conta. Clique abaixo para entrar no painel."
     />
 
     @if (fromRegister) {
@@ -40,15 +40,15 @@
         </div>
         <p class="plan-card__price">
           <span class="plan-card__price-value">Grátis</span>
-          <span class="plan-card__price-meta">14 dias · sem cartão</span>
+          <span class="plan-card__price-meta">15 dias · sem cartão</span>
         </p>
         <ul class="plan-card__features">
-          <li><i class="fa-solid fa-check" aria-hidden="true"></i> Funcionalidades do plano Pro no período de teste</li>
+          <li><i class="fa-solid fa-check" aria-hidden="true"></i> Acesso imediato ao painel durante 15 dias</li>
           <li><i class="fa-solid fa-check" aria-hidden="true"></i> Encomendas, lucro e relatórios em MZN</li>
-          <li><i class="fa-solid fa-check" aria-hidden="true"></i> Depois: <strong>login</strong> com o seu contacto e senha</li>
+          <li><i class="fa-solid fa-check" aria-hidden="true"></i> Sem pagamento obrigatório no registo</li>
         </ul>
         <button type="button" class="plan-submit-btn" (click)="chooseFreeTrial()">
-          Continuar com teste grátis
+          Entrar no painel (teste grátis)
           <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
         </button>
       </article>

@@ -23,6 +23,12 @@ export class DebtsComponent implements OnInit {
   displaySize = orderDisplaySize;
   getOrderStatusLabel = getOrderStatusLabel;
 
+  filterClient = signal('');
+  filterCategory = signal('');
+  filterStatus = signal('');
+  filterPayment = signal('');
+  showFilters = signal(false);
+
   /** Ordem para a qual vamos mostrar popup de confirmar pagamento */
   orderToConfirmPaid = signal<Order | null>(null);
   paymentAmountInput = signal<number>(0);
@@ -34,6 +40,21 @@ export class DebtsComponent implements OnInit {
       if (o.isCancelled || o.orderStatus === 'cancelled') return false;
       const saldo = Math.max(0, o.valueCharged - o.valuePaid);
       return saldo > 0;
+    });
+  });
+
+  filteredOrdersWithDebt = computed(() => {
+    const client = this.filterClient().trim().toLowerCase();
+    const category = this.filterCategory();
+    const status = this.filterStatus();
+    const payment = this.filterPayment();
+
+    return this.ordersWithDebt().filter(o => {
+      if (client && !o.clientName.toLowerCase().includes(client)) return false;
+      if (category && (o.category || '') !== category) return false;
+      if (status && (o.orderStatus || 'ordered') !== status) return false;
+      if (payment && o.paymentStatus !== payment) return false;
+      return true;
     });
   });
 
@@ -57,6 +78,17 @@ export class DebtsComponent implements OnInit {
 
   ngOnInit(): void {
     this.ordersService.loadOrders();
+  }
+
+  clearFilters(): void {
+    this.filterClient.set('');
+    this.filterCategory.set('');
+    this.filterStatus.set('');
+    this.filterPayment.set('');
+  }
+
+  toggleFilters(): void {
+    this.showFilters.update(v => !v);
   }
 
   getSaldo(o: Order): number {
