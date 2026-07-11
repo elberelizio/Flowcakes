@@ -8,9 +8,9 @@
           </span>
           <div class="brand-inner">
             <app-brand-wordmark [onDark]="true" />
-            <span class="brand-tagline">Gestão de doces e salgados</span>
+            <span class="brand-tagline">{{ 'shell.tagline' | translate }}</span>
             <span class="brand-role" [class.brand-role--admin]="auth.isAdmin()">
-              {{ auth.isAdmin() ? 'Administrador' : 'Utilizador' }}
+              {{ auth.isAdmin() ? ('shell.administrator' | translate) : ('shell.user' | translate) }}
             </span>
           </div>
         </a>
@@ -29,22 +29,22 @@
       <nav class="sidebar-nav">
         @if (auth.isAdmin()) {
           <div class="sidebar-nav-group">
-            <p class="sidebar-nav-section" role="presentation">Início</p>
+            <p class="sidebar-nav-section" role="presentation">{{ 'shell.sectionHome' | translate }}</p>
             <a routerLink="/admin-dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
               <app-icon name="dashboard" />
-              <span class="nav-label">Painel</span>
+              <span class="nav-label">{{ 'shell.navPanel' | translate }}</span>
             </a>
           </div>
 
           <div class="sidebar-nav-group">
-            <p class="sidebar-nav-section" role="presentation">Financeiro</p>
+            <p class="sidebar-nav-section" role="presentation">{{ 'shell.sectionFinance' | translate }}</p>
             <a routerLink="/treasury" routerLinkActive="active" class="nav-item">
               <app-icon name="wallet" />
-              <span class="nav-label">Tesouraria</span>
+              <span class="nav-label">{{ 'shell.navTreasury' | translate }}</span>
             </a>
             <a routerLink="/license-management" routerLinkActive="active" class="nav-item">
               <app-icon name="user" />
-              <span class="nav-label">Licenças</span>
+              <span class="nav-label">{{ 'shell.navLicenses' | translate }}</span>
               @if (adminStats.expiringLicensesCount() > 0) {
                 <span class="nav-badge">{{ adminStats.expiringLicensesCount() }}</span>
               }
@@ -52,14 +52,14 @@
           </div>
 
           <div class="sidebar-nav-group">
-            <p class="sidebar-nav-section" role="presentation">Utilizadores</p>
+            <p class="sidebar-nav-section" role="presentation">{{ 'shell.sectionUsers' | translate }}</p>
             <a routerLink="/admin-profiles" routerLinkActive="active" class="nav-item">
               <app-icon name="user" />
-              <span class="nav-label">Utilizadores e perfis</span>
+              <span class="nav-label">{{ 'shell.navUsersProfiles' | translate }}</span>
             </a>
             <a routerLink="/admin-new-users" routerLinkActive="active" class="nav-item">
               <app-icon name="add" />
-              <span class="nav-label">Pendentes de aprovação</span>
+              <span class="nav-label">{{ 'shell.navPendingApproval' | translate }}</span>
               @if (adminStats.pendingCount() > 0) {
                 <span class="nav-badge">{{ adminStats.pendingCount() }}</span>
               }
@@ -70,15 +70,15 @@
             <p class="sidebar-nav-section" role="presentation">Operações</p>
             <a routerLink="/admin-orders" routerLinkActive="active" class="nav-item">
               <app-icon name="list" />
-              <span class="nav-label">Todas as encomendas</span>
+              <span class="nav-label">{{ 'shell.navAllOrders' | translate }}</span>
             </a>
             <a routerLink="/admin-ranking" routerLinkActive="active" class="nav-item">
               <app-icon name="chart" />
-              <span class="nav-label">Ranking</span>
+              <span class="nav-label">{{ 'shell.navRanking' | translate }}</span>
             </a>
             <a routerLink="/satisfaction" routerLinkActive="active" class="nav-item">
               <app-icon name="help-circle" />
-              <span class="nav-label">Satisfação</span>
+              <span class="nav-label">{{ 'shell.navSatisfaction' | translate }}</span>
             </a>
           </div>
 
@@ -86,7 +86,7 @@
             <p class="sidebar-nav-section" role="presentation">Comunicação</p>
             <a routerLink="/notification-management" routerLinkActive="active" class="nav-item">
               <app-icon name="bell" />
-              <span class="nav-label">Notificações do sistema</span>
+              <span class="nav-label">{{ 'shell.navSystemNotifications' | translate }}</span>
             </a>
           </div>
 
@@ -98,17 +98,17 @@
               [routerLinkActiveOptions]="configNavActiveOptions"
               class="nav-item">
               <app-icon name="settings" />
-              <span class="nav-label">Configurações</span>
+              <span class="nav-label">{{ 'shell.navSettings' | translate }}</span>
             </a>
           </div>
         } @else {
           <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
             <app-icon name="dashboard" />
-            <span class="nav-label">Dashboard</span>
+            <span class="nav-label">{{ 'shell.navDashboard' | translate }}</span>
           </a>
           <a routerLink="/reminders" routerLinkActive="active" class="nav-item">
             <app-icon name="bell" />
-            <span class="nav-label">Lembretes</span>
+            <span class="nav-label">{{ 'shell.navReminders' | translate }}</span>
             @if (reminderCount() > 0) {
               <span class="nav-badge">{{ reminderCount() }}</span>
             }
@@ -120,12 +120,12 @@
             [class.nav-item--comunicado-pending]="systemNotifications.comunicadoCount() > 0"
             [attr.aria-label]="
               systemNotifications.comunicadoCount() > 0
-                ? 'Comunicado, ' + systemNotifications.comunicadoCount() + ' avisos activos'
-                : 'Comunicado'
+                ? ('shell.navComunicado' | translate) + ', ' + systemNotifications.comunicadoCount() + ' avisos activos'
+                : ('shell.navComunicado' | translate)
             "
           >
             <app-icon name="alert-circle" />
-            <span class="nav-label">Comunicado</span>
+            <span class="nav-label">{{ 'shell.navComunicado' | translate }}</span>
             @if (systemNotifications.comunicadoCount() > 0) {
               <span class="nav-badge nav-badge--comunicado" aria-hidden="true">{{ systemNotifications.comunicadoCount() }}</span>
             }
@@ -133,7 +133,7 @@
           <div class="nav-group">
             <button type="button" class="nav-item nav-group-toggle" (click)="toggleOrders()">
               <app-icon name="list" />
-              <span class="nav-label">Encomendas</span>
+              <span class="nav-label">{{ 'shell.navOrders' | translate }}</span>
               @if (orderCount() > 0) {
                 <span class="nav-badge">{{ orderCount() }}</span>
               }
@@ -142,7 +142,7 @@
             @if (ordersExpanded()) {
               <div class="nav-sub">
                 <a routerLink="/new-order" routerLinkActive="active" class="nav-item nav-sub-item">Criar</a>
-                <a routerLink="/orders" routerLinkActive="active" class="nav-item nav-sub-item">Visualizar <span class="nav-badge-inline">@if (orderCount() > 0) { {{ orderCount() }} }</span></a>
+                <a routerLink="/orders" routerLinkActive="active" class="nav-item nav-sub-item">{{ 'shell.navOrdersView' | translate }} <span class="nav-badge-inline">@if (orderCount() > 0) { {{ orderCount() }} }</span></a>
                 <a routerLink="/variable-expenses" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item nav-sub-item">Registar despesas</a>
                 <a routerLink="/variable-expenses/consultar" routerLinkActive="active" class="nav-item nav-sub-item">Consultar despesas</a>
               </div>
@@ -150,31 +150,31 @@
           </div>
           <a routerLink="/debts" routerLinkActive="active" class="nav-item">
             <app-icon name="wallet" />
-            <span class="nav-label">Dívidas</span>
+            <span class="nav-label">{{ 'shell.navDebts' | translate }}</span>
             @if (debtCount() > 0) {
               <span class="nav-badge">{{ debtCount() }}</span>
             }
           </a>
           <a routerLink="/reports" routerLinkActive="active" class="nav-item">
             <app-icon name="chart" />
-            <span class="nav-label">Relatório</span>
+            <span class="nav-label">{{ 'shell.navReport' | translate }}</span>
           </a>
           <a routerLink="/withdrawals" routerLinkActive="active" class="nav-item">
             <app-icon [name]="withdrawalsIcon" />
-            <span class="nav-label">Retiradas</span>
+            <span class="nav-label">{{ 'shell.navWithdrawals' | translate }}</span>
           </a>
           <a routerLink="/clients" routerLinkActive="active" class="nav-item">
             <app-icon name="user" />
-            <span class="nav-label">Clientes</span>
+            <span class="nav-label">{{ 'shell.navClients' | translate }}</span>
           </a>
           <a routerLink="/my-license" routerLinkActive="active" class="nav-item">
             <app-icon name="receipt" />
-            <span class="nav-label">Licença e Pagamentos</span>
+            <span class="nav-label">{{ 'shell.navLicenseAndPayments' | translate }}</span>
           </a>
           @if (licenseStatus()) {
             <div class="sidebar-license" [class.license-warning]="licenseStatus()?.showLicenseExpiryWarning">
               <div class="license-header">
-                <span class="license-label">Minha Licença</span>
+                <span class="license-label">{{ 'shell.myLicense' | translate }}</span>
                 <span
                   class="license-badge"
                   [class.paid]="licenseStatus()?.status === 'paid'"
@@ -186,7 +186,7 @@
               </div>
               @if (licenseStatus()?.validUntil) {
                 <div class="license-expiry">
-                  <span class="license-expiry-label">Expira em</span>
+                  <span class="license-expiry-label">{{ 'shell.licenseExpiresIn' | translate }}</span>
                   <span class="license-expiry-date">{{ formatLicenseExpiry(licenseStatus()?.validUntil) }}</span>
                 </div>
                 @if (licenseStatus()?.daysRemaining != null) {
@@ -209,7 +209,7 @@
       <div class="sidebar-footer">
         <button type="button" class="nav-item logout" (click)="onLogout()">
           <app-icon name="logout" />
-          <span class="nav-label">Sair</span>
+          <span class="nav-label">{{ 'shell.logout' | translate }}</span>
         </button>
       </div>
     </aside>
@@ -226,11 +226,11 @@
             <h2 class="navbar-title">{{ getPageTitle() }}</h2>
             <nav class="navbar-breadcrumb" aria-label="Navegação">
               @if (auth.isAdmin()) {
-                <a routerLink="/admin-dashboard" class="breadcrumb-item">Painel</a>
+                <a routerLink="/admin-dashboard" class="breadcrumb-item">{{ 'shell.navPanel' | translate }}</a>
               } @else {
-                <a routerLink="/dashboard" class="breadcrumb-item">Início</a>
+                <a routerLink="/dashboard" class="breadcrumb-item">{{ 'shell.sectionHome' | translate }}</a>
               }
-              @if (getPageTitle() !== 'Dashboard' && getPageTitle() !== 'Painel de administração' && getPageTitle() !== 'Flow Cakes') {
+              @if (showBreadcrumbCurrent()) {
                 <span class="breadcrumb-sep">/</span>
                 <span class="breadcrumb-current">{{ getPageTitle() }}</span>
               }
@@ -244,7 +244,7 @@
             <time>{{ currentDateTime() }}</time>
           </div>
           <div class="navbar-lang-toggle" title="Idioma">
-            <button type="button" class="navbar-toggle-btn navbar-toggle-btn--lang" (click)="lang.toggle()" [attr.aria-label]="lang.currentLang() === 'pt' ? 'Mudar para Inglês' : 'Change to Portuguese'">
+            <button type="button" class="navbar-toggle-btn navbar-toggle-btn--lang" (click)="lang.toggle()" [attr.aria-label]="lang.currentLang() === 'pt' ? ('shell.changeToEnglish' | translate) : ('shell.changeToPortuguese' | translate)">
               <span class="lang-option" [class.active]="lang.currentLang() === 'pt'">PT</span>
               <span class="lang-sep">/</span>
               <span class="lang-option" [class.active]="lang.currentLang() === 'en'">EN</span>
@@ -314,7 +314,7 @@
               <span class="navbar-user-avatar" aria-hidden="true">{{ userInitials() }}</span>
               <span class="navbar-user-meta">
                 <span class="navbar-user-name">{{ auth.getDisplayName() }}</span>
-                <span class="navbar-user-role">{{ auth.isAdmin() ? 'Administrador' : 'Utilizador' }}</span>
+                <span class="navbar-user-role">{{ auth.isAdmin() ? ('shell.administrator' | translate) : ('shell.user' | translate) }}</span>
               </span>
               <app-icon name="chevron-down" class="navbar-user-chevron" />
             </button>

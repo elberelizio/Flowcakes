@@ -25,6 +25,7 @@ import { PublicPageMotionService } from './public/web-page/public-page-motion.se
 import { LicensePaymentLockService } from './services/license-payment-lock.service';
 import { BRAND_ASSETS } from './core/config/brand-assets';
 import { BrandWordmarkComponent } from './core/brand/brand-wordmark.component';
+import { TranslatePipe } from './core/i18n/translate.pipe';
 
 @Component({
   selector: 'app-root',
@@ -38,6 +39,7 @@ import { BrandWordmarkComponent } from './core/brand/brand-wordmark.component';
     BrandWordmarkComponent,
     DecimalPipe,
     DatePipe,
+    TranslatePipe,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -269,10 +271,10 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   /** EN: Sidebar license chip text. Pt: Texto do chip da licença na barra lateral. */
   sidebarLicenseBadgeText(s: LicenseStatusResponse | null | undefined): string {
     if (!s) return '';
-    if (s.showLicenseExpiryWarning) return 'A expirar';
-    if (s.status === 'paid') return 'Activa';
-    if (s.status === 'trial') return 'Teste';
-    return 'Pendente';
+    if (s.showLicenseExpiryWarning) return this.lang.t('shell.licenseExpiring');
+    if (s.status === 'paid') return this.lang.t('shell.licenseActive');
+    if (s.status === 'trial') return this.lang.t('shell.licenseTrial');
+    return this.lang.t('shell.licensePending');
   }
 
   readonly isPaidOrTrialStatus = isPaidOrTrialStatus;
@@ -391,43 +393,53 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     return false;
   }
 
-  getPageTitle(): string {
+  private getPageTitleKey(): string {
     const url = this.router.url;
-    if (url.includes('/admin-settings/suggestions')) return 'Sugestões';
-    if (url.includes('landing-suggestions')) return 'Sugestões';
-    if (url.includes('/admin-dashboard')) return 'Painel de administração';
-    if (url.includes('/treasury')) return 'Tesouraria';
-    if (url.includes('/license-management')) return 'Gestão de licenças';
-    if (url.includes('/admin-settings/logs')) return 'Logs de acesso';
-    if (url.includes('/admin-settings/access')) return 'Gestão de acessos';
-    if (url.includes('/admin-orders')) return 'Encomendas';
-    if (url.includes('/recover-password')) return 'Recuperar senha';
-    if (url.includes('/reminders')) return 'Lembretes';
-    if (url.includes('/notifications')) return 'Comunicado';
-    if (url.includes('/variable-expenses/consultar')) return 'Consultar despesas';
-    if (url.includes('/variable-expenses')) return 'Registar despesas';
-    if (url.includes('/debts')) return 'Gestão de dívidas';
-    if (url.includes('/clients')) return 'Clientes';
-    if (url.includes('/profile')) return 'Meu perfil';
-    if (url.includes('/my-license')) return 'Minha Licença';
-    if (url.includes('/orders/details')) return 'Detalhes dos pedidos';
-    if (url.match(/\/orders\/[^/]+/) && !url.includes('/orders/details')) return 'Detalhes da encomenda';
-    if (url.includes('/orders')) return 'Encomendas';
-    if (url.includes('/notification-management')) return 'Notificações';
-    if (url.includes('/admin-new-users')) return 'Novos utilizadores';
-    if (url.includes('/admin-profiles')) return 'Utilizadores e perfis';
-    if (url.includes('/admin-settings')) return 'Configurações';
-    if (url.includes('/settings')) return 'Configurações do Meu site';
-    if (url.includes('/admin-ranking')) return 'Ranking';
-    if (url.includes('/satisfaction')) return 'Satisfação';
-    if (url.includes('/pagamentos')) return 'Pagamentos';
-    if (url.includes('/new-order')) return 'Criar encomenda';
-    if (url.includes('/reports')) return 'Relatórios';
-    if (url.includes('/dashboard')) return 'Dashboard';
-    if (url === '/' || url === '') return 'Início';
-    if (url.includes('/register')) return 'Criar conta';
-    if (url.includes('/choose-plan')) return 'Escolher plano';
-    if (url.includes('/license-payment')) return 'Pagamento da licença';
-    return 'Flow Cakes';
+    if (url.includes('/admin-settings/suggestions')) return 'shell.pageTitleSuggestions';
+    if (url.includes('landing-suggestions')) return 'shell.pageTitleSuggestions';
+    if (url.includes('/admin-dashboard')) return 'shell.pageTitleAdminDashboard';
+    if (url.includes('/treasury')) return 'shell.pageTitleTreasury';
+    if (url.includes('/license-management')) return 'shell.pageTitleLicenseManagement';
+    if (url.includes('/admin-settings/logs')) return 'shell.pageTitleAccessLogs';
+    if (url.includes('/admin-settings/access')) return 'shell.pageTitleAccessManagement';
+    if (url.includes('/admin-orders')) return 'shell.pageTitleOrders';
+    if (url.includes('/recover-password')) return 'shell.pageTitleRecoverPassword';
+    if (url.includes('/reminders')) return 'shell.pageTitleReminders';
+    if (url.includes('/notifications')) return 'shell.pageTitleComunicado';
+    if (url.includes('/variable-expenses/consultar')) return 'shell.pageTitleConsultExpenses';
+    if (url.includes('/variable-expenses')) return 'shell.pageTitleRegisterExpenses';
+    if (url.includes('/debts')) return 'shell.pageTitleDebts';
+    if (url.includes('/clients')) return 'shell.pageTitleClients';
+    if (url.includes('/profile')) return 'shell.pageTitleProfile';
+    if (url.includes('/my-license')) return 'shell.pageTitleMyLicense';
+    if (url.includes('/orders/details')) return 'shell.pageTitleOrdersDetails';
+    if (url.match(/\/orders\/[^/]+/) && !url.includes('/orders/details')) return 'shell.pageTitleOrderDetails';
+    if (url.includes('/orders')) return 'shell.pageTitleOrders';
+    if (url.includes('/notification-management')) return 'shell.pageTitleNotificationManagement';
+    if (url.includes('/admin-new-users')) return 'shell.pageTitleNewUsers';
+    if (url.includes('/admin-profiles')) return 'shell.pageTitleAdminProfiles';
+    if (url.includes('/admin-settings')) return 'shell.pageTitleAdminSettings';
+    if (url.includes('/settings')) return 'shell.pageTitleSettings';
+    if (url.includes('/admin-ranking')) return 'shell.pageTitleAdminRanking';
+    if (url.includes('/satisfaction')) return 'shell.pageTitleSatisfaction';
+    if (url.includes('/pagamentos')) return 'shell.pageTitlePayments';
+    if (url.includes('/new-order')) return 'shell.pageTitleNewOrder';
+    if (url.includes('/reports')) return 'shell.pageTitleReports';
+    if (url.includes('/dashboard')) return 'shell.pageTitleDashboard';
+    if (url === '/' || url === '') return 'shell.pageTitleHome';
+    if (url.includes('/register')) return 'shell.pageTitleRegister';
+    if (url.includes('/choose-plan')) return 'shell.pageTitleChoosePlan';
+    if (url.includes('/license-payment')) return 'shell.pageTitleLicensePayment';
+    return 'shell.pageTitleDefault';
+  }
+
+  getPageTitle(): string {
+    return this.lang.t(this.getPageTitleKey());
+  }
+
+  /** Esconde o breadcrumb "actual" quando a página já é a raiz (dashboard/painel/fallback). */
+  showBreadcrumbCurrent(): boolean {
+    const key = this.getPageTitleKey();
+    return key !== 'shell.pageTitleDashboard' && key !== 'shell.pageTitleAdminDashboard' && key !== 'shell.pageTitleDefault';
   }
 }

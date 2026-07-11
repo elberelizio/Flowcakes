@@ -9,35 +9,43 @@
       <app-brand-lockup layout="inline" [emblemSize]="44" />
     </a>
     <div class="hidden md:flex items-center gap-8">
-      <a [routerLink]="['/']" fragment="features" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">Funcionalidades</a>
-      <a [routerLink]="['/']" fragment="pricing" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">Preços</a>
-      <a [routerLink]="['/']" fragment="testimonials" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">Depoimentos</a>
+      <a [routerLink]="['/']" fragment="features" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">{{ 'publicNav.features' | translate }}</a>
+      <a [routerLink]="['/']" fragment="pricing" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">{{ 'publicNav.pricing' | translate }}</a>
+      <a [routerLink]="['/']" fragment="testimonials" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">{{ 'publicNav.testimonials' | translate }}</a>
       <a
         routerLink="/contacto"
         routerLinkActive="text-brand-700 font-semibold"
         [routerLinkActiveOptions]="{ exact: true }"
         class="text-gray-600 hover:text-brand-600 font-medium transition-colors"
-        >Contacto</a
+        >{{ 'publicNav.contact' | translate }}</a
       >
       <a
         [routerLink]="['/']"
         fragment="mensagem-equipa"
         class="text-gray-600 hover:text-brand-600 font-medium transition-colors"
-        >Sugestões</a
+        >{{ 'publicNav.suggestions' | translate }}</a
       >
     </div>
     <div class="hidden md:flex items-center gap-3">
+      <button
+        type="button"
+        (click)="lang.toggle()"
+        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-semibold border border-gray-300 text-gray-600 hover:border-brand-600 hover:text-brand-700 transition-colors"
+        [attr.aria-label]="lang.currentLang() === 'pt' ? ('shell.changeToEnglish' | translate) : ('shell.changeToPortuguese' | translate)"
+      >
+        <span [class.text-brand-700]="lang.currentLang() === 'pt'">PT</span>/<span [class.text-brand-700]="lang.currentLang() === 'en'">EN</span>
+      </button>
       <a
         routerLink="/login"
         class="inline-flex items-center justify-center px-6 py-2.5 rounded-full font-semibold border-2 border-brand-600 text-brand-700 hover:bg-brand-50 hover:border-brand-700 transition-all duration-300"
       >
-        Entrar
+        {{ 'publicNav.login' | translate }}
       </a>
       <a
         routerLink="/register"
         class="inline-flex items-center justify-center bg-brand-600 text-white px-6 py-2.5 rounded-full font-medium hover:bg-brand-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
       >
-        Começar grátis
+        {{ 'publicNav.startFree' | translate }}
       </a>
     </div>
     <button type="button" (click)="toggleMobileMenu()" class="md:hidden text-brand-800 text-2xl focus:outline-none" aria-label="Menu">
@@ -49,25 +57,32 @@
     [class.hidden]="!mobileMenuOpen"
     [class.flex]="mobileMenuOpen"
   >
-    <a [routerLink]="['/']" fragment="features" (click)="closeMobileMenu()" class="block py-2 text-gray-600 hover:text-brand-600">Funcionalidades</a>
-    <a [routerLink]="['/']" fragment="pricing" (click)="closeMobileMenu()" class="block py-2 text-gray-600 hover:text-brand-600">Preços</a>
-    <a [routerLink]="['/']" fragment="testimonials" (click)="closeMobileMenu()" class="block py-2 text-gray-600 hover:text-brand-600">Depoimentos</a>
-    <a routerLink="/contacto" (click)="closeMobileMenu()" class="block py-2 text-gray-600 hover:text-brand-600">Contacto</a>
-    <a [routerLink]="['/']" fragment="mensagem-equipa" (click)="closeMobileMenu()" class="block py-2 text-gray-600 hover:text-brand-600">Sugestões</a>
+    <a [routerLink]="['/']" fragment="features" (click)="closeMobileMenu()" class="block py-2 text-gray-600 hover:text-brand-600">{{ 'publicNav.features' | translate }}</a>
+    <a [routerLink]="['/']" fragment="pricing" (click)="closeMobileMenu()" class="block py-2 text-gray-600 hover:text-brand-600">{{ 'publicNav.pricing' | translate }}</a>
+    <a [routerLink]="['/']" fragment="testimonials" (click)="closeMobileMenu()" class="block py-2 text-gray-600 hover:text-brand-600">{{ 'publicNav.testimonials' | translate }}</a>
+    <a routerLink="/contacto" (click)="closeMobileMenu()" class="block py-2 text-gray-600 hover:text-brand-600">{{ 'publicNav.contact' | translate }}</a>
+    <a [routerLink]="['/']" fragment="mensagem-equipa" (click)="closeMobileMenu()" class="block py-2 text-gray-600 hover:text-brand-600">{{ 'publicNav.suggestions' | translate }}</a>
     <hr class="border-gray-100" />
+    <button
+      type="button"
+      (click)="lang.toggle()"
+      class="block w-full text-center py-2 text-sm font-semibold text-gray-600"
+    >
+      <span [class.text-brand-700]="lang.currentLang() === 'pt'">PT</span>/<span [class.text-brand-700]="lang.currentLang() === 'en'">EN</span>
+    </button>
     <a
       routerLink="/login"
       (click)="closeMobileMenu()"
       class="block w-full text-center py-3 rounded-full font-semibold border-2 border-brand-600 text-brand-700 hover:bg-brand-50 transition-colors"
     >
-      Entrar
+      {{ 'publicNav.login' | translate }}
     </a>
     <a
       routerLink="/register"
       (click)="closeMobileMenu()"
       class="block w-full bg-brand-600 text-white py-3 rounded-full font-medium text-center hover:bg-brand-700 transition-colors"
     >
-      Começar grátis
+      {{ 'publicNav.startFree' | translate }}
     </a>
   </div>
 </nav>

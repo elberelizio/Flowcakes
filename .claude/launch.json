@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "bolo-gest-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "bolo-gest", "run", "start"],
+      "port": 4200
+    }
+  ]
+}
