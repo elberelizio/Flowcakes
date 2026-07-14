@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
@@ -17,16 +17,19 @@ import { AdminLoginSummaryPopupService } from '../dashboard-admin/services/admin
 import { RegistrationFlowService } from '@app/core/registration/registration-flow.service';
 import { BRAND_ASSETS } from '@app/core/config/brand-assets';
 import { BrandLockupComponent } from '@app/core/brand/brand-lockup.component';
+import { TranslatePipe } from '@app/core/i18n/translate.pipe';
+import { LanguageService } from '@app/services/language.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, BrandLockupComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, BrandLockupComponent, TranslatePipe],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
 export class LoginComponent implements OnInit {
   readonly brand = BRAND_ASSETS;
+  readonly lang = inject(LanguageService);
   error = '';
   /** Mostrar nota sobre JSON 401 em POST /auth/login (distingue conta inexistente vs senha). */
   showLoginDiagHint = false;
@@ -146,10 +149,10 @@ export class LoginComponent implements OnInit {
         } else if (result.code === 'ACCOUNT_BLOCKED') {
           this.error =
             result.message?.trim() ||
-            'Conta bloqueada por excesso de tentativas. Contacte o suporte para recuperar o acesso.';
+            this.lang.t('auth.accountBlockedError');
           this.showNoAccountInfo = false;
         } else {
-          this.error = result.message?.trim() || 'Telefone ou senha incorretos.';
+          this.error = result.message?.trim() || this.lang.t('auth.wrongCredentialsError');
           this.showNoAccountInfo = false;
           this.showLoginDiagHint = result.code === 'INVALID_CREDENTIALS';
         }

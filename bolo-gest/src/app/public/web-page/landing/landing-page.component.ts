@@ -17,6 +17,8 @@ import { firstValueFrom } from 'rxjs';
 import { AuthService } from '@app/services/auth.service';
 import { API_URL } from '@app/core/config/api.config';
 import { PublicSiteNavComponent } from '../public-site-nav/public-site-nav.component';
+import { TranslatePipe } from '@app/core/i18n/translate.pipe';
+import { LanguageService } from '@app/services/language.service';
 import { RegistrationFlowService } from '@app/core/registration/registration-flow.service';
 import { PublicPageMotionService } from '../public-page-motion.service';
 import { BRAND_ASSETS } from '@app/core/config/brand-assets';
@@ -34,12 +36,13 @@ import {
 @Component({
   selector: 'app-landing-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, PublicSiteNavComponent],
+  imports: [CommonModule, RouterLink, PublicSiteNavComponent, TranslatePipe],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.scss',
 })
 export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly brand = BRAND_ASSETS;
+  readonly lang = inject(LanguageService);
   private auth = inject(AuthService);
   private router = inject(Router);
   private title = inject(Title);
@@ -353,7 +356,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   playDemo(): void {
-    window.alert('Em breve: Vídeo demonstrativo completo do sistema!');
+    window.alert(this.lang.t('landing.demoAlert'));
   }
 
   async sendTeamSuggestion(name: string, message: string, textarea: HTMLTextAreaElement, nameInput: HTMLInputElement): Promise<void> {
@@ -374,17 +377,17 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.suggestionCharCount = suggestion.length;
 
     if (!personName) {
-      this.suggestionFormHint = 'Preencha o seu nome para podermos agradecer.';
+      this.suggestionFormHint = this.lang.t('landing.suggestionHintName');
       return;
     }
 
     if (!suggestion) {
-      this.suggestionFormHint = 'Escreva a sua sugestão antes de enviar.';
+      this.suggestionFormHint = this.lang.t('landing.suggestionHintMessage');
       return;
     }
 
     if (suggestion.length > this.maxSuggestionChars) {
-      this.suggestionFormHint = `A sugestão pode ter no máximo ${this.maxSuggestionChars} caracteres.`;
+      this.suggestionFormHint = `${this.lang.t('landing.suggestionHintMaxChars')} ${this.maxSuggestionChars}.`;
       return;
     }
 
@@ -409,7 +412,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       this.scheduleSuggestionReset();
     } catch {
-      this.suggestionFormError = 'Não foi possível enviar agora. Verifique a ligação e tente outra vez.';
+      this.suggestionFormError = this.lang.t('landing.suggestionError');
     } finally {
       this.suggestionSending = false;
     }

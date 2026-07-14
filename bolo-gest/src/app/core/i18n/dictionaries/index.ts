@@ -11,12 +11,13 @@ import { shell } from './shell.dict';
 import { publicSite } from './public-site.dict';
 import { auth } from './auth.dict';
 import { dashboardUser } from './dashboard-user.dict';
+import { landing } from './landing.dict';
 
 export interface Dict {
   [key: string]: string | Dict;
 }
 
-const modules = [common, shell, publicSite, auth, dashboardUser];
+const modules = [common, shell, publicSite, auth, dashboardUser, landing];
 
 export const PT: Dict = Object.assign({}, ...modules.map((m) => m.pt));
 export const EN: Dict = Object.assign({}, ...modules.map((m) => m.en));

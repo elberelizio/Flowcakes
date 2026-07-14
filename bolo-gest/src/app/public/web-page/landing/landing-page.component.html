@@ -13,35 +13,34 @@
         <div class="landing-hero__copy" data-landing-reveal-child data-reveal-delay="1">
           <div class="landing-hero__badge">
             <span class="landing-hero__badge-dot" aria-hidden="true"></span>
-            <span>Encomendas, lucro e finanças em MZN</span>
+            <span>{{ 'landing.badge' | translate }}</span>
           </div>
 
           <h1 id="landing-hero-title" class="landing-hero__title">
-            Transforme a sua
-            <span class="landing-hero__title-accent">paixão</span>
-            em lucro.
+            {{ 'landing.heroTitlePre' | translate }}
+            <span class="landing-hero__title-accent">{{ 'landing.heroTitleAccent' | translate }}</span>
+            {{ 'landing.heroTitlePost' | translate }}
           </h1>
 
           <p class="landing-hero__lead">
-            O sistema para confeiteiras gerirem encomendas, calcular lucro por pedido, controlar dívidas de clientes e
-            acompanhar o negócio — tudo num só lugar.
+            {{ 'landing.heroLead' | translate }}
           </p>
 
           <div class="landing-hero__actions">
             <a routerLink="/register" class="landing-hero__cta landing-hero__cta--primary">
-              Experimente grátis
+              {{ 'landing.ctaTryFree' | translate }}
               <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
             </a>
             <button type="button" class="landing-hero__cta landing-hero__cta--secondary" (click)="playDemo()">
               <span class="landing-hero__play" aria-hidden="true"><i class="fa-solid fa-play"></i></span>
-              Ver demonstração
+              {{ 'landing.ctaWatchDemo' | translate }}
             </button>
           </div>
 
           <ul class="landing-hero__highlights" aria-label="Benefícios principais">
-            <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> 15 dias grátis</li>
-            <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Sem fidelização</li>
-            <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Valores em MZN</li>
+            <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> {{ 'landing.highlight15days' | translate }}</li>
+            <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> {{ 'landing.highlightNoLockin' | translate }}</li>
+            <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> {{ 'landing.highlightMzn' | translate }}</li>
           </ul>
 
           <div class="landing-hero__social">
@@ -51,8 +50,8 @@
               <img src="/t%20(2).jpg" alt="" width="40" height="40" decoding="async" />
             </div>
             <div>
-              <p class="landing-hero__social-title">Junte-se a <strong>+2.500</strong> confeiteiras</p>
-              <p class="landing-hero__social-sub">A gerir pedidos e lucro com o Flow Cakes</p>
+              <p class="landing-hero__social-title">{{ 'landing.socialJoinPre' | translate }} <strong>{{ 'landing.socialJoinCount' | translate }}</strong> {{ 'landing.socialJoinSuffix' | translate }}</p>
+              <p class="landing-hero__social-sub">{{ 'landing.socialSub' | translate }}</p>
             </div>
           </div>
         </div>
@@ -67,11 +66,11 @@
               </div>
               <div class="landing-hero__mock-brand">
                 <img [src]="brand.logoIcon" alt="Flow Cakes" width="24" height="24" decoding="async" />
-                <span>Dashboard Flow Cakes</span>
+                <span>{{ 'landing.mockDashboardTitle' | translate }}</span>
               </div>
               <span class="landing-hero__mock-live">
                 <span class="landing-hero__mock-live-dot" aria-hidden="true"></span>
-                Ao vivo
+                {{ 'landing.mockLive' | translate }}
               </span>
             </header>
 
@@ -82,7 +81,7 @@
                     <i class="fa-solid fa-box"></i>
                   </div>
                   <div>
-                    <p class="landing-hero__kpi-label">Pedidos hoje</p>
+                    <p class="landing-hero__kpi-label">{{ 'landing.mockOrdersToday' | translate }}</p>
                     <p class="landing-hero__kpi-value">12</p>
                   </div>
                 </article>
@@ -91,7 +90,7 @@
                     <i class="fa-solid fa-chart-line"></i>
                   </div>
                   <div>
-                    <p class="landing-hero__kpi-label">Lucro</p>
+                    <p class="landing-hero__kpi-label">{{ 'landing.mockProfit' | translate }}</p>
                     <p class="landing-hero__kpi-value">MZN 1.240</p>
                   </div>
                   <span class="landing-hero__kpi-trend" aria-hidden="true">+18%</span>
@@ -100,7 +99,7 @@
 
               <div class="landing-hero__chart-card">
                 <div class="landing-hero__chart-head">
-                  <p class="landing-hero__chart-title">Desempenho semanal</p>
+                  <p class="landing-hero__chart-title">{{ 'landing.mockWeeklyPerf' | translate }}</p>
                   <span class="landing-hero__chart-meta">MZN</span>
                 </div>
                 <div class="landing-hero__chart-labels" aria-hidden="true">
@@ -116,14 +115,14 @@
               </div>
 
               <div class="landing-hero__orders">
-                <p class="landing-hero__orders-title">Próximas entregas</p>
+                <p class="landing-hero__orders-title">{{ 'landing.mockUpcomingDeliveries' | translate }}</p>
                 <article class="landing-hero__order">
                   <div class="landing-hero__order-icon landing-hero__order-icon--cake" aria-hidden="true">
                     <i class="fa-solid fa-cake-candles"></i>
                   </div>
                   <div class="landing-hero__order-info">
                     <p class="landing-hero__order-name">Bolo Red Velvet</p>
-                    <p class="landing-hero__order-meta">Entrega: 15:00</p>
+                    <p class="landing-hero__order-meta">{{ 'landing.mockDelivery' | translate }} 15:00</p>
                   </div>
                   <span class="landing-hero__order-price">MZN 85,00</span>
                 </article>
@@ -133,7 +132,7 @@
                   </div>
                   <div class="landing-hero__order-info">
                     <p class="landing-hero__order-name">Caixa de Brigadeiros</p>
-                    <p class="landing-hero__order-meta">Retirada: 18:00</p>
+                    <p class="landing-hero__order-meta">{{ 'landing.mockPickup' | translate }} 18:00</p>
                   </div>
                   <span class="landing-hero__order-price">MZN 45,00</span>
                 </article>
@@ -146,7 +145,7 @@
               <i class="fa-solid fa-check"></i>
             </div>
             <div>
-              <p class="landing-hero__float-label">Pagamento recebido</p>
+              <p class="landing-hero__float-label">{{ 'landing.mockPaymentReceived' | translate }}</p>
               <p class="landing-hero__float-value">MZN 120,00</p>
             </div>
           </aside>
@@ -156,7 +155,7 @@
               <i class="fa-solid fa-bell"></i>
             </div>
             <div>
-              <p class="landing-hero__float-label">Lembrete de entrega</p>
+              <p class="landing-hero__float-label">{{ 'landing.mockDeliveryReminder' | translate }}</p>
               <p class="landing-hero__float-value">Bolo Maria · amanhã</p>
             </div>
           </aside>
@@ -168,40 +167,40 @@
   <section id="features" class="py-16 sm:py-20 lg:py-24 bg-white">
     <div class="max-w-7xl mx-auto px-6 lg:px-12" data-landing-reveal>
       <header class="lp-section-header mb-12 lg:mb-16" data-landing-reveal-child data-reveal-delay="1">
-        <p class="lp-eyebrow"><i class="fa-solid fa-sparkles text-[0.65rem]" aria-hidden="true"></i> Funcionalidades</p>
-        <h2 class="lp-section-title">Tudo o que precisa para <span class="text-brand-600">crescer</span></h2>
-        <p class="lp-section-lead">Deixe a folha de cálculo de lado. Gira o seu negócio de confeitaria com ferramentas pensadas para o seu dia a dia.</p>
+        <p class="lp-eyebrow"><i class="fa-solid fa-sparkles text-[0.65rem]" aria-hidden="true"></i> {{ 'landing.featuresEyebrow' | translate }}</p>
+        <h2 class="lp-section-title">{{ 'landing.featuresTitlePre' | translate }} <span class="text-brand-600">{{ 'landing.featuresTitleAccent' | translate }}</span></h2>
+        <p class="lp-section-lead">{{ 'landing.featuresLead' | translate }}</p>
       </header>
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
         <article class="lp-feature-card" data-landing-reveal-child data-reveal-delay="2">
           <div class="lp-feature-icon" aria-hidden="true"><i class="fa-solid fa-receipt"></i></div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">Gestão de encomendas</h3>
-          <p class="text-slate-600 text-sm leading-relaxed">Registe pedidos de doces e salgados, acompanhe entregas, pagamentos recebidos e saldo em dívida por cliente.</p>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">{{ 'landing.featureOrdersTitle' | translate }}</h3>
+          <p class="text-slate-600 text-sm leading-relaxed">{{ 'landing.featureOrdersDesc' | translate }}</p>
         </article>
         <article class="lp-feature-card" data-landing-reveal-child data-reveal-delay="3">
           <div class="lp-feature-icon" aria-hidden="true"><i class="fa-solid fa-calculator"></i></div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">Lucro por pedido</h3>
-          <p class="text-slate-600 text-sm leading-relaxed">Indique custos de ingredientes, valor cobrado e despesas extras — o sistema calcula o lucro de cada encomenda.</p>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">{{ 'landing.featureProfitTitle' | translate }}</h3>
+          <p class="text-slate-600 text-sm leading-relaxed">{{ 'landing.featureProfitDesc' | translate }}</p>
         </article>
         <article class="lp-feature-card" data-landing-reveal-child data-reveal-delay="4">
           <div class="lp-feature-icon" aria-hidden="true"><i class="fa-solid fa-chart-pie"></i></div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">Dashboard financeiro</h3>
-          <p class="text-slate-600 text-sm leading-relaxed">Veja total arrecadado, despesas, lucro e gráficos por período. Filtros por data, mês ou ano.</p>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">{{ 'landing.featureDashboardTitle' | translate }}</h3>
+          <p class="text-slate-600 text-sm leading-relaxed">{{ 'landing.featureDashboardDesc' | translate }}</p>
         </article>
         <article class="lp-feature-card" data-landing-reveal-child data-reveal-delay="5">
           <div class="lp-feature-icon" aria-hidden="true"><i class="fa-solid fa-users"></i></div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">Clientes e dívidas</h3>
-          <p class="text-slate-600 text-sm leading-relaxed">Lista de clientes com histórico de pedidos e visão clara de quem ainda deve e quanto falta receber.</p>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">{{ 'landing.featureClientsTitle' | translate }}</h3>
+          <p class="text-slate-600 text-sm leading-relaxed">{{ 'landing.featureClientsDesc' | translate }}</p>
         </article>
         <article class="lp-feature-card" data-landing-reveal-child data-reveal-delay="6">
           <div class="lp-feature-icon" aria-hidden="true"><i class="fa-solid fa-bell"></i></div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">Lembretes e notificações</h3>
-          <p class="text-slate-600 text-sm leading-relaxed">Crie lembretes para datas de entrega e receba avisos no login e no dashboard. Notificações da plataforma incluídas.</p>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">{{ 'landing.featureRemindersTitle' | translate }}</h3>
+          <p class="text-slate-600 text-sm leading-relaxed">{{ 'landing.featureRemindersDesc' | translate }}</p>
         </article>
         <article class="lp-feature-card" data-landing-reveal-child data-reveal-delay="7">
           <div class="lp-feature-icon" aria-hidden="true"><i class="fa-solid fa-file-lines"></i></div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">Relatórios e retiradas</h3>
-          <p class="text-slate-600 text-sm leading-relaxed">Lucro por dia, semana e mês, relatórios de pedidos e registo de retiradas do negócio — tudo em meticais (MZN).</p>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">{{ 'landing.featureReportsTitle' | translate }}</h3>
+          <p class="text-slate-600 text-sm leading-relaxed">{{ 'landing.featureReportsDesc' | translate }}</p>
         </article>
       </div>
     </div>
@@ -215,22 +214,22 @@
     <div class="w-full relative z-10" data-landing-reveal>
       <div class="lp-promo-section__grid grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 lg:gap-10 items-center">
         <div class="lp-promo-section__copy px-5 sm:px-6 lg:pl-12 lg:pr-4" data-landing-reveal-child data-reveal-delay="1">
-          <p class="text-brand-300 text-[0.7rem] sm:text-xs font-bold uppercase tracking-[0.16em] sm:tracking-[0.18em] mb-3 sm:mb-4">Feito para confeiteiras</p>
-          <h2 class="lp-promo-section__title text-[1.65rem] sm:text-3xl md:text-4xl font-serif font-bold mb-4 sm:mb-6 leading-snug sm:leading-tight tracking-tight">Haaa djo! Transforme talento em vendas reais com controlo total do seu negócio.</h2>
+          <p class="text-brand-300 text-[0.7rem] sm:text-xs font-bold uppercase tracking-[0.16em] sm:tracking-[0.18em] mb-3 sm:mb-4">{{ 'landing.promoEyebrow' | translate }}</p>
+          <h2 class="lp-promo-section__title text-[1.65rem] sm:text-3xl md:text-4xl font-serif font-bold mb-4 sm:mb-6 leading-snug sm:leading-tight tracking-tight">{{ 'landing.promoTitle' | translate }}</h2>
           <p class="lp-promo-section__lead text-brand-100/90 mb-6 sm:mb-8 text-[0.95rem] sm:text-lg leading-relaxed">
-            Milhares de confeiteiras já usam o Flow Cakes para organizar pedidos, calcular lucros e crescer com confiança. Enquanto outras ainda vendem no improviso, você pode vender com estratégia.
+            {{ 'landing.promoLead' | translate }}
           </p>
           <ul class="lp-promo-section__list space-y-3 sm:space-y-3.5 text-brand-50/95 text-[0.9rem] sm:text-base">
-            <li class="flex items-start gap-2.5 sm:gap-3"><i class="fa-solid fa-circle-check text-brand-400 mt-0.5 sm:mt-1 shrink-0" aria-hidden="true"></i><span>Saiba quanto realmente lucra em cada pedido, sem adivinhação</span></li>
-            <li class="flex items-start gap-2.5 sm:gap-3"><i class="fa-solid fa-circle-check text-brand-400 mt-0.5 sm:mt-1 shrink-0" aria-hidden="true"></i><span>Ganhe tempo com encomendas, clientes e finanças organizados num só lugar</span></li>
-            <li class="flex items-start gap-2.5 sm:gap-3"><i class="fa-solid fa-circle-check text-brand-400 mt-0.5 sm:mt-1 shrink-0" aria-hidden="true"></i><span>Venda com mais segurança e faça o seu negócio crescer todos os meses</span></li>
+            <li class="flex items-start gap-2.5 sm:gap-3"><i class="fa-solid fa-circle-check text-brand-400 mt-0.5 sm:mt-1 shrink-0" aria-hidden="true"></i><span>{{ 'landing.promoBullet1' | translate }}</span></li>
+            <li class="flex items-start gap-2.5 sm:gap-3"><i class="fa-solid fa-circle-check text-brand-400 mt-0.5 sm:mt-1 shrink-0" aria-hidden="true"></i><span>{{ 'landing.promoBullet2' | translate }}</span></li>
+            <li class="flex items-start gap-2.5 sm:gap-3"><i class="fa-solid fa-circle-check text-brand-400 mt-0.5 sm:mt-1 shrink-0" aria-hidden="true"></i><span>{{ 'landing.promoBullet3' | translate }}</span></li>
           </ul>
           <a
             [routerLink]="['/']"
             fragment="pricing"
             class="lp-promo-section__cta mt-6 sm:mt-8 inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-white px-6 sm:px-7 py-3.5 text-sm font-bold text-brand-900 shadow-lg hover:bg-brand-50 hover:-translate-y-0.5 transition-all duration-300"
           >
-            Quero começar agora <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+            {{ 'landing.promoCta' | translate }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
           </a>
         </div>
         <div class="lp-promo-section__visual-wrap px-5 sm:px-6 lg:px-0" data-landing-reveal-child data-reveal-delay="2">
@@ -282,65 +281,65 @@
 
     <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-12" data-landing-reveal>
       <header class="lp-section-header" data-landing-reveal-child data-reveal-delay="1">
-        <p class="lp-eyebrow"><i class="fa-solid fa-tags text-[0.65rem]" aria-hidden="true"></i> Preços em MZN</p>
-        <h2 id="pricing-heading" class="lp-section-title">Escolha o plano ideal e comece hoje</h2>
+        <p class="lp-eyebrow"><i class="fa-solid fa-tags text-[0.65rem]" aria-hidden="true"></i> {{ 'landing.pricingEyebrow' | translate }}</p>
+        <h2 id="pricing-heading" class="lp-section-title">{{ 'landing.pricingTitle' | translate }}</h2>
         <p class="lp-section-lead">
-          Comece grátis por 15 dias e evolua para o Pro para desbloquear todo o potencial do seu negócio.
+          {{ 'landing.pricingLead' | translate }}
         </p>
         <div class="pricing-trust" role="list">
-          <span class="pricing-trust__item" role="listitem"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Sem complicação</span>
-          <span class="pricing-trust__item" role="listitem"><i class="fa-solid fa-unlock" aria-hidden="true"></i> Sem fidelização</span>
-          <span class="pricing-trust__item" role="listitem"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Cancele quando quiser</span>
+          <span class="pricing-trust__item" role="listitem"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {{ 'landing.pricingTrustSimple' | translate }}</span>
+          <span class="pricing-trust__item" role="listitem"><i class="fa-solid fa-unlock" aria-hidden="true"></i> {{ 'landing.pricingTrustNoLockin' | translate }}</span>
+          <span class="pricing-trust__item" role="listitem"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> {{ 'landing.pricingTrustCancel' | translate }}</span>
         </div>
       </header>
 
       <div class="pricing-grid">
         <article class="pricing-card pricing-card--trial" data-landing-reveal-child data-reveal-delay="2">
-          <span class="pricing-card__ribbon pricing-card__ribbon--starter">Plano inicial</span>
+          <span class="pricing-card__ribbon pricing-card__ribbon--starter">{{ 'landing.trialRibbon' | translate }}</span>
 
           <div class="pricing-card__head">
             <div class="pricing-card__icon" aria-hidden="true"><i class="fa-solid fa-gift"></i></div>
             <div>
-              <h3 class="pricing-card__name">Teste grátis</h3>
-              <p class="pricing-card__tagline">Perfeito para começar</p>
-              <span class="pricing-card__badge">15 dias grátis</span>
+              <h3 class="pricing-card__name">{{ 'landing.trialName' | translate }}</h3>
+              <p class="pricing-card__tagline">{{ 'landing.trialTagline' | translate }}</p>
+              <span class="pricing-card__badge">{{ 'landing.trialBadge' | translate }}</span>
             </div>
           </div>
 
           <div class="pricing-card__price-block">
             <div class="pricing-card__price">
-              <span class="pricing-card__amount pricing-card__amount--free">Grátis</span>
+              <span class="pricing-card__amount pricing-card__amount--free">{{ 'landing.trialFree' | translate }}</span>
             </div>
-            <p class="pricing-card__price-note">15 dias · sem pagar</p>
+            <p class="pricing-card__price-note">{{ 'landing.trialPriceNote' | translate }}</p>
           </div>
 
           <ul class="pricing-card__features">
             <li class="pricing-card__feature">
               <span class="pricing-card__check" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
-              Acesso às funcionalidades do plano Pro durante o teste
+              {{ 'landing.trialFeature1' | translate }}
             </li>
             <li class="pricing-card__feature">
               <span class="pricing-card__check" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
-              Encomendas, lucro por pedido e dashboard em MZN
+              {{ 'landing.trialFeature2' | translate }}
             </li>
             <li class="pricing-card__feature">
               <span class="pricing-card__check" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
-              Clientes, lembretes e relatórios
+              {{ 'landing.trialFeature3' | translate }}
             </li>
           </ul>
 
-          <a routerLink="/register" class="pricing-card__cta pricing-card__cta--outline">Começar teste</a>
+          <a routerLink="/register" class="pricing-card__cta pricing-card__cta--outline">{{ 'landing.trialCta' | translate }}</a>
         </article>
 
         <article class="pricing-card pricing-card--pro" data-landing-reveal-child data-reveal-delay="3">
-          <span class="pricing-card__ribbon pricing-card__ribbon--popular">Mais popular</span>
+          <span class="pricing-card__ribbon pricing-card__ribbon--popular">{{ 'landing.proRibbon' | translate }}</span>
 
           <div class="pricing-card__head">
             <div class="pricing-card__icon" aria-hidden="true"><i class="fa-solid fa-bolt"></i></div>
             <div>
-              <h3 class="pricing-card__name">Pro</h3>
-              <p class="pricing-card__tagline">Para quem quer crescer a sério</p>
-              <span class="pricing-card__badge pricing-card__badge--popular">Recomendado</span>
+              <h3 class="pricing-card__name">{{ 'landing.proName' | translate }}</h3>
+              <p class="pricing-card__tagline">{{ 'landing.proTagline' | translate }}</p>
+              <span class="pricing-card__badge pricing-card__badge--popular">{{ 'landing.proBadge' | translate }}</span>
             </div>
           </div>
 
@@ -355,24 +354,24 @@
           <ul class="pricing-card__features">
             <li class="pricing-card__feature">
               <span class="pricing-card__check" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
-              Encomendas e gestão de clientes
+              {{ 'landing.proFeature1' | translate }}
             </li>
             <li class="pricing-card__feature">
               <span class="pricing-card__check" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
-              Dívidas, despesas extras e retiradas
+              {{ 'landing.proFeature2' | translate }}
             </li>
             <li class="pricing-card__feature">
               <span class="pricing-card__check" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
-              Relatórios financeiros completos
+              {{ 'landing.proFeature3' | translate }}
             </li>
             <li class="pricing-card__feature">
               <span class="pricing-card__check" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
-              Pagamento da licença por M-Pesa ou e-Mola
+              {{ 'landing.proFeature4' | translate }}
             </li>
           </ul>
 
           <a routerLink="/register" class="pricing-card__cta pricing-card__cta--primary">
-            Assinar plano Pro <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+            {{ 'landing.proCta' | translate }} <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
           </a>
         </article>
       </div>
@@ -382,8 +381,8 @@
   <section id="testimonials" class="testimonials-section py-16 sm:py-20 lg:py-24">
     <div class="max-w-7xl mx-auto px-6 lg:px-12" data-landing-reveal>
       <header class="lp-section-header mb-10 lg:mb-12" data-landing-reveal-child data-reveal-delay="1">
-        <p class="lp-eyebrow"><i class="fa-solid fa-heart text-[0.65rem]" aria-hidden="true"></i> Depoimentos</p>
-        <h2 class="lp-section-title testimonials-section__title">O que as confeiteiras dizem</h2>
+        <p class="lp-eyebrow"><i class="fa-solid fa-heart text-[0.65rem]" aria-hidden="true"></i> {{ 'landing.testimonialsEyebrow' | translate }}</p>
+        <h2 class="lp-section-title testimonials-section__title">{{ 'landing.testimonialsTitle' | translate }}</h2>
       </header>
 
       <div
@@ -494,9 +493,9 @@
 
     <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-12" data-landing-reveal>
       <header class="lp-section-header mb-12 lg:mb-14" data-landing-reveal-child data-reveal-delay="1">
-        <p class="lp-eyebrow"><i class="fa-solid fa-comments text-[0.65rem]" aria-hidden="true"></i> Sugestões</p>
-        <h2 class="lp-section-title">Ajude-nos a evoluir o sistema</h2>
-        <p class="lp-section-lead">A sua opinião orienta o que construímos a seguir no Flow Cakes.</p>
+        <p class="lp-eyebrow"><i class="fa-solid fa-comments text-[0.65rem]" aria-hidden="true"></i> {{ 'landing.suggestionsEyebrow' | translate }}</p>
+        <h2 class="lp-section-title">{{ 'landing.suggestionsTitle' | translate }}</h2>
+        <p class="lp-section-lead">{{ 'landing.suggestionsLead' | translate }}</p>
       </header>
 
       <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
@@ -519,19 +518,19 @@
         @if (suggestionStep === 'form') {
           <div class="suggestion-form-card" data-landing-reveal-child data-reveal-delay="3">
             <div class="suggestion-form-card__accent" aria-hidden="true"></div>
-            <h3 class="text-2xl font-serif font-bold text-slate-900 mb-2 leading-tight">Ajude-nos a crescer</h3>
+            <h3 class="text-2xl font-serif font-bold text-slate-900 mb-2 leading-tight">{{ 'landing.suggestionFormTitle' | translate }}</h3>
             <p class="text-slate-600 text-sm leading-relaxed mb-6">
-              A sua sugestão ajuda-nos a priorizar melhorias reais no ChefControl para as próximas versões.
+              {{ 'landing.suggestionFormLead' | translate }}
             </p>
 
-            <label for="team-suggestion-name" class="block text-sm font-semibold text-slate-700 mb-1.5">O seu nome</label>
+            <label for="team-suggestion-name" class="block text-sm font-semibold text-slate-700 mb-1.5">{{ 'landing.suggestionNameLabel' | translate }}</label>
             <input
               id="team-suggestion-name"
               #teamSuggestionName
               type="text"
               maxlength="120"
               autocomplete="name"
-              placeholder="Ex.: Maria Fernandes"
+              [placeholder]="'landing.suggestionNamePlaceholder' | translate"
               class="lp-form-field"
               (input)="handleSuggestionNameInput(teamSuggestionName)"
             />
@@ -539,14 +538,14 @@
               <p class="field-usage-alert" role="alert">{{ formNameUsageHint }}</p>
             }
 
-            <label for="team-suggestion" class="mt-4 block text-sm font-semibold text-slate-700 mb-1.5">A sua sugestão</label>
+            <label for="team-suggestion" class="mt-4 block text-sm font-semibold text-slate-700 mb-1.5">{{ 'landing.suggestionMessageLabel' | translate }}</label>
             <textarea
               id="team-suggestion"
               #teamSuggestion
               rows="6"
               [attr.maxlength]="maxSuggestionChars"
               (input)="handleSuggestionInput(teamSuggestion)"
-              placeholder="Ex.: Gostaria de relatórios semanais automáticos por WhatsApp..."
+              [placeholder]="'landing.suggestionMessagePlaceholder' | translate"
               class="lp-form-field min-h-[160px] resize-y"
             ></textarea>
             <div class="mt-2 flex items-center justify-end gap-3 text-xs">
@@ -574,9 +573,9 @@
               >
                 @if (suggestionSending) {
                   <span class="suggestion-submit-btn__spinner" aria-hidden="true"></span>
-                  <span>A enviar…</span>
+                  <span>{{ 'landing.suggestionSending' | translate }}</span>
                 } @else {
-                  <span>Enviar sugestão</span>
+                  <span>{{ 'landing.suggestionSubmit' | translate }}</span>
                   <i class="fa-solid fa-paper-plane suggestion-submit-btn__icon" aria-hidden="true"></i>
                 }
               </button>
@@ -587,9 +586,9 @@
             <div class="suggestion-success-icon" aria-hidden="true">
               <i class="fa-solid fa-heart"></i>
             </div>
-            <h3 class="suggestion-success-title">Obrigado pela sua sugestão!</h3>
+            <h3 class="suggestion-success-title">{{ 'landing.suggestionSuccessTitle' | translate }}</h3>
             <p class="suggestion-success-lead">
-              Recebemos a sua mensagem com carinho. A equipa ChefControl lê cada ideia para moldar as próximas versões do sistema.
+              {{ 'landing.suggestionSuccessLead' | translate }}
             </p>
             <div
               class="suggestion-reset-progress"
@@ -604,7 +603,7 @@
             </div>
             <div class="suggestion-success-actions">
               <button type="button" class="suggestion-submit-btn suggestion-submit-btn--secondary" (click)="resetSuggestionForm()">
-                Enviar outra sugestão
+                {{ 'landing.suggestionSendAnother' | translate }}
               </button>
             </div>
           </div>
@@ -622,36 +621,36 @@
             <img [src]="brand.logoFull" alt="Flow Cakes" class="landing-footer__logo" />
           </a>
           <p class="landing-footer__tagline">
-            Sistema de gestão para confeiteiras — encomendas, lucro, clientes, dívidas e relatórios em MZN.
+            {{ 'landing.footerTagline' | translate }}
           </p>
           <div class="landing-footer__actions">
-            <a routerLink="/register" class="landing-footer__btn landing-footer__btn--primary">Começar grátis</a>
-            <a routerLink="/contacto" class="landing-footer__btn landing-footer__btn--ghost">Contacto</a>
+            <a routerLink="/register" class="landing-footer__btn landing-footer__btn--primary">{{ 'landing.footerStartFree' | translate }}</a>
+            <a routerLink="/contacto" class="landing-footer__btn landing-footer__btn--ghost">{{ 'landing.footerContact' | translate }}</a>
           </div>
         </div>
 
         <nav class="landing-footer__nav" aria-label="Links do rodapé">
           <div class="landing-footer__col">
-            <h4 class="landing-footer__heading">Produto</h4>
+            <h4 class="landing-footer__heading">{{ 'landing.footerProduct' | translate }}</h4>
             <ul>
-              <li><a [routerLink]="['/']" fragment="features">Funcionalidades</a></li>
-              <li><a [routerLink]="['/']" fragment="pricing">Preços</a></li>
-              <li><a [routerLink]="['/']" fragment="testimonials">Depoimentos</a></li>
-              <li><a routerLink="/store/contact">Encomendar na loja</a></li>
+              <li><a [routerLink]="['/']" fragment="features">{{ 'landing.footerFeatures' | translate }}</a></li>
+              <li><a [routerLink]="['/']" fragment="pricing">{{ 'landing.footerPricing' | translate }}</a></li>
+              <li><a [routerLink]="['/']" fragment="testimonials">{{ 'landing.footerTestimonials' | translate }}</a></li>
+              <li><a routerLink="/store/contact">{{ 'landing.footerOrderStore' | translate }}</a></li>
             </ul>
           </div>
           <div class="landing-footer__col">
-            <h4 class="landing-footer__heading">Conta</h4>
+            <h4 class="landing-footer__heading">{{ 'landing.footerAccount' | translate }}</h4>
             <ul>
-              <li><a routerLink="/login">Entrar</a></li>
-              <li><a routerLink="/register">Criar conta</a></li>
+              <li><a routerLink="/login">{{ 'landing.footerLogin' | translate }}</a></li>
+              <li><a routerLink="/register">{{ 'landing.footerCreateAccount' | translate }}</a></li>
             </ul>
           </div>
           <div class="landing-footer__col">
-            <h4 class="landing-footer__heading">Suporte</h4>
+            <h4 class="landing-footer__heading">{{ 'landing.footerSupport' | translate }}</h4>
             <ul>
-              <li><a routerLink="/contacto">Contacto e ajuda</a></li>
-              <li><a routerLink="/contacto">Reclamações e sugestões</a></li>
+              <li><a routerLink="/contacto">{{ 'landing.footerContactHelp' | translate }}</a></li>
+              <li><a routerLink="/contacto">{{ 'landing.footerComplaints' | translate }}</a></li>
             </ul>
           </div>
         </nav>
@@ -661,9 +660,9 @@
 
     <div class="landing-footer__bottom">
       <div class="landing-footer__bottom-inner">
-        <p class="landing-footer__copy">© {{ currentYear }} Flow Cakes. Todos os direitos reservados.</p>
-        <p class="landing-footer__meta">Gestão para confeitaria · Valores em MZN</p>
-        <p class="landing-footer__credit">developer by <span>Fyget</span></p>
+        <p class="landing-footer__copy">© {{ currentYear }} Flow Cakes. {{ 'landing.footerRights' | translate }}</p>
+        <p class="landing-footer__meta">{{ 'landing.footerMeta' | translate }}</p>
+        <p class="landing-footer__credit">{{ 'landing.footerCredit' | translate }} <span>Fyget</span></p>
       </div>
     </div>
     <div class="landing-footer__stripe" aria-hidden="true"></div>

@@ -23,10 +23,38 @@
 /* Navegação superior do login — acima do cartão, sem sobrepor o conteúdo */
 .login-nav {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   padding: 0;
   flex-shrink: 0;
+  gap: 0.75rem;
+}
+
+.login-nav__lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.55rem 0.9rem;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  span {
+    opacity: 0.55;
+  }
+
+  span.active {
+    opacity: 1;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.22);
+  }
 }
 
 .msg-trial-login {

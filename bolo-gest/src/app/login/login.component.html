@@ -3,63 +3,71 @@
     <nav class="login-nav" aria-label="Navegação">
       <a routerLink="/" class="login-nav__back" title="Voltar à página inicial">
         <i class="pi pi-arrow-left" aria-hidden="true"></i>
-        Voltar ao início
+        {{ 'auth.backToHome' | translate }}
       </a>
+      <button
+        type="button"
+        class="login-nav__lang"
+        (click)="lang.toggle()"
+        [attr.aria-label]="lang.currentLang() === 'pt' ? ('shell.changeToEnglish' | translate) : ('shell.changeToPortuguese' | translate)"
+      >
+        <span [class.active]="lang.currentLang() === 'pt'">PT</span>/<span [class.active]="lang.currentLang() === 'en'">EN</span>
+      </button>
     </nav>
     <div class="login-card">
       <div class="card-panel card-welcome">
         <div class="card-welcome__content">
           <app-brand-lockup layout="stacked" [emblemSize]="92" wordmarkSize="lg" class="card-logo" />
-          <h2 class="welcome-title">Bem-vindo</h2>
-          <p class="welcome-text">Sistema de Gestão de Doces e Salgados</p>
+          <h2 class="welcome-title">{{ 'auth.welcomeTitle' | translate }}</h2>
+          <p class="welcome-text">{{ 'auth.welcomeText' | translate }}</p>
         </div>
         <span class="version">v 001</span>
       </div>
       <div class="card-panel card-form">
-        <h2 class="form-title" id="login-form-heading">Entrar</h2>
+        <h2 class="form-title" id="login-form-heading">{{ 'auth.loginTitle' | translate }}</h2>
         @if (showTrialLoginBanner) {
           <div class="msg-trial-login" role="status">
             <i class="pi pi-gift msg-trial-login__icon" aria-hidden="true"></i>
             <div>
-              <strong>Teste grátis de 15 dias activo</strong>
+              <strong>{{ 'auth.trialActiveTitle' | translate }}</strong>
               <span class="msg-trial-login__text">
-                A sua conta já tem 15 dias de uso gratuito. Introduza o contacto e a senha do registo para entrar.
+                {{ 'auth.trialActiveText' | translate }}
               </span>
             </div>
           </div>
         } @else if (showPostRegisterHint) {
           <p class="msg-success" role="status">
-            Conta criada com sucesso. Introduza a mesma senha que definiu no registo para iniciar sessão.
+            {{ 'auth.postRegisterSuccess' | translate }}
           </p>
         }
         <form id="login-form" [formGroup]="form" (ngSubmit)="submit()" class="form" aria-labelledby="login-form-heading">
           <div class="field">
-            <label for="phone">Contacto (9 dígitos ou 258…)</label>
+            <label for="phone">{{ 'auth.phoneLabel' | translate }}</label>
             <input
               id="phone"
               type="tel"
               formControlName="phone"
-              placeholder="841234567 ou 258841234567"
+              [placeholder]="'auth.phonePlaceholder' | translate"
               inputmode="numeric"
               maxlength="12"
               (input)="onPhoneInput($event)" />
             @if (form.get('phone')?.invalid && form.get('phone')?.touched) {
               <span class="error">{{
                 form.get('phone')?.errors?.['required']
-                  ? 'Contacto é obrigatório.'
-                  : 'Use 9 dígitos ou 12 com prefixo 258.'
+                  ? ('auth.phoneRequired' | translate)
+                  : ('auth.phoneInvalid' | translate)
               }}</span>
             }
           </div>
           <div class="field">
-            <label for="password">Senha da conta</label>
-            <input id="password" type="password" formControlName="password" placeholder="Senha para entrar na aplicação" autocomplete="current-password" />
+            <label for="password">{{ 'auth.passwordLabel' | translate }}</label>
+            <input id="password" type="password" formControlName="password" [placeholder]="'auth.passwordPlaceholder' | translate" autocomplete="current-password" />
             @if (form.get('password')?.invalid && form.get('password')?.touched) {
-              <span class="error">{{ form.get('password')?.errors?.['required'] ? 'Senha é obrigatória.' : 'Senha inválida.' }}</span>
+              <span class="error">{{ form.get('password')?.errors?.['required'] ? ('auth.passwordRequired' | translate) : ('auth.passwordInvalid' | translate) }}</span>
             }
           </div>
           <button type="button" class="link-btn" (click)="goToForgotPassword()">
-            Esqueci a senha
+            {{ 'auth.forgotPasswordLink' | translate }}
           </button>
           @if (error) {
             <p class="msg-error">{{ error }}</p>
@@ -74,17 +82,17 @@
           }
           @if (showNoAccountInfo) {
             <div class="no-account-box">
-              <p class="no-account-text">Não tem conta? Crie a sua conta para ter acesso ao sistema. Após o registo terá um período de teste gratuito.</p>
-              <a routerLink="/register" class="btn btn-primary">Criar conta</a>
+              <p class="no-account-text">{{ 'auth.noAccountText' | translate }}</p>
+              <a routerLink="/register" class="btn btn-primary">{{ 'auth.createAccountCta' | translate }}</a>
             </div>
           }
           <button
             type="submit"
             class="btn btn-primary btn-main"
             [disabled]="loading || form.get('phone')?.invalid || !form.get('password')?.value">
-            {{ loading ? 'A carregar...' : 'Entrar' }}
+            {{ loading ? ('auth.loadingButton' | translate) : ('auth.loginButton' | translate) }}
           </button>
-          <a routerLink="/recover-password" class="btn btn-switch"><span class="switch-highlight">Recuperar senha</span></a>
+          <a routerLink="/recover-password" class="btn btn-switch"><span class="switch-highlight">{{ 'auth.recoverPasswordLink' | translate }}</span></a>
         </form>
       </div>
     </div>
