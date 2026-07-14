@@ -13,7 +13,7 @@
             {{ step.id }}
           }
         </span>
-        <span class="reg-progress__label">{{ step.label }}</span>
+        <span class="reg-progress__label">{{ step.labelKey | translate }}</span>
       </li>
       @if (step.id < 3) {
         <li class="reg-progress__connector" [class.reg-progress__connector--done]="step.id < currentStep" aria-hidden="true"></li>
@@ -25,7 +25,7 @@
       @if (hint) {
         {{ hint }}
       } @else {
-        Complete todos os passos para aceder ao sistema.
+        {{ 'register.progressHintDefault' | translate }}
       }
     </p>
   }

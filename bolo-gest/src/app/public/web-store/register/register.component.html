@@ -12,15 +12,15 @@
         <div class="register-aside__copy hidden lg:block space-y-8">
           <div class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-brand-50 to-brand-100 border border-brand-200 shadow-sm hover:shadow-md transition-shadow">
             <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
-            <span class="text-sm font-medium text-brand-800">Cadastro rápido e seguro</span>
+            <span class="text-sm font-medium text-brand-800">{{ 'register.badge' | translate }}</span>
           </div>
 
           <div>
             <h1 class="text-5xl lg:text-6xl font-serif font-bold leading-tight text-gray-900 mb-4">
-              Crie sua conta e comece a <span class="text-gradient-animated">vender melhor</span>.
+              {{ 'register.heroTitlePre' | translate }} <span class="text-gradient-animated">{{ 'register.heroTitleAccent' | translate }}</span>.
             </h1>
             <p class="text-lg text-gray-600 leading-relaxed opacity-90">
-              Em poucos minutos você entra no Flow Cakes e começa a organizar seu negócio de forma profissional. Sem complicações.
+              {{ 'register.heroLead' | translate }}
             </p>
           </div>
         </div>
@@ -38,7 +38,7 @@
           <div class="register-aside__shade" aria-hidden="true"></div>
           <div class="register-aside__badge">
             <i class="fa-solid fa-cake-candles" aria-hidden="true"></i>
-            <span>O seu negócio, organizado</span>
+            <span>{{ 'register.heroBadge' | translate }}</span>
           </div>
         </figure>
       </section>
@@ -47,84 +47,81 @@
       <section class="bg-white/80 backdrop-blur-md border border-brand-100/50 rounded-3xl shadow-2xl p-8 sm:p-10 opacity-0 animate-fade-in-right hover:shadow-3xl transition-shadow duration-500 lg:sticky lg:top-32">
         <app-registration-progress [currentStep]="progressStep" />
         <div class="space-y-1 mb-8">
-          <h2 class="text-3xl font-bold text-gray-900">Criar conta</h2>
-          <p class="text-sm text-gray-500">Preencha os dados abaixo para começar hoje</p>
+          <h2 class="text-3xl font-bold text-gray-900">{{ 'register.formTitle' | translate }}</h2>
+          <p class="text-sm text-gray-500">{{ 'register.formSubtitle' | translate }}</p>
         </div>
 
         <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
           <!-- Nome Completo -->
           <div class="form-group animate-fade-in-up" [style.--delay]="'100ms'" style="animation-delay: 100ms;">
             <label for="fullName" class="block text-sm font-semibold text-gray-700 mb-2.5">
-              <i class="fa-solid fa-user text-brand-600 mr-2"></i>Nome completo
+              <i class="fa-solid fa-user text-brand-600 mr-2"></i>{{ 'register.fullNameLabel' | translate }}
             </label>
             <div class="relative">
-              <input 
-                id="fullName" 
-                type="text" 
-                formControlName="fullName" 
-                placeholder="João da Silva" 
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all duration-300 bg-gray-50 focus:bg-white" 
+              <input
+                id="fullName"
+                type="text"
+                formControlName="fullName"
+                [placeholder]="'register.fullNamePlaceholder' | translate"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all duration-300 bg-gray-50 focus:bg-white"
               />
               @if (form.get('fullName')?.valid && form.get('fullName')?.touched) {
                 <span class="absolute right-3 top-3.5 text-green-500"><i class="fa-solid fa-check"></i></span>
               }
             </div>
             @if (form.get('fullName')?.invalid && form.get('fullName')?.touched) {
-              <span class="text-xs text-red-600 mt-1 block"><i class="fa-solid fa-circle-exclamation mr-1"></i>Nome completo é obrigatório.</span>
+              <span class="text-xs text-red-600 mt-1 block"><i class="fa-solid fa-circle-exclamation mr-1"></i>{{ 'register.fullNameRequired' | translate }}</span>
             }
           </div>
 
           <!-- Província -->
           <div class="form-group animate-fade-in-up" [style.--delay]="'150ms'" style="animation-delay: 150ms;">
             <label for="province" class="block text-sm font-semibold text-gray-700 mb-2.5">
-              <i class="fa-solid fa-map-pin text-brand-600 mr-2"></i>Província
+              <i class="fa-solid fa-map-pin text-brand-600 mr-2"></i>{{ 'register.provinceLabel' | translate }}
             </label>
-            <select 
-              id="province" 
-              formControlName="province" 
+            <select
+              id="province"
+              formControlName="province"
               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all duration-300 bg-gray-50 focus:bg-white"
             >
-              <option value="">Selecione a sua província</option>
+              <option value="">{{ 'register.provincePlaceholder' | translate }}</option>
               @for (p of provinces; track p) {
                 <option [value]="p">{{ p }}</option>
               }
             </select>
             @if (form.get('province')?.invalid && form.get('province')?.touched) {
-              <span class="text-xs text-red-600 mt-1 block"><i class="fa-solid fa-circle-exclamation mr-1"></i>Província é obrigatória.</span>
+              <span class="text-xs text-red-600 mt-1 block"><i class="fa-solid fa-circle-exclamation mr-1"></i>{{ 'register.provinceRequired' | translate }}</span>
             }
           </div>
 
           <!-- Contacto -->
           <div class="form-group animate-fade-in-up" [style.--delay]="'200ms'" style="animation-delay: 200ms;">
             <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2.5">
-              <i class="fa-solid fa-phone text-brand-600 mr-2"></i>Contacto (9 ou 12 dígitos)
+              <i class="fa-solid fa-phone text-brand-600 mr-2"></i>{{ 'register.phoneLabel' | translate }}
             </label>
             <div class="relative">
-              <input 
-                id="phone" 
-                type="tel" 
-                formControlName="phone" 
-                placeholder="841234567 ou 258841234567" 
-                inputmode="numeric" 
-                maxlength="12" 
-                (input)="onPhoneInput($event)" 
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all duration-300 bg-gray-50 focus:bg-white" 
+              <input
+                id="phone"
+                type="tel"
+                formControlName="phone"
+                [placeholder]="'register.phonePlaceholder' | translate"
+                inputmode="numeric"
+                maxlength="12"
+                (input)="onPhoneInput($event)"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all duration-300 bg-gray-50 focus:bg-white"
               />
               @if (form.get('phone')?.valid && form.get('phone')?.touched) {
                 <span class="absolute right-3 top-3.5 text-green-500"><i class="fa-solid fa-check"></i></span>
               }
             </div>
             @if (form.get('phone')?.invalid && form.get('phone')?.touched) {
-              <span class="text-xs text-red-600 mt-1 block"><i class="fa-solid fa-circle-exclamation mr-1"></i>{{ form.get('phone')?.errors?.['mzPhone'] ? 'Use 9 dígitos ou 12 com prefixo 258.' : 'Contacto é obrigatório.' }}</span>
+              <span class="text-xs text-red-600 mt-1 block"><i class="fa-solid fa-circle-exclamation mr-1"></i>{{ form.get('phone')?.errors?.['mzPhone'] ? ('register.phoneInvalid' | translate) : ('register.phoneRequired' | translate) }}</span>
             }
             <div class="register-phone-notice" role="note">
               <i class="fa-solid fa-circle-info register-phone-notice__icon" aria-hidden="true"></i>
               <p>
-                <strong>Use o seu número real de telemóvel.</strong>
-                É o login da conta — pedidos, clientes e licença ficam ligados a ela.
-                Não use números temporários ou de terceiros.
-                Se mais tarde alterar o contacto em «Meu perfil», mantém a mesma conta;
-                o número antigo, se libertado, pode ser usado noutro registo como conta nova.
+                <strong>{{ 'register.phoneNoticeStrong' | translate }}</strong>
+                {{ 'register.phoneNoticeText' | translate }}
               </p>
             </div>
           </div>
@@ -132,59 +129,59 @@
           <!-- Email -->
           <div class="form-group animate-fade-in-up" [style.--delay]="'250ms'" style="animation-delay: 250ms;">
             <label for="email" class="block text-sm font-semibold text-gray-700 mb-2.5">
-              <i class="fa-solid fa-envelope text-brand-600 mr-2"></i>Email (opcional)
+              <i class="fa-solid fa-envelope text-brand-600 mr-2"></i>{{ 'register.emailLabel' | translate }}
             </label>
             <div class="relative">
-              <input 
-                id="email" 
-                type="email" 
-                formControlName="email" 
-                placeholder="exemplo&#64;email.com" 
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all duration-300 bg-gray-50 focus:bg-white" 
+              <input
+                id="email"
+                type="email"
+                formControlName="email"
+                placeholder="exemplo&#64;email.com"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all duration-300 bg-gray-50 focus:bg-white"
               />
               @if (form.get('email')?.valid && form.get('email')?.touched && form.get('email')?.value) {
                 <span class="absolute right-3 top-3.5 text-green-500"><i class="fa-solid fa-check"></i></span>
               }
             </div>
             @if (form.get('email')?.invalid && form.get('email')?.touched) {
-              <span class="text-xs text-red-600 mt-1 block"><i class="fa-solid fa-circle-exclamation mr-1"></i>Email inválido.</span>
+              <span class="text-xs text-red-600 mt-1 block"><i class="fa-solid fa-circle-exclamation mr-1"></i>{{ 'register.emailInvalid' | translate }}</span>
             }
           </div>
 
           <!-- Senha -->
           <div class="form-group animate-fade-in-up" [style.--delay]="'300ms'" style="animation-delay: 300ms;">
             <label for="password" class="block text-sm font-semibold text-gray-700 mb-2.5">
-              <i class="fa-solid fa-lock text-brand-600 mr-2"></i>Senha da conta
+              <i class="fa-solid fa-lock text-brand-600 mr-2"></i>{{ 'register.passwordLabel' | translate }}
             </label>
             <div class="relative">
-              <input 
-                id="password" 
-                type="password" 
-                formControlName="password" 
-                placeholder="Mín. 4 caracteres" 
-                autocomplete="new-password" 
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all duration-300 bg-gray-50 focus:bg-white" 
+              <input
+                id="password"
+                type="password"
+                formControlName="password"
+                [placeholder]="'register.passwordPlaceholder' | translate"
+                autocomplete="new-password"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all duration-300 bg-gray-50 focus:bg-white"
               />
               @if (form.get('password')?.valid && form.get('password')?.touched) {
                 <span class="absolute right-3 top-3.5 text-green-500"><i class="fa-solid fa-check"></i></span>
               }
             </div>
             @if (form.get('password')?.invalid && form.get('password')?.touched) {
-              <span class="text-xs text-red-600 mt-1 block"><i class="fa-solid fa-circle-exclamation mr-1"></i>{{ form.get('password')?.errors?.['required'] ? 'Senha é obrigatória.' : 'Senha deve ter pelo menos 4 caracteres.' }}</span>
+              <span class="text-xs text-red-600 mt-1 block"><i class="fa-solid fa-circle-exclamation mr-1"></i>{{ form.get('password')?.errors?.['required'] ? ('register.passwordRequired' | translate) : ('register.passwordMinLength' | translate) }}</span>
             }
           </div>
 
           <!-- Checkbox Conformidade -->
           <label class="flex items-start gap-3 text-sm text-gray-700 p-4 rounded-xl bg-brand-50 border border-brand-100 hover:border-brand-200 transition-colors cursor-pointer group animate-fade-in-up" [style.--delay]="'350ms'" style="animation-delay: 350ms;">
-            <input 
-              type="checkbox" 
-              formControlName="dataTrue" 
-              class="mt-1 rounded accent-brand-600 cursor-pointer" 
+            <input
+              type="checkbox"
+              formControlName="dataTrue"
+              class="mt-1 rounded accent-brand-600 cursor-pointer"
             />
-            <span class="group-hover:text-brand-800">Concordo que todos os dados fornecidos são verdadeiros.</span>
+            <span class="group-hover:text-brand-800">{{ 'register.dataTrueLabel' | translate }}</span>
           </label>
           @if (form.get('dataTrue')?.invalid && form.get('dataTrue')?.touched) {
-            <span class="block text-xs text-red-600 -mt-2 animate-fade-in-up" style="animation-delay: 350ms;"><i class="fa-solid fa-circle-exclamation mr-1"></i>Deve concordar para criar a conta.</span>
+            <span class="block text-xs text-red-600 -mt-2 animate-fade-in-up" style="animation-delay: 350ms;"><i class="fa-solid fa-circle-exclamation mr-1"></i>{{ 'register.dataTrueRequired' | translate }}</span>
           }
 
           <div class="register-legal animate-fade-in-up" style="animation-delay: 380ms;">
@@ -195,27 +192,26 @@
                 class="mt-1 rounded accent-brand-600 cursor-pointer shrink-0"
               />
               <span>
-                Li e aceito os
-                <strong>Termos de Utilização</strong>
-                e a
-                <strong>Política de Privacidade</strong>.
-                O registo é bloqueado sem esta aceitação.
+                {{ 'register.legalTextPre' | translate }}
+                <strong>{{ 'register.legalTerms' | translate }}</strong>
+                {{ 'register.legalAnd' | translate }}
+                <strong>{{ 'register.legalPrivacy' | translate }}</strong>{{ 'register.legalSuffix' | translate }}
               </span>
             </label>
             @if (form.get('acceptTerms')?.invalid && form.get('acceptTerms')?.touched) {
               <span class="register-legal__error">
                 <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
-                Deve aceitar os termos e a política de privacidade para continuar.
+                {{ 'register.legalRequired' | translate }}
               </span>
             }
             <div class="register-legal__actions">
               <button type="button" class="register-legal__view-btn" (click)="openLegalModal('terms')">
                 <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
-                Ver termos de utilização
+                {{ 'register.viewTerms' | translate }}
               </button>
               <button type="button" class="register-legal__view-btn" (click)="openLegalModal('privacy')">
                 <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
-                Ver política de privacidade
+                {{ 'register.viewPrivacy' | translate }}
               </button>
             </div>
           </div>
@@ -237,17 +233,17 @@
             >
               @if (loading) {
                 <span class="register-submit-btn__spinner" aria-hidden="true"></span>
-                <span>A criar conta…</span>
+                <span>{{ 'register.submitting' | translate }}</span>
               } @else {
-                <span>Criar conta</span>
+                <span>{{ 'register.submit' | translate }}</span>
                 <i class="fa-solid fa-arrow-right register-submit-btn__icon" aria-hidden="true"></i>
               }
             </button>
-            <a 
-              routerLink="/login" 
+            <a
+              routerLink="/login"
               class="block w-full text-center py-3 rounded-xl border-2 border-brand-300 text-brand-700 font-semibold hover:bg-brand-50 hover:border-brand-400 transition-all duration-300 hover:scale-[1.01] active:scale-95"
             >
-              <i class="fa-solid fa-right-to-bracket mr-2"></i>Já tenho conta — Entrar
+              <i class="fa-solid fa-right-to-bracket mr-2"></i>{{ 'register.alreadyHaveAccount' | translate }}
             </a>
           </div>
         </form>

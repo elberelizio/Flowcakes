@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import {
@@ -20,6 +20,8 @@ import { RegistrationProgressComponent } from '@app/core/registration/registrati
 import { LegalDocumentModalComponent } from '@app/core/legal/legal-document-modal.component';
 import { LegalDocumentId } from '@app/core/legal/legal-content';
 import { PublicSiteNavComponent } from '../../web-page/public-site-nav/public-site-nav.component';
+import { TranslatePipe } from '@app/core/i18n/translate.pipe';
+import { LanguageService } from '@app/services/language.service';
 
 @Component({
   selector: 'app-register',
@@ -31,11 +33,13 @@ import { PublicSiteNavComponent } from '../../web-page/public-site-nav/public-si
     PublicSiteNavComponent,
     RegistrationProgressComponent,
     LegalDocumentModalComponent,
+    TranslatePipe,
   ],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss',
 })
 export class RegisterComponent implements OnInit {
+  readonly lang = inject(LanguageService);
   error = '';
   loading = false;
   form: FormGroup;
@@ -100,37 +104,37 @@ export class RegisterComponent implements OnInit {
   getFirstInvalidFieldMessage(): string {
     const order = ['fullName', 'province', 'phone', 'email', 'password', 'dataTrue', 'acceptTerms'] as const;
     const names: Record<string, string> = {
-      fullName: 'Nome completo',
-      province: 'Província',
-      phone: 'Contacto',
-      email: 'Email',
-      password: 'Senha da conta',
-      dataTrue: 'Confirmação dos dados',
-      acceptTerms: 'Termos e privacidade',
+      fullName: this.lang.t('register.fieldFullName'),
+      province: this.lang.t('register.fieldProvince'),
+      phone: this.lang.t('register.fieldPhone'),
+      email: this.lang.t('register.fieldEmail'),
+      password: this.lang.t('register.fieldPassword'),
+      dataTrue: this.lang.t('register.dataTrueLabel'),
+      acceptTerms: this.lang.t('register.legalTerms'),
     };
     for (const key of order) {
       const c = this.form.get(key);
       if (c?.invalid && c?.errors) {
-        if (c.errors['required']) return names[key] + ' é obrigatório.';
+        if (c.errors['required']) return names[key] + ' ' + this.lang.t('register.fieldRequiredSuffix');
         if (c.errors['requiredTrue']) {
           if (key === 'acceptTerms') {
-            return 'Deve aceitar os Termos de Utilização e a Política de Privacidade para criar conta.';
+            return this.lang.t('register.acceptTermsError');
           }
-          return 'Deve concordar que os dados fornecidos são verdadeiros.';
+          return this.lang.t('register.confirmDataError');
         }
-        if (c.errors['email']) return 'Email inválido.';
-        if (c.errors['mzPhone']) return 'Use 9 dígitos ou 12 com prefixo 258.';
-        if (c.errors['minlength']) return names[key] + ' deve ter pelo menos 4 caracteres.';
+        if (c.errors['email']) return this.lang.t('register.emailInvalid');
+        if (c.errors['mzPhone']) return this.lang.t('register.phoneInvalid');
+        if (c.errors['minlength']) return names[key] + ' ' + this.lang.t('register.fieldMinLengthSuffix');
       }
     }
-    return 'Preencha todos os campos obrigatórios.';
+    return this.lang.t('register.fillAllFields');
   }
 
   async submit(): Promise<void> {
     this.error = '';
     if (!this.form.get('acceptTerms')?.value) {
       this.form.get('acceptTerms')?.markAsTouched();
-      this.error = 'Deve aceitar os Termos de Utilização e a Política de Privacidade para criar conta.';
+      this.error = this.lang.t('register.acceptTermsError');
       if (this.form.invalid) {
         this.form.markAllAsTouched();
         const msg = this.getFirstInvalidFieldMessage();
@@ -156,7 +160,7 @@ export class RegisterComponent implements OnInit {
     });
     this.loading = false;
     if (!result.ok) {
-      this.error = result.message || 'Este contacto já está registado.';
+      this.error = result.message || this.lang.t('register.genericError');
       return;
     }
     this.registrationFlow.complete();
