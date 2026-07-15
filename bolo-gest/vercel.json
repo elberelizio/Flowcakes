@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://chef-control-api-production.up.railway.app/api/:path*"
+      "destination": "https://flowcakes-api.duckdns.org/api/:path*"
     },
     {
       "source": "/(.*)",
