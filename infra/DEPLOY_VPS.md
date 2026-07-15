@@ -71,11 +71,11 @@ cat > supabase.vps.env <<'EOF'
 SPRING_PROFILES_ACTIVE=prod
 SERVER_PORT=8081
 DB_HOST=localhost
-DB_PORT=5432
+DB_PORT=5433
 DB_NAME=chefcontrol2025
 DB_USER=chefcontrol
 DB_PASSWORD=MESMA_SENHA_DO_db.env
-DATABASE_JDBC_URL=jdbc:postgresql://localhost:5432/chefcontrol2025
+DATABASE_JDBC_URL=jdbc:postgresql://localhost:5433/chefcontrol2025
 EOF
 
 # supabase.local.env já existe no repo com as credenciais do Supabase actual

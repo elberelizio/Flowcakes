@@ -6,7 +6,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      - "127.0.0.1:5432:5432" # só acessível na própria VPS, nunca exposto à internet
+      - "127.0.0.1:5433:5432" # 5432 já usado por um Postgres nativo na VPS; só acessível localmente
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
       interval: 5s
