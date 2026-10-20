@@ -50,3 +50,30 @@ Skipped in script mother (run manually if needed):
 - `12_add_new_admin_user.sql` (template)
 - `CRIAR_USUARIO_NORMAL.sql`
 - `CRIAR_MULTIPLOS_USUARIOS_NORMAIS.sql`
+
+After script mother, also run (in order):
+
+- `34_mpesa_payment_rejection.sql`
+- `35_mpesa_payment_operator_ref.sql`
+- `36_license_transaction_receipt.sql`
+- `37_license_transaction_valid_until_backfill.sql`
+- `38_password_reset_otps.sql`
+- `39_contact_messages.sql`
+
+Or use `migrate_supabase.py schema` (applies mother + 34–39 automatically).
+
+---
+
+## Migração para novo projecto Supabase
+
+1. Criar projecto no Supabase (nova conta). Anotar **project ref**, senha e região do pooler.
+2. Copiar `backend/supabase.new.env.example` → `backend/supabase.new.env` e preencher credenciais.
+3. Ver dados actuais: `python backend/scripts/migrate_supabase.py counts --env backend/supabase.local.env`
+4. Esquema na base nova: `python backend/scripts/migrate_supabase.py schema --target backend/supabase.new.env`
+5. Copiar dados: `python backend/scripts/migrate_supabase.py data --source backend/supabase.local.env --target backend/supabase.new.env`
+6. Verificar: `python backend/scripts/migrate_supabase.py verify --source backend/supabase.local.env --target backend/supabase.new.env`
+7. Variáveis Railway: `python backend/scripts/migrate_supabase.py railway-env --env backend/supabase.new.env`
+8. Actualizar Railway com as novas variáveis; testar `https://flowcakes.vercel.app/api/public/health`.
+9. Renomear `supabase.new.env` → `supabase.local.env` (ou actualizar o existente).
+
+**Nota:** Supabase usa a base `postgres` (não é preciso `CREATE DATABASE`). O `script-mother.sql` usa `\ir` — o script Python usa `psql` ou Docker (`postgres:16-alpine`) automaticamente.
